@@ -1,0 +1,8 @@
+# Ignore non-code files in language detection
+*.html linguist-detectable=false
+*.css linguist-detectable=false
+*.json linguist-detectable=false
+
+# Force language detection
+backend/** linguist-language=Python
+frontend/** linguist-language=TypeScript
