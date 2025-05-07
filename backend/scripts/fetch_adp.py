@@ -63,7 +63,7 @@ def scrape_adp():
             name = name_tag.text.strip()
             position = position_tag.text.strip()
             team = team_tag.text.strip()
-            adp = float(adp_tag.text.strip())
+            adp = adp_tag.text.strip()
 
             players.append({
                 "id": f"{name}-{team}-{position}".lower().replace(" ", "-"),

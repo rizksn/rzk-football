@@ -9,7 +9,6 @@
     "lint": "next lint",
     "update-adp": "tsx scripts/getAdpRaw.ts && tsx scripts/cleanAdpData.ts",
     "dev-server": "npm --prefix frontend run dev",
-    "sync-adp": "node scripts/syncAdpData.js",
     "fetch:sleeper": "tsx src/scripts/fetchSleeperIndex.ts"
   },
   "dependencies": {

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes.players import router as players_router
-from routes.simulate import router as simulate_router
+from backend.routes.players import router as players_router
+from backend.draft_engine.simulate import router as simulate_router
 
 app = FastAPI()
 
