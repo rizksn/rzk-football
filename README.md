@@ -1,62 +1,52 @@
-# 🏈 RZK Football | Fantasy Application and Mock Draft Simulator
+# 🏈 RZK Football | AI Fantasy Draft Simulator
 
-A smart, strategic fantasy football draft simulator built with **Next.js**, featuring a human-like CPU that mimics real fantasy drafters using real ADP data, positional needs, market inefficiencies, and controlled randomness.
-
----
-
-## 🚀 Version 1.1.1 — Initial Public Release
-
-### ✅ Features
-
-- 💻 **Next.js frontend** styled with TailwindCSS
-- 🐍 **Custom Python draft engine** handling CPU logic
-- 📊 **Puppeteer scraper** pulling real-time ADP data (DraftSharks)
-- 🧠 **CPU Draft Engine v1.1**
-  - Score-based logic (ADP, ECR, Tiers, Upside)
-  - Market inefficiency detection (ADP vs ECR)
-  - Roster-based positional filtering
-  - Tier-aware tiebreak logic
-  - Controlled randomness to simulate real draft variance
-- 🪄 **Drag-and-drop player queue**
-- 📋 **Roster panel + live draft board**
-- 🔄 Full snake-draft logic with user + CPU teams
+A smart, customizable fantasy football draft simulator with a full-stack architecture. Built for realism, flexibility, and future expansion — blending ADP-based modeling, drag-and-drop drafting, and a protected Python backend.
 
 ---
 
-## 🧠 Draft Engine Philosophy
+## 🚀 Core Features
 
-Our CPU doesn’t just draft by ADP — it *thinks*:
-
-- 📉 Penalizes overdrafted players
-- 📈 Identifies undervalued gems (ECR vs ADP)
-- 🧩 Adjusts picks in real-time based on roster needs (e.g. no QB2 in early rounds)
-- 🔄 Uses randomness to simulate human inconsistency
-
----
-
-## 📦 Tech Stack
-
-- **Frontend**: Next.js + TypeScript + TailwindCSS
-- **Backend**: Python (custom draft engine)
-- Puppeteer (for scraping ADP)
-- Modular, monorepo-based architecture
----
-
-## 🔮 Roadmap
-
-- 🔢 Configurable draft settings (1QB / Superflex / PPR)
-- 🧠 CPU Team Personality Profiles (Zero RB, Hero WR, etc.)
-- 💾 Save + resume drafts
-- 📈 Draft analytics dashboard
-- 🎨 Dark mode support
+- ⚛️ **Modern Frontend** — Built with Next.js, Tailwind, and TypeScript
+- 🧠 **AI-Ready Draft Engine** — Python backend ready for advanced CPU logic
+- 🔄 **Snake Draft Logic** — Full round-by-round draft simulation
+- 🪄 **Drag-and-Drop Queue** — Sortable draft queue with real-time interactivity
+- 📋 **Roster Panel** — Auto-fills players into correct slots (WR, FLX, etc.)
+- 🧩 **Protected Logic** — Core draft engine logic is modular and excluded from version control
 
 ---
 
-## 🧑‍💻 Author
+## 🛠 Tech Stack
+
+- **Frontend**: Next.js App Router, TypeScript, TailwindCSS
+- **Backend**: FastAPI + Python (ADP scraping + draft simulation)
+- **Scraping**: Playwright for live consensus ADP from DraftSharks
+- **Queue/Sort**: dnd-kit for draggable user queue
+
+---
+
+## 🧠 Coming Soon
+
+- 🎛 CPU Strategy Configurator (Zero RB, Balanced, Hero WR, etc.)
+- 📈 Draft Analytics Overlay
+- 💾 Save/Load Drafts
+- 🎯 Multi-mode Draft Settings (1QB, Superflex, TEP)
+- 👥 Multiplayer or Guest Draft Sessions
+
+---
+
+## 🔒 Draft Engine Security
+
+All sensitive logic is located in `/backend/draft_engine/` and protected via `.gitignore` to prevent public indexing. This ensures long-term security as the project grows toward production.
+
+---
+
+## 👤 Author
 
 **Sherif Rizk**  
-Software engineer & fantasy football enthusiast  
+Software Engineer | Fantasy Strategist  
 [LinkedIn](https://www.linkedin.com/in/sherif-rizk) · [GitHub](https://github.com/rizksn)
 
 ---
 
+> 🧪 Version: Pre-Alpha – Local Dev Only  
+> Stable for internal development and demonstration purposes.
