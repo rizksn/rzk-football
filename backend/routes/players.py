@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 
 router = APIRouter()
 
-DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'adp-consensus-ppr.json')
+DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'anubis', 'data', 'adp-consensus-ppr.json')
 
 @router.get("/players")
 def get_adp_players():

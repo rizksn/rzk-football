@@ -1,7 +1,12 @@
+import sys
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.players import router as players_router
-from backend.draft_engine.simulate import router as simulate_router
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'anubis')))
+
+from anubis_draft_engine.simulate import router as simulate_router
 
 app = FastAPI()
 

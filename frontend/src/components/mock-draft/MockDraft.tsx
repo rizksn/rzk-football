@@ -71,17 +71,27 @@ export default function MockDraft({ initialPlayers }: Props) {
   };
 
   const handleStartDraft = async () => {
-    const res = await fetch('http://127.0.0.1:8000/simulate', {
-      method: 'POST',
-    });
-    const draftSequence: Player[] = await res.json();
-
-    setDraftPlan(draftSequence);
-    setDraftBoard(
-      Array.from({ length: NUM_ROUNDS }, () => Array(NUM_TEAMS).fill(null))
-    );
-    setCurrentPickIndex(0);
-    setDraftStarted(true);
+    try {
+      const res = await fetch('http://127.0.0.1:8000/simulate', {
+        method: 'POST',
+      });
+  
+      const draftSequence = await res.json();
+  
+      if (!Array.isArray(draftSequence)) {
+        console.error("❌ Draft simulation failed:", draftSequence);
+        return;
+      }
+  
+      setDraftPlan(draftSequence);
+      setDraftBoard(
+        Array.from({ length: NUM_ROUNDS }, () => Array(NUM_TEAMS).fill(null))
+      );
+      setCurrentPickIndex(0);
+      setDraftStarted(true);
+    } catch (err) {
+      console.error("❌ Draft simulation crashed:", err);
+    }
   };
 
   return (

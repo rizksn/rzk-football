@@ -42,8 +42,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Ignore draft engine code
-src/engine/
-
 # Draft engine logic
-backend/draft_engine/
+backend/anubis/anubis_draft_engine
