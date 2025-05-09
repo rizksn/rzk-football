@@ -44,3 +44,5 @@ next-env.d.ts
 
 # Draft engine logic
 backend/anubis/anubis_draft_engine
+
+debug.html

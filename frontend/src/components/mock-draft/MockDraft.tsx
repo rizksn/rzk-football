@@ -13,6 +13,45 @@ const TOTAL_PICKS = NUM_TEAMS * NUM_ROUNDS;
 const getSnakedTeamIndex = (round: number, indexInRound: number): number =>
   round % 2 === 0 ? indexInRound : NUM_TEAMS - 1 - indexInRound;
 
+const extractPlayerName = (
+  responseText: string | undefined,
+  playerPool: Player[]
+): string | null => {
+  if (!responseText) return null;
+
+  const cleanText = responseText.replace(/\*\*(.*?)\*\*/g, '$1').toLowerCase();
+
+  const match = cleanText.match(
+    /(?:draft|select|pick|taking)\s+(?:rb|wr|qb|te)?\s*([a-z]+\s[a-z]+)/i
+  );
+  if (match?.[1]) return match[1];
+
+  for (const player of playerPool) {
+    const name = player.name.toLowerCase();
+    if (cleanText.includes(name)) return player.name;
+  }
+
+  return null;
+};
+
+const resolvePlayer = (
+  playerNameRaw: string,
+  playerPool: Player[]
+): Player | null => {
+  const normalize = (name: string) =>
+    name.replace(/[^\w\s]/gi, '').toLowerCase().trim();
+
+  const aiName = normalize(playerNameRaw);
+
+  for (const player of playerPool) {
+    const poolName = normalize(player.name);
+    if (poolName === aiName) return player;
+    if (poolName.includes(aiName) || aiName.includes(poolName)) return player;
+  }
+
+  return null;
+};
+
 type Props = {
   initialPlayers: Player[];
 };
@@ -74,23 +113,39 @@ export default function MockDraft({ initialPlayers }: Props) {
     try {
       const res = await fetch('http://127.0.0.1:8000/simulate', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          draftBoard,
+          teamIndex: userDraftSlot ?? 11,
+        }),
       });
-  
-      const draftSequence = await res.json();
-  
-      if (!Array.isArray(draftSequence)) {
-        console.error("❌ Draft simulation failed:", draftSequence);
+
+      const data = await res.json();
+      const text = data.result as string;
+      console.log("\ud83e\udde0 ANUBIS response:", text);
+
+      const rawName = extractPlayerName(text, players);
+      if (!rawName) {
+        console.error("\u274c Could not extract player name from AI response");
         return;
       }
-  
-      setDraftPlan(draftSequence);
+
+      const aiPick = resolvePlayer(rawName, players);
+      if (!aiPick) {
+        console.error("\u274c AI recommended player not found in pool:", rawName);
+        return;
+      }
+
+      setDraftPlan([aiPick]);
       setDraftBoard(
         Array.from({ length: NUM_ROUNDS }, () => Array(NUM_TEAMS).fill(null))
       );
       setCurrentPickIndex(0);
       setDraftStarted(true);
     } catch (err) {
-      console.error("❌ Draft simulation crashed:", err);
+      console.error("\u274c Draft simulation crashed:", err);
     }
   };
 
