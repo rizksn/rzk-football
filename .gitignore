@@ -42,7 +42,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Draft engine logic
+# anubis draft engine
 backend/anubis/anubis_draft_engine
+
+# rzk-football vison & blueprint
+docs
 
 debug.html

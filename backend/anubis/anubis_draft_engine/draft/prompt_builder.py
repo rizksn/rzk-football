@@ -1,21 +1,30 @@
 def build_prompt(team_roster, available_players, round_number, league_format):
     player_lines = "\n".join([
-        f"{p['name']} ({p['team']} - {p['pos']}) - ADP: {p['adp']} - 2024: {p['stats']}"
+        f"{p['name']} ({p['team']} - {p['pos']}) – ADP: {p['adp']} – 2024: {p['stats']}"
         for p in available_players
     ])
 
+    roster_text = ", ".join(team_roster) if team_roster else "None"
+
     prompt = f"""
-You are a strategic fantasy football analyst. Your goal is to give smart, well-reasoned advice using natural language.
+You are a strategic fantasy football analyst. Your job is to pick the best player for a fantasy football team in a redraft league.
 
 This is a 2025 redraft in a {league_format}.
 
 Team has made the following picks:
-{', '.join(team_roster)}
+{roster_text}
 
 It is now Round {round_number}. The following players are available:
 
 {player_lines}
 
-Who should this team draft next and why? Please respond in full sentences. Be detailed about what factors you considered (ADP, positional need, stats, upside, etc).
+⚠️ IMPORTANT: Only choose a player from the list above. Do not pick any player who is not listed. Do not invent or hallucinate names.
+
+Only respond with the **exact full name** of the best available player to draft. No explanation. No formatting. No extra text. No position. No team. Just the name.
+
+Example:
+Bijan Robinson
+
+DO NOT return anything else.
 """
-    return prompt
+    return prompt.strip()

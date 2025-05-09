@@ -21,11 +21,11 @@ const extractPlayerName = (
 
   const cleanText = responseText.replace(/\*\*(.*?)\*\*/g, '$1').toLowerCase();
 
-  const match = cleanText.match(
-    /(?:draft|select|pick|taking)\s+(?:rb|wr|qb|te)?\s*([a-z]+\s[a-z]+)/i
-  );
+  // 👇 Try strict match first
+  const match = cleanText.match(/player name:\s*([a-z]+\s[a-z]+)/i);
   if (match?.[1]) return match[1];
 
+  // 👇 Fallback: fuzzy match against player pool
   for (const player of playerPool) {
     const name = player.name.toLowerCase();
     if (cleanText.includes(name)) return player.name;
@@ -74,18 +74,48 @@ export default function MockDraft({ initialPlayers }: Props) {
   const isUserTurn = draftStarted && userDraftSlot === teamIndex;
 
   useEffect(() => {
-    if (!draftStarted || isUserTurn || currentPickIndex >= TOTAL_PICKS) return;
-
-    const timeout = setTimeout(() => {
-      const nextPlayer = draftPlan.find(p =>
-        players.some(pool => pool.id === p.id)
-      );
-      if (nextPlayer) makePick(nextPlayer);
-    }, 800);
-
+    const runCpuPick = async () => {
+      if (!draftStarted || isUserTurn || currentPickIndex >= TOTAL_PICKS) return;
+  
+      const round = Math.floor(currentPickIndex / NUM_TEAMS);
+      const indexInRound = currentPickIndex % NUM_TEAMS;
+      const teamIndex = getSnakedTeamIndex(round, indexInRound);
+  
+      try {
+        const res = await fetch('http://127.0.0.1:8000/simulate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ draftBoard, teamIndex }),
+        });
+  
+        const data = await res.json();
+        const text = data.result as string;
+        console.log("🧠 ANUBIS response:", text);
+  
+        const rawName = extractPlayerName(text, players);
+        if (!rawName) {
+          console.error("❌ Could not extract player name from AI response");
+          return;
+        }
+  
+        const aiPick = resolvePlayer(rawName, players);
+        if (!aiPick) {
+          console.error("❌ AI recommended player not found in pool:", rawName);
+          return;
+        }
+  
+        makePick(aiPick);
+      } catch (err) {
+        console.error("❌ CPU draft error:", err);
+      }
+    };
+  
+    const timeout = setTimeout(runCpuPick, 1000);
     return () => clearTimeout(timeout);
-  }, [currentPickIndex, draftStarted, isUserTurn, draftPlan, players]);
-
+  }, [currentPickIndex, draftStarted, isUserTurn, draftBoard, players]);
+  
   const makePick = (player: Player) => {
     const round = Math.floor(currentPickIndex / NUM_TEAMS);
     const indexInRound = currentPickIndex % NUM_TEAMS;
