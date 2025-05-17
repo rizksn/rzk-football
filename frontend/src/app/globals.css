@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  background-color: rgb(1, 11, 21); /* or whatever dark bg you want */
+}
+
+/* globals.css */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: transparent; 
+  border-radius: 0px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  
+}
+
+.clip-trapezoid {
+  clip-path: polygon(0% 0%, 100% 0%, 90% 100%, 10% 100%);
+}
+
+/* #2d3548    background-color: rgba(16,94,82,0.51);  bg-[rgba(16,94,82,0.51)]   #03062a */

@@ -1,0 +1,11 @@
+# Ignore non-code files in language stats
+*.html linguist-detectable=false
+*.css linguist-detectable=false
+*.json linguist-detectable=false
+
+# Explicitly mark backend as Python
+backend/** linguist-language=Python
+
+# Explicitly mark frontend as TypeScript (covers React)
+frontend/src/** linguist-language=TypeScript
+frontend/src/app/** linguist-language=JavaScript
