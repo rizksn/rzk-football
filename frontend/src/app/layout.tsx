@@ -1,4 +1,7 @@
+import { defaultMetadata } from './metadata';
 import "./globals.css";
+
+export const metadata = defaultMetadata;
 
 export default function RootLayout({
   children,
