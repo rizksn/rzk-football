@@ -1,4 +1,6 @@
 import { defaultMetadata } from './metadata';
+import { AuthProvider } from "@/context/AuthContext";
+import Navbar from "@/components/shared/Navbar";
 import "./globals.css";
 
 export const metadata = defaultMetadata;
@@ -30,7 +32,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          <Navbar />
+          {children}
+         </AuthProvider>
+      </body>
     </html>
   );
 }

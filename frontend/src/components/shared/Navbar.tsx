@@ -1,0 +1,38 @@
+'use client';
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useAuthContext } from "@/context/AuthContext";
+
+export default function Navbar() {
+  const pathname = usePathname();
+  const { user, loginWithGoogle, logout } = useAuthContext();
+
+  const isMockDraft = pathname.startsWith("/mockdraft");
+
+  return (
+    <nav className={`w-full py-4 px-6 flex items-center justify-between ${isMockDraft ? "bg-black" : "bg-white"} text-${isMockDraft ? "white" : "black"}`}>
+      <Link href="/" className="font-bold text-lg">
+        RZK Football
+      </Link>
+
+      <div className="flex gap-4 items-center">
+        {pathname === "/" && (
+          <Link href="/mockdraft" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">
+            Enter Draft Room
+          </Link>
+        )}
+
+        {user ? (
+          <button onClick={logout} className="text-sm underline">
+            Logout
+          </button>
+        ) : (
+          <button onClick={loginWithGoogle} className="text-sm underline">
+            Login
+          </button>
+        )}
+      </div>
+    </nav>
+  );
+}
