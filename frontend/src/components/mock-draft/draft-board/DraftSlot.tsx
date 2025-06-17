@@ -62,7 +62,7 @@ const DraftSlot = ({ pickNumber, player }: DraftSlotProps) => {
       <div className="h-full w-full flex flex-col justify-center px-2 leading-tight text-[11px] text-white font-medium">
         {player && (
           <>
-            <div className="text-left">{formatPlayerName(player.name)}</div>
+            <div className="text-left">{formatPlayerName(player.full_name)}</div>
             <div className="text-left text-[9px] text-slate-400 mt-[1px]">
               {player.position}&nbsp;&nbsp;{player.team}
             </div>

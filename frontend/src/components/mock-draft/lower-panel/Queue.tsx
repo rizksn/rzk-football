@@ -38,12 +38,12 @@ const Queue = ({
       <SortableContext items={order} strategy={verticalListSortingStrategy}>
         <div className="text-xs space-y-1">
           {order.map(id => {
-            const player = queuedPlayers.find(p => p.id === id);
+            const player = queuedPlayers.find(p => p.player_id === id);
             return player ? (
               <QueuePlayer
-                key={player.id}
+                key={player.player_id}
                 player={player}
-                onRemove={() => onRemoveFromQueue(player.id)}
+                onRemove={() => onRemoveFromQueue(player.player_id)}
               />
             ) : null;
           })}

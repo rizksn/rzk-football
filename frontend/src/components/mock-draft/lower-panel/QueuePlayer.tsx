@@ -4,7 +4,6 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Player } from '@/types';
-import { getSleeperPlayerId } from '@/utils/getSleeperPlayerId'; 
 import PlayerImage from '@/components/shared/PlayerImage';
 
 type QueueItemProps = {
@@ -19,14 +18,14 @@ const QueueItem = ({ player, onRemove }: QueueItemProps) => {
     setNodeRef,
     transform,
     transition,
-  } = useSortable({ id: player.name });
+  } = useSortable({ id: player.full_name });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
-  const playerId = getSleeperPlayerId(player.name);
+  // const playerId = getSleeperPlayerId(player.name);
   const imageHeight = 24;
 
   return (
@@ -58,7 +57,7 @@ const QueueItem = ({ player, onRemove }: QueueItemProps) => {
         {...attributes}
         {...listeners}
       >
-        {player.name}
+        {player.full_name}
       </div>
 
       {/* Team */}
@@ -71,7 +70,7 @@ const QueueItem = ({ player, onRemove }: QueueItemProps) => {
           onRemove();
         }}
         className="ml-3 text-red-400 hover:text-red-300"
-        aria-label={`Remove ${player.name}`}
+        aria-label={`Remove ${player.full_name}`}
       >
         ❌
       </button>

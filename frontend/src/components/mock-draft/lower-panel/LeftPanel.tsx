@@ -18,7 +18,7 @@ const LeftPanel = ({
   isUserTurn,
 }: LeftPanelProps) => {
   const filteredPlayers = players.filter(
-    (p) => !draftedPlayers.some((d) => d.id === p.id)
+    (p) => !draftedPlayers.some((d) => d.player_id === p.player_id)
   );
 
   return (
@@ -43,7 +43,7 @@ const LeftPanel = ({
           <tbody>
             {filteredPlayers.map((p, index) => (
               <tr
-                key={`${p.name}-${p.team}`}
+                key={`${p.full_name}-${p.team}`}
                 className={`border-b border-slate-700 hover:bg-slate-800 ${
                   index % 2 === 0
                     ? 'bg-[rgba(28,29,46,0.23)]'  // Slightly transparent dark
@@ -64,14 +64,14 @@ const LeftPanel = ({
                   </button>
                 </td>
                 <td className="px-2 py-1.5 text-slate-300">{p.adp}</td>
-                <td className="px-2 py-1.5 text-slate-300">{p.name}</td>
+                <td className="px-2 py-1.5 text-slate-300">{p.full_name}</td>
                 <td className="px-2 py-1.5 text-slate-300">{p.position}</td>
                 <td className="px-2 py-1.5 text-slate-300">{p.team}</td>
                 <td className="px-4 py-1">
                   <button
                     className="text-green-400 hover:text-green-300 font-bold"
                     onClick={() => onAddToQueue(p)}
-                    aria-label={`Add ${p.name} to queue`}
+                    aria-label={`Add ${p.full_name} to queue`}
                   >
                     +
                   </button>

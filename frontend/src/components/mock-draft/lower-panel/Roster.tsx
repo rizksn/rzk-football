@@ -35,7 +35,7 @@ const Roster = ({ userRoster, playerIds }: RosterProps) => {
             key={index}
             slot={slot}
             player={player}
-            playerId={player ? playerIds[player.name] ?? null : null}
+            playerId={player ? playerIds[player.full_name] ?? null : null}
           />
         );
       })}

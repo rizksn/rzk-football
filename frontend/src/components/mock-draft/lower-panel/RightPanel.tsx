@@ -5,39 +5,23 @@ import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 
 import { Player } from '@/types';
-import { getSleeperPlayerId } from '@/utils/getSleeperPlayerId';
 import Queue from './Queue';
 import Roster from './Roster';
 
 type RightPanelProps = {
   queuedPlayers: Player[];
   userRoster: Player[];
+  playerIds: Record<string, string | null>;
   onRemoveFromQueue: (playerId: string) => void;
 };
 
-const RightPanel = ({ queuedPlayers, userRoster, onRemoveFromQueue }: RightPanelProps) => {
+const RightPanel = ({ queuedPlayers, userRoster, playerIds, onRemoveFromQueue }: RightPanelProps) => {
   const [queueOrder, setQueueOrder] = useState<string[]>([]);
-  const [playerIds, setPlayerIds] = useState<Record<string, string | null>>({});
 
   // Sync drag order
   useEffect(() => {
-    setQueueOrder(queuedPlayers.map(p => p.id));
+    setQueueOrder(queuedPlayers.map(p => p.player_id));
   }, [queuedPlayers]);
-
-  // Fetch image IDs for rostered players
-  useEffect(() => {
-    const fetchImageIds = async () => {
-      const newIds: Record<string, string | null> = {};
-      for (const player of userRoster) {
-        if (!(player.name in playerIds)) {
-          const id = await getSleeperPlayerId(player.name);
-          newIds[player.name] = id ?? null;
-        }
-      }
-      setPlayerIds(prev => ({ ...prev, ...newIds }));
-    };
-    fetchImageIds();
-  }, [userRoster]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -72,6 +56,7 @@ const RightPanel = ({ queuedPlayers, userRoster, onRemoveFromQueue }: RightPanel
         <h2 className="text-sm font-semibold text-[#fcf8f8] mb-2">ROSTER</h2>
         <div className="flex-1 min-h-0 overflow-y-auto">
           <Roster userRoster={userRoster} playerIds={playerIds} />
+
         </div>
       </div>
     </div>

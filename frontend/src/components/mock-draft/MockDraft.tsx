@@ -1,22 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Player } from '@/types';
 import { useCpuDraft } from './hooks/useCpuDraft';
-import { extractPlayerName } from '@/utils/extractPlayerName';
-import { resolvePlayer } from '@/utils/resolvePlayer';
 import { NUM_TEAMS, NUM_ROUNDS, TOTAL_PICKS, getSnakedTeamIndex } from '@/utils/constants';
 
 import MockNavbar from './MockNavbar';
 import DraftBoard from './draft-board/DraftBoard';
 import LowerPanel from './lower-panel/LowerPanel';
 
-type Props = {
-  initialPlayers: Player[];
-};
-
-export default function MockDraft({ initialPlayers }: Props) {
-  const [players, setPlayers] = useState<Player[]>(initialPlayers);
+export default function MockDraft() {
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [playerIds, setPlayerIds] = useState<Record<string, string>>({});
   const [draftBoard, setDraftBoard] = useState<(Player | null)[][]>(
     Array.from({ length: NUM_ROUNDS }, () => Array(NUM_TEAMS).fill(null))
   );
@@ -27,7 +22,29 @@ export default function MockDraft({ initialPlayers }: Props) {
   const [userRoster, setUserRoster] = useState<Player[]>([]);
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
   const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
-  const [isSplit, setIsSplit] = useState(true); // add a UI toggle 
+  const [isSplit, setIsSplit] = useState(true); // add a UI toggle
+
+  // Fetch players from backend on component mount
+  useEffect(() => {
+    async function fetchPlayers() {
+      try {
+        const res = await fetch('/api/players?format=dynasty_1qb_1_ppr_sleeper');
+        // Explicitly type the JSON response
+        const json: { data: Player[] } = await res.json();
+  
+        setPlayers(json.data);
+  
+        const idMap = json.data.reduce<Record<string, string>>((acc, player) => {
+          acc[player.full_name] = player.player_id;
+          return acc;
+        }, {});
+        setPlayerIds(idMap);
+      } catch (err) {
+        console.error("Failed to fetch player data:", err);
+      }
+    }
+    fetchPlayers();
+  }, []);  
 
   const round = Math.floor(currentPickIndex / NUM_TEAMS);
   const indexInRound = currentPickIndex % NUM_TEAMS;
@@ -51,14 +68,14 @@ export default function MockDraft({ initialPlayers }: Props) {
     const snakedTeamIndex = getSnakedTeamIndex(round, indexInRound);
 
     setDraftBoard(prev => {
-      const updated = [...prev.map(row => [...row])];
-      player.team_index = snakedTeamIndex; 
-      updated[round][snakedTeamIndex] = player;
+      const updated = prev.map(row => [...row]);
+      const playerWithTeamIndex = { ...player, team_index: snakedTeamIndex };
+      updated[round][snakedTeamIndex] = playerWithTeamIndex;
       return updated;
     });
 
-    setPlayers(prev => prev.filter(p => p.id !== player.id));
-    setQueuePlayers(prev => prev.filter(p => p.id !== player.id));
+    setPlayers(prev => prev.filter(p => p.player_id !== player.player_id));
+    setQueuePlayers(prev => prev.filter(p => p.player_id !== player.player_id));
     setCurrentPickIndex(prev => prev + 1);
   }
 
@@ -72,7 +89,7 @@ export default function MockDraft({ initialPlayers }: Props) {
     const round = Math.floor(currentPickIndex / NUM_TEAMS);
     const indexInRound = currentPickIndex % NUM_TEAMS;
     const teamIndex = getSnakedTeamIndex(round, indexInRound);
-  
+
     try {
       const res = await fetch('https://rzk-anubis.onrender.com/simulate', {
         method: 'POST',
@@ -84,17 +101,14 @@ export default function MockDraft({ initialPlayers }: Props) {
           teamIndex,
         }),
       });
-  
+
       const data = await res.json();
       const text = data.result as string;
       console.log('🧠 ANUBIS response:', text);
-  
-      const rawName = extractPlayerName(text, players);
-      if (!rawName) return console.error('❌ Could not extract player name');
-  
-      const aiPick = resolvePlayer(rawName, players);
-      if (!aiPick) return console.error('❌ AI player not found:', rawName);
-  
+
+      const aiPick = players.find(p => p.full_name === text.trim());
+      if (!aiPick) return console.error('❌ AI player not found:', text);
+
       setDraftBoard(
         Array.from({ length: NUM_ROUNDS }, () => Array(NUM_TEAMS).fill(null))
       );
@@ -104,12 +118,12 @@ export default function MockDraft({ initialPlayers }: Props) {
     } catch (err) {
       console.error('❌ Draft simulation crashed:', err);
     }
-  };  
+  };
 
   return (
     <div className="w-full max-w-[1600px] min-w-[1250px] mx-auto h-full">
       <div className="flex flex-col h-screen overflow-hidden">
-        
+
         <MockNavbar draftStarted={draftStarted} onStartDraft={handleStartDraft} />
 
         {/* Draft Grid Area */}
@@ -126,16 +140,17 @@ export default function MockDraft({ initialPlayers }: Props) {
         <div className="h-[55vh] min-h-[300px] overflow-visible relative z-10">
           <LowerPanel
             players={players}
+            playerIds={playerIds}          
             draftedPlayers={draftBoard.flat().filter(Boolean) as Player[]}
             isUserTurn={isUserTurn}
             onDraftPlayer={handleUserPick}
             onAddToQueue={player =>
               setQueuePlayers(prev =>
-                prev.some(p => p.id === player.id) ? prev : [...prev, player]
+                prev.some(p => p.player_id === player.player_id) ? prev : [...prev, player]
               )
             }
             onRemoveFromQueue={id =>
-              setQueuePlayers(prev => prev.filter(p => p.id !== id))
+              setQueuePlayers(prev => prev.filter(p => p.player_id !== id))
             }
             queuePlayers={queuePlayers}
             userRoster={userRoster}

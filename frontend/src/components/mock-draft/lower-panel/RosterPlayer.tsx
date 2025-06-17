@@ -23,7 +23,7 @@ const RosterPlayer = ({ slot, player, playerId }: RosterPlayerProps) => {
           ) : (
             <div className="w-[22px] h-[22px] bg-slate-600 rounded-full ml-4" />
           )}
-          <div className="flex-1 text-center font-medium">{player.name}</div>
+          <div className="flex-1 text-center font-medium">{player.full_name}</div>
           <div className="w-[40px] text-xs text-slate-400 text-right">{player.team}</div>
         </>
       ) : (

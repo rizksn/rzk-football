@@ -17,6 +17,7 @@ type LowerPanelProps = {
   leftPlayer: Player | null;
   rightPlayer: Player | null;
   isSplit: boolean;
+  playerIds: Record<string, string | null>;
 };
 
 const LowerPanel: React.FC<LowerPanelProps> = ({
@@ -31,9 +32,10 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   leftPlayer, 
   rightPlayer,
   isSplit,
+  playerIds, 
 }: LowerPanelProps) => {
   const handleDraft = (player: Player) => {
-    onRemoveFromQueue(player.id); 
+    onRemoveFromQueue(player.player_id); 
     onDraftPlayer(player); 
   };
 
@@ -78,6 +80,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
                 queuedPlayers={queuePlayers}
                 userRoster={userRoster}
                 onRemoveFromQueue={onRemoveFromQueue}
+                playerIds={playerIds} 
               />
             </div>
           </div>

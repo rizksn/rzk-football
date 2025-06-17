@@ -28,9 +28,9 @@ export default function ADPTable() {
         </thead>
         <tbody>
           {players.map((p) => (
-            <tr key={`${p.name}-${p.team}`} className="border-b border-slate-700 hover:bg-slate-800">
+            <tr key={`${p.full_name}-${p.team}`} className="border-b border-slate-700 hover:bg-slate-800">
               <td className="px-2 py-1 text-green-400">{p.adp.toFixed(1)}</td>
-              <td className="px-2 py-1">{p.name}</td>
+              <td className="px-2 py-1">{p.full_name}</td>
               <td className="px-2 py-1">{p.position}</td>
               <td className="px-2 py-1">{p.team}</td>
             </tr>
