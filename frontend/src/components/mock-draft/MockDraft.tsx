@@ -89,7 +89,7 @@ export default function MockDraft() {
     const round = Math.floor(currentPickIndex / NUM_TEAMS);
     const indexInRound = currentPickIndex % NUM_TEAMS;
     const teamIndex = getSnakedTeamIndex(round, indexInRound);
-
+  
     try {
       const res = await fetch('https://rzk-anubis.onrender.com/simulate', {
         method: 'POST',
@@ -101,24 +101,22 @@ export default function MockDraft() {
           teamIndex,
         }),
       });
-
+  
       const data = await res.json();
-      const text = data.result as string;
-      console.log('🧠 ANUBIS response:', text);
-
-      const aiPick = players.find(p => p.full_name === text.trim());
-      if (!aiPick) return console.error('❌ AI player not found:', text);
-
-      setDraftBoard(
-        Array.from({ length: NUM_ROUNDS }, () => Array(NUM_TEAMS).fill(null))
-      );
+      const aiPick = data.result as Player;
+      console.log('🧠 ANUBIS pick:', aiPick);
+      if (!aiPick) {
+        return console.error('❌ AI player not found');
+      }
+  
+      setDraftBoard(Array.from({ length: NUM_ROUNDS }, () => Array(NUM_TEAMS).fill(null)));
       setCurrentPickIndex(0);
       setDraftStarted(true);
       makePick(aiPick);
     } catch (err) {
       console.error('❌ Draft simulation crashed:', err);
     }
-  };
+  };  
 
   return (
     <div className="w-full max-w-[1600px] min-w-[1250px] mx-auto h-full">
