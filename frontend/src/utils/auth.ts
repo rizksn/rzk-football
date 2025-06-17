@@ -1,15 +1,29 @@
-import { auth } from "@/utils/firebase"
+// utils/auth/persistUser.ts
+
+import { auth } from "@/utils/firebase";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export const persistUser = async () => {
-  const user = auth.currentUser
-  if (!user) return
+  const user = auth.currentUser;
+  if (!user) return;
 
-  const token = await user.getIdToken()
+  const token = await user.getIdToken();
 
-  await fetch("/api/auth/persist", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-}
+  try {
+    const res = await fetch(`${BACKEND_URL}/auth/persist`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      console.error("❌ Failed to persist user. Status:", res.status);
+    } else {
+      console.log("✅ User persisted");
+    }
+  } catch (err) {
+    console.error("❌ Error hitting /auth/persist:", err);
+  }
+};
