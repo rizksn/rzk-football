@@ -9,5 +9,5 @@ export default async function MockDraftPage() {
   const json = await res.json();
   const initialPlayers: Player[] = Array.isArray(json) ? json : [];
 
-  return <MockDraft initialPlayers={initialPlayers} />;
+  return <MockDraft />;
 }
