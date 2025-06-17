@@ -30,7 +30,7 @@ export default function DisplayPanel({ player, wide = false }: Props) {
       <div className="relative z-10 p-4 text-white flex flex-col justify-center h-full">
         {player ? (
           <>
-            <h2 className="text-lg font-semibold mb-1">{player.name}</h2>
+            <h2 className="text-lg font-semibold mb-1">{player.full_name}</h2>
             <p className="text-sm text-gray-300">
               {player.position} – {player.team}
             </p>
