@@ -28,7 +28,7 @@ export default function MockDraft() {
   useEffect(() => {
     async function fetchPlayers() {
       try {
-        const res = await fetch('/api/players?format=dynasty_1qb_1_ppr_sleeper');
+        const res = await fetch('https://rzk-anubis.onrender.com/api/players?format=dynasty_1qb_1_ppr_sleeper');
         // Explicitly type the JSON response
         const json: { data: Player[] } = await res.json();
   
