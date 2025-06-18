@@ -11,10 +11,9 @@ export default function Navbar() {
   const isMockDraft = pathname.startsWith("/mockdraft");
 
   return (
-    <nav className={`w-full py-4 px-6 flex items-center justify-between ${isMockDraft ? "bg-black" : "bg-white"} text-${isMockDraft ? "white" : "black"}`}>
-      <Link href="/" className="font-bold text-lg">
-        RZK Football
-      </Link>
+  <nav className={`w-full flex flex-col ${isMockDraft ? "bg-black" : "bg-white"} text-${isMockDraft ? "white" : "black"}`}>
+    <div className="py-4 px-6 flex items-center justify-between">
+      <Link href="/" className="font-bold text-lg">RZK Football</Link>
 
       <div className="flex gap-4 items-center">
         {pathname === "/" && (
@@ -22,17 +21,13 @@ export default function Navbar() {
             Enter Draft Room
           </Link>
         )}
-
         {user ? (
-          <button onClick={logout} className="text-sm underline">
-            Logout
-          </button>
+          <button onClick={logout} className="text-sm underline">Logout</button>
         ) : (
-          <button onClick={loginWithGoogle} className="text-sm underline">
-            Login
-          </button>
+          <button onClick={loginWithGoogle} className="text-sm underline">Login</button>
         )}
       </div>
-    </nav>
-  );
+    </div>
+  </nav>
+);
 }
