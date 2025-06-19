@@ -52,20 +52,47 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Anubis Draft Engine */}
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">🧠 The Anubis Draft Engine</h2>
-            <ul className="space-y-2 text-gray-300 list-disc list-inside">
-              <li>Simulates real-world drafting behavior using advanced modeling</li>
-              <li>Adjusts for league format, positional value, and opponent team needs</li>
-              <li>Supports strategic presets like Zero RB, Hero WR, and BPA</li>
-              <li>Controls for randomness and aggression to mimic human variance</li>
-              <li>Users can adjust CPU behavior to prioritize certain positions (e.g. WR-heavy, QB-heavy in Superflex)</li>
-              <li>Assign different draft strategies to specific CPU teams for realism</li>
-              <li>Upload league settings and keeper data to simulate your exact league</li>
-              <li>Coming soon: Pick explanations, mid-draft pivots, and smarter CPU logic</li>
-            </ul>
-          </div>
+      {/* Anubis Draft Engine (Upgraded) */}
+      <div>
+        <h2 className="text-4xl font-bold text-white mb-12">The Anubis Draft Engine</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-gray-300">
+          {[
+            {
+              title: "Realistic Draft Simulation",
+              desc: "Mimics real draft behavior using league-aware modeling — format, positional value, opponent needs.",
+            },
+            {
+              title: "Strategic Presets",
+              desc: "Configure Zero RB, Hero WR, Best Player Available, or create your own draft strategy profiles.",
+            },
+            {
+              title: "Custom CPU Behavior",
+              desc: "Prioritize WR in standard leagues, QBs in Superflex, or assign specific strategies to each team.",
+            },
+            {
+              title: "Keeper + League Upload",
+              desc: "Upload your real league’s structure and keeper list to simulate your actual draft conditions.",
+            },
+            {
+              title: "Variance & Aggression Control",
+              desc: "Dial up CPU randomness, aggression, or balance to simulate casual vs competitive leagues.",
+            },
+            {
+              title: "Coming Soon",
+              desc: "AI pick rationales, adaptive CPU pivots, and smarter draft context awareness.",
+            },
+          ].map((feature, i) => (
+            <div
+              key={i}
+              className="bg-gray-900 p-6 rounded-xl border border-gray-800 shadow hover:shadow-blue-600/20 transition"
+            >
+              <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
+              <p className="text-sm">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div> 
+
 
           {/* Data Section */}
           <div>
