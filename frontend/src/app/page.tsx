@@ -32,7 +32,7 @@ export default function HomePage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative bg-black text-white py-20 px-6 sm:px-12 lg:px-20">
+      <section className="relative bg-[#080029] text-white py-20 px-6 sm:px-12 lg:px-20">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
           <div className="flex-1">
             <p className="text-sm uppercase tracking-widest text-blue-500 mb-4">
@@ -66,7 +66,7 @@ export default function HomePage() {
       </section>
 
       {/* Platform Overview Section */}
-      <section className="bg-gray-950 text-white py-24 px-6 sm:px-12 lg:px-20 border-t border-gray-800">
+      <section className="bg-[#090032] text-white py-24 px-6 sm:px-12 lg:px-20 border-t border-gray-800">
         <div className="max-w-6xl mx-auto space-y-20">
 
           {/* Mission */}

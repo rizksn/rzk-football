@@ -11,7 +11,7 @@ export default function Navbar() {
   const isMockDraft = pathname.startsWith("/mockdraft");
 
   return (
-  <nav className={`w-full flex flex-col ${isMockDraft ? "bg-black" : "bg-white"} text-${isMockDraft ? "white" : "black"}`}>
+  <nav className={`w-full flex flex-col ${isMockDraft ? "bg-black" : "bg-[#f3f0ff]"} text-${isMockDraft ? "white" : "black"}`}>
     <div className="py-4 px-6 flex items-center justify-between">
       <Link href="/" className="font-bold text-lg">RZK Football</Link>
 
