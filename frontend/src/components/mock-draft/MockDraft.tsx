@@ -9,9 +9,24 @@ import MockNavbar from './MockNavbar';
 import DraftBoard from './draft-board/DraftBoard';
 import LowerPanel from './lower-panel/LowerPanel';
 
+interface DraftConfig {
+  adpFormatKey: string;
+  leagueFormat: string;
+  scoring: string;
+  platform: string;
+  useAI: boolean;
+}
+
 export default function MockDraft() {
+  const [draftConfig, setDraftConfig] = useState<DraftConfig>({
+    adpFormatKey: 'dynasty_1qb_1_ppr_sleeper',
+    leagueFormat: '1QB',
+    scoring: 'ppr',
+    platform: 'sleeper',
+    useAI: false,
+  });
+
   const [players, setPlayers] = useState<Player[]>([]);
-  const [playerIds, setPlayerIds] = useState<Record<string, string>>({});
   const [draftBoard, setDraftBoard] = useState<(Player | null)[][]>(
     Array.from({ length: NUM_ROUNDS }, () => Array(NUM_TEAMS).fill(null))
   );
@@ -22,29 +37,23 @@ export default function MockDraft() {
   const [userRoster, setUserRoster] = useState<Player[]>([]);
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
   const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
-  const [isSplit, setIsSplit] = useState(true); // add a UI toggle
+  const [isSplit, setIsSplit] = useState(true);
 
-  // Fetch players from backend on component mount
+  // Fetch players using the active config
   useEffect(() => {
     async function fetchPlayers() {
       try {
-        const res = await fetch('https://rzk-anubis.onrender.com/api/players?format=dynasty_1qb_1_ppr_sleeper');
-        // Explicitly type the JSON response
+        // const res = await fetch(`http://localhost:8000/api/players?format=${draftConfig.adpFormatKey}`);
+        const res = await fetch(`https://rzk-anubis.onrender.com/api/players?format=${draftConfig.adpFormatKey}`);
         const json: { data: Player[] } = await res.json();
-  
         setPlayers(json.data);
-  
-        const idMap = json.data.reduce<Record<string, string>>((acc, player) => {
-          acc[player.full_name] = player.player_id;
-          return acc;
-        }, {});
-        setPlayerIds(idMap);
       } catch (err) {
-        console.error("Failed to fetch player data:", err);
+        console.error('❌ Failed to fetch player data:', err);
       }
     }
+
     fetchPlayers();
-  }, []);  
+  }, [draftConfig]);
 
   const round = Math.floor(currentPickIndex / NUM_TEAMS);
   const indexInRound = currentPickIndex % NUM_TEAMS;
@@ -60,6 +69,8 @@ export default function MockDraft() {
     onCpuPick: makePick,
     totalPicks: TOTAL_PICKS,
     numTeams: NUM_TEAMS,
+    leagueFormat: draftConfig.leagueFormat,
+    useAI: draftConfig.useAI,
   });
 
   function makePick(player: Player) {
@@ -79,52 +90,62 @@ export default function MockDraft() {
     setCurrentPickIndex(prev => prev + 1);
   }
 
-  const handleUserPick = (player: Player) => {
+  function handleUserPick(player: Player) {
     if (!isUserTurn) return;
     setUserRoster(prev => [...prev, player]);
     makePick(player);
-  };
+  }
 
-  const handleStartDraft = async () => {
+  async function handleStartDraft() {
     const round = Math.floor(currentPickIndex / NUM_TEAMS);
     const indexInRound = currentPickIndex % NUM_TEAMS;
     const teamIndex = getSnakedTeamIndex(round, indexInRound);
-  
+
     try {
-      const res = await fetch('https://rzk-anubis.onrender.com/simulate', {
+      const payload = {
+        draftBoard,
+        teamIndex,
+        use_ai: draftConfig.useAI,
+        leagueFormat: draftConfig.leagueFormat,
+      };
+
+      console.log('📤 Sending to /api/simulate:', payload);
+      // const res = await fetch('http://localhost:8000/api/simulate', {
+      const res = await fetch('https://rzk-anubis.onrender.com/api/simulate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          draftBoard,
-          teamIndex,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
-  
+
+      console.log("🌐 Response status:", res.status);
       const data = await res.json();
+      console.log("📩 Response data:", data);
+
+      if (!data?.result) {
+        console.error('❌ No AI pick returned:', data);
+        return;
+      }
+
       const aiPick = data.result as Player;
       console.log('🧠 ANUBIS pick:', aiPick);
-      if (!aiPick) {
-        return console.error('❌ AI player not found');
-      }
-  
+
       setDraftBoard(Array.from({ length: NUM_ROUNDS }, () => Array(NUM_TEAMS).fill(null)));
+      setQueuePlayers([]);
+      setUserRoster([]);
       setCurrentPickIndex(0);
       setDraftStarted(true);
+
       makePick(aiPick);
     } catch (err) {
       console.error('❌ Draft simulation crashed:', err);
     }
-  };  
+  }
 
   return (
     <div className="w-full max-w-[1600px] min-w-[1250px] mx-auto h-full">
       <div className="flex flex-col h-screen overflow-hidden">
-
         <MockNavbar draftStarted={draftStarted} onStartDraft={handleStartDraft} />
 
-        {/* Draft Grid Area */}
         <div className="flex-1 overflow-y-auto relative z-0">
           <DraftBoard
             draftStarted={draftStarted}
@@ -134,11 +155,9 @@ export default function MockDraft() {
           />
         </div>
 
-        {/* Lower Panel */}
         <div className="h-[55vh] min-h-[300px] overflow-visible relative z-10">
           <LowerPanel
             players={players}
-            playerIds={playerIds}          
             draftedPlayers={draftBoard.flat().filter(Boolean) as Player[]}
             isUserTurn={isUserTurn}
             onDraftPlayer={handleUserPick}

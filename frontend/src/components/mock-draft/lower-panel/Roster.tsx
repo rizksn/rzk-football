@@ -1,12 +1,10 @@
 'use client';
 
 import { Player } from '@/types';
-import PlayerImage from '@/components/shared/PlayerImage';
 import RosterPlayer from './RosterPlayer';
 
 type RosterProps = {
   userRoster: Player[];
-  playerIds: Record<string, string | null>;
 };
 
 const defaultSlots = [
@@ -14,7 +12,7 @@ const defaultSlots = [
   'K', 'DEF', 'BN', 'BN', 'BN', 'BN', 'BN',
 ];
 
-const Roster = ({ userRoster, playerIds }: RosterProps) => {
+const Roster = ({ userRoster }: RosterProps) => {
   const filledPlayers = [...userRoster];
 
   return (
@@ -35,7 +33,7 @@ const Roster = ({ userRoster, playerIds }: RosterProps) => {
             key={index}
             slot={slot}
             player={player}
-            playerId={player ? playerIds[player.full_name] ?? null : null}
+            playerId={player?.player_id ?? null}
           />
         );
       })}

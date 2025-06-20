@@ -25,4 +25,10 @@ body {
   clip-path: polygon(0% 0%, 100% 0%, 90% 100%, 10% 100%);
 }
 
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 /* #2d3548    background-color: rgba(16,94,82,0.51);  bg-[rgba(16,94,82,0.51)]   #03062a */
