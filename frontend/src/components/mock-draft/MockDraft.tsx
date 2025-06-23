@@ -40,6 +40,8 @@ export default function MockDraft() {
   const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
   const [isSplit, setIsSplit] = useState(true);
 
+  const sortedPlayers = [...players].sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity));
+
   // Fetch players using the active config
   useEffect(() => {
     async function fetchPlayers() {
@@ -157,7 +159,7 @@ export default function MockDraft() {
 
         <div className="h-[55vh] min-h-[300px] overflow-visible relative z-10">
           <LowerPanel
-            players={players}
+            players={sortedPlayers}
             draftedPlayers={draftBoard.flat().filter(Boolean) as Player[]}
             isUserTurn={isUserTurn}
             onDraftPlayer={handleUserPick}

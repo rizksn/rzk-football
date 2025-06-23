@@ -30,16 +30,17 @@ const LeftPanel = ({
       {/* Main Scrollable Area */}
       <div className="overflow-y-auto h-full w-full border-r border-slate-800 rounded-md">
         <table className="w-full text-xs text-white">
-          {/* <thead className="sticky top-0 z-20">
+          <thead className="sticky top-0 z-20">
             <tr>
               <th className="text-left px-3 py-2">DRAFT</th>
+              <th className="text-left px-0 py-2">RANK</th>
               <th className="text-left px-1 py-1">ADP</th>
               <th className="text-left px-2 py-1">NAME</th>
               <th className="text-left px-2 py-1">POS</th>
               <th className="text-left px-2 py-1">TEAM</th>
               <th className="text-left px-2 py-1">ADD</th>
             </tr>
-          </thead> */}
+          </thead>
           <tbody>
             {filteredPlayers.map((p, index) => (
               <tr
@@ -63,6 +64,7 @@ const LeftPanel = ({
                     DRAFT
                   </button>
                 </td>
+                <td className="px-2 py-1.5 text-slate-300">{p.rank}</td>
                 <td className="px-2 py-1.5 text-slate-300">{p.adp}</td>
                 <td className="px-2 py-1.5 text-slate-300">{p.full_name}</td>
                 <td className="px-2 py-1.5 text-slate-300">{p.position}</td>

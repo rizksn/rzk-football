@@ -1,0 +1,128 @@
+[
+  {
+    "format": "best_ball",
+    "qb_type": "1qb",
+    "scoring": "0.5-ppr",
+    "platform": "underdog"
+  },
+  {
+    "format": "best_ball",
+    "qb_type": "1qb",
+    "scoring": "te-premium",
+    "platform": "ffpc"
+  },
+  {
+    "format": "dynasty",
+    "qb_type": "1qb",
+    "scoring": "0.5-ppr",
+    "platform": "sleeper"
+  },
+  {
+    "format": "dynasty",
+    "qb_type": "1qb",
+    "scoring": "1-ppr",
+    "platform": "sleeper"
+  },
+  {
+    "format": "dynasty",
+    "qb_type": "1qb",
+    "scoring": "non-ppr",
+    "platform": "sleeper"
+  },
+  {
+    "format": "dynasty",
+    "qb_type": "superflex",
+    "scoring": "1-ppr",
+    "platform": "sleeper"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "1qb",
+    "scoring": "0.5-ppr",
+    "platform": "consensus"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "1qb",
+    "scoring": "0.5-ppr",
+    "platform": "sleeper"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "1qb",
+    "scoring": "0.5-ppr",
+    "platform": "yahoo"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "1qb",
+    "scoring": "1-ppr",
+    "platform": "cbs"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "1qb",
+    "scoring": "1-ppr",
+    "platform": "consensus"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "1qb",
+    "scoring": "1-ppr",
+    "platform": "espn"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "1qb",
+    "scoring": "1-ppr",
+    "platform": "ffpc"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "1qb",
+    "scoring": "1-ppr",
+    "platform": "sleeper"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "1qb",
+    "scoring": "non-ppr",
+    "platform": "cbs"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "1qb",
+    "scoring": "non-ppr",
+    "platform": "consensus"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "1qb",
+    "scoring": "non-ppr",
+    "platform": "sleeper"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "1qb",
+    "scoring": "te-premium",
+    "platform": "ffpc"
+  },
+  {
+    "format": "redraft",
+    "qb_type": "superflex",
+    "scoring": "1-ppr",
+    "platform": "sleeper"
+  },
+  {
+    "format": "rookie",
+    "qb_type": "1qb",
+    "scoring": "1-ppr",
+    "platform": "sleeper"
+  },
+  {
+    "format": "rookie",
+    "qb_type": "superflex",
+    "scoring": "1-ppr",
+    "platform": "sleeper"
+  }
+]

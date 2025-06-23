@@ -10,6 +10,7 @@ export type Player = {
   scoring: string;
   platform: string;
   type: string;
+  rank?: number;
   // Optional draft engine fields if you want
   ecr?: number;
   stdDev?: number;
