@@ -2,7 +2,9 @@
 
 body {
   margin: 0;
-  background-color: #13111c; 
+  background-color: #180d41; 
+  background-image: radial-gradient(#25153e 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
 /* globals.css */
@@ -30,5 +32,12 @@ html, body {
   max-width: 100%;
   overflow-x: hidden;
 }
+
+.dotted-background {
+  background-color: #0f0f1a; /* dark base */
+  background-image: radial-gradient(#25153e 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
 
 /* #2d3548    background-color: rgba(16,94,82,0.51);  bg-[rgba(16,94,82,0.51)]   #03062a */

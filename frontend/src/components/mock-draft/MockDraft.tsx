@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Player } from '@/types';
 import { useCpuDraft } from './hooks/useCpuDraft';
 import { NUM_TEAMS, NUM_ROUNDS, TOTAL_PICKS, getSnakedTeamIndex } from '@/utils/constants';
+import { API_BASE_URL } from '@/utils/config';
 
 import MockNavbar from './MockNavbar';
 import DraftBoard from './draft-board/DraftBoard';
@@ -43,8 +44,7 @@ export default function MockDraft() {
   useEffect(() => {
     async function fetchPlayers() {
       try {
-        // const res = await fetch(`http://localhost:8000/api/players?format=${draftConfig.adpFormatKey}`);
-        const res = await fetch(`https://rzk-anubis.onrender.com/api/players?format=${draftConfig.adpFormatKey}`);
+        const res = await fetch(`${API_BASE_URL}/api/players?format=${draftConfig.adpFormatKey}`);
         const json: { data: Player[] } = await res.json();
         setPlayers(json.data);
       } catch (err) {
@@ -110,8 +110,8 @@ export default function MockDraft() {
       };
 
       console.log('📤 Sending to /api/simulate:', payload);
-      // const res = await fetch('http://localhost:8000/api/simulate', {
-      const res = await fetch('https://rzk-anubis.onrender.com/api/simulate', {
+
+      const res = await fetch(`${API_BASE_URL}/api/simulate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
