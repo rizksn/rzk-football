@@ -53,7 +53,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
       >
         {/* ✅ Tilt only the lower panel grid (not the blue panels) */}
         <div
-          className="flex gap-0 h-full transition-all duration-300 ease-in-out bg-[#000000af]"
+          className="flex gap-0 h-full transition-all duration-300 ease-in-out bg-[#4b02e942]"
           style={{
             transform: 'rotateX(2deg)',
             transformOrigin: 'top center',
@@ -61,7 +61,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
           }}
         >
           {/* ✅ Left Panel */}
-          <div className="w-1/2 flex flex-col rounded-tl-lg h-full transition-all duration-300">
+          <div className="w-1/2 flex flex-col h-full transition-all duration-300">
             <LeftPanel
               players={players}
               onAddToQueue={onAddToQueue}
@@ -73,7 +73,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
 
           {/* ✅ Right Panel */}
           <div className="w-1/2 flex flex-col h-full">
-            <div className="flex-1 rounded-tr-lg rounded-lr-lg  overflow-hidden h-full">
+            <div className="flex-1 overflow-hidden h-full">
               <RightPanel
                 queuedPlayers={queuePlayers}
                 userRoster={userRoster}
@@ -88,3 +88,5 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
 };
 
 export default LowerPanel;
+
+//  060111af

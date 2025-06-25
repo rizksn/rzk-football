@@ -2,8 +2,8 @@
 
 body {
   margin: 0;
-  background-color: #180d41; 
-  background-image: radial-gradient(#25153e 1px, transparent 1px);
+  background-color: #0e172c; 
+  background-image: radial-gradient(#5f1cca 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
@@ -35,9 +35,9 @@ html, body {
 
 .dotted-background {
   background-color: #0f0f1a; /* dark base */
-  background-image: radial-gradient(#25153e 1px, transparent 1px);
+  background-image: radial-gradient(#0e172c76 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
 
-/* #2d3548    background-color: rgba(16,94,82,0.51);  bg-[rgba(16,94,82,0.51)]   #03062a */
+/* #2d3548    background-color: rgba(16,94,82,0.51);  bg-[rgba(16,94,82,0.51)]  5f1cca   #03062a */

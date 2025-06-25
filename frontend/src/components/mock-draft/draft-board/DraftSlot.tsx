@@ -46,7 +46,7 @@ function getPositionColor(position: string): string {
  * DraftSlot component displays a single draft grid cell.
  */
 const DraftSlot = ({ pickNumber, player }: DraftSlotProps) => {
-  const backgroundColor = player ? getPositionColor(player.position) : 'bg-gray-800';
+  const backgroundColor = player ? getPositionColor(player.position) : 'bg-[#0e172c9f]';
 
   return (
     <div

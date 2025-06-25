@@ -31,7 +31,7 @@ const DraftBoard = ({
             className={`text-[10px] py-0 px-2 rounded-md font-bold tracking-wide transition-all ${
               claimedTeamIndex === teamIndex
                 ? 'bg-green-600 text-white'
-                : 'bg-[#f13607] hover:bg-blue-700 text-white'
+                : 'bg-[#5907f1] hover:bg-[#ec5100] text-white'
             } ${draftStarted ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {claimedTeamIndex === teamIndex ? 'CLAIMED' : 'CLAIM'}
