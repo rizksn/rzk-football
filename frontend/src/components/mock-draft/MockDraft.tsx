@@ -15,18 +15,22 @@ import { useAuthContext } from '@/context/AuthContext';
 interface DraftConfig {
   adpFormatKey: string;
   leagueFormat: string;
+  qb_setting: string;
   scoring: string;
   platform: string;
   useAI: boolean;
 }
 
 export default function MockDraft() {
-  const { isPaidUser } = useAuthContext(); // 🆕 get stripe access state
-  const [showSettings, setShowSettings] = useState(false); // 🆕 modal state
+  const { user, isPaidUser } = useAuthContext(); 
+  const isLoggedIn = !!user;
+
+  const [showSettings, setShowSettings] = useState(false); 
 
   const [draftConfig, setDraftConfig] = useState<DraftConfig>({
     adpFormatKey: 'dynasty_1qb_1_ppr_sleeper',
-    leagueFormat: '1QB',
+    leagueFormat: 'dynasty',
+    qb_setting: '1qb',
     scoring: 'ppr',
     platform: 'sleeper',
     useAI: false,
@@ -44,17 +48,21 @@ export default function MockDraft() {
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
   const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
   const [isSplit, setIsSplit] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const sortedPlayers = [...players].sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity));
 
   useEffect(() => {
     async function fetchPlayers() {
       try {
+        setLoading(true);
         const res = await fetch(`${API_BASE_URL}/api/players?format=${draftConfig.adpFormatKey}`);
         const json: { data: Player[] } = await res.json();
         setPlayers(json.data);
       } catch (err) {
         console.error('❌ Failed to fetch player data:', err);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -195,7 +203,12 @@ export default function MockDraft() {
           onClose={() => setShowSettings(false)}
           draftConfig={draftConfig}
           setDraftConfig={setDraftConfig}
-          isPaidUser={isPaidUser}
+          onConfirm={(newConfig) => {
+            setDraftConfig(newConfig);            
+            setPlayers([]);                       
+          }}
+          isPaidUser={true}
+          isLoggedIn={true}
         />
       )}
     </div>

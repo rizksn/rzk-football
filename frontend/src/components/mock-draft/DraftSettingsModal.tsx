@@ -2,11 +2,12 @@
 
 import { Dialog } from '@headlessui/react';
 import { useState } from 'react';
-import { LEAGUE_FORMATS, SCORING_FORMATS, PLATFORMS } from '@/utils/constants';
+import ADP_OPTIONS from '@/data/valid_adp_combinations.json';
 
 interface DraftConfig {
   adpFormatKey: string;
   leagueFormat: string;
+  qb_setting: string;
   scoring: string;
   platform: string;
   useAI: boolean;
@@ -17,7 +18,9 @@ interface DraftSettingsModalProps {
   onClose: () => void;
   draftConfig: DraftConfig;
   setDraftConfig: (config: DraftConfig) => void;
+  onConfirm: (config: DraftConfig) => void; 
   isPaidUser: boolean;
+  isLoggedIn: boolean;
 }
 
 export default function DraftSettingsModal({
@@ -25,6 +28,7 @@ export default function DraftSettingsModal({
   onClose,
   draftConfig,
   setDraftConfig,
+  onConfirm, // ✅ NEW
   isPaidUser,
 }: DraftSettingsModalProps) {
   const [activeTab, setActiveTab] = useState<'adp' | 'roster'>('adp');
@@ -33,12 +37,46 @@ export default function DraftSettingsModal({
     setDraftConfig({ ...draftConfig, [field]: value });
   };
 
+  const handleConfirm = () => {
+    onConfirm(draftConfig);  // ✅ Send config back to parent
+    onClose();               // ✅ Close modal
+  };
+
+  const validFormats = Array.from(new Set(ADP_OPTIONS.map(o => o.format)));
+  const validQbSettings = Array.from(
+    new Set(
+      ADP_OPTIONS
+        .filter(o => o.format === draftConfig.leagueFormat)
+        .map(o => o.qb_setting)
+    )
+  );
+  const validScoring = Array.from(
+    new Set(
+      ADP_OPTIONS
+        .filter(o =>
+          o.format === draftConfig.leagueFormat &&
+          o.qb_setting === draftConfig.qb_setting
+        )
+        .map(o => o.scoring)
+    )
+  );
+  const validPlatforms = Array.from(
+    new Set(
+      ADP_OPTIONS
+        .filter(o =>
+          o.format === draftConfig.leagueFormat &&
+          o.qb_setting === draftConfig.qb_setting &&
+          o.scoring === draftConfig.scoring
+        )
+        .map(o => o.platform)
+    )
+  );
+
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="bg-slate-900 text-white max-w-4xl w-full rounded-xl shadow-xl flex">
-
           {/* Tabs */}
           <div className="w-48 border-r border-white/10 flex flex-col">
             <button
@@ -65,6 +103,7 @@ export default function DraftSettingsModal({
 
                 <fieldset disabled={!isPaidUser} className={!isPaidUser ? 'opacity-40 pointer-events-none' : ''}>
                   <div className="space-y-2">
+                    {/* Dropdowns */}
                     <label className="block text-sm">
                       Format
                       <select
@@ -72,8 +111,21 @@ export default function DraftSettingsModal({
                         value={draftConfig.leagueFormat}
                         onChange={e => handleAdpChange('leagueFormat', e.target.value)}
                       >
-                        {LEAGUE_FORMATS.map(format => (
+                        {validFormats.map(format => (
                           <option key={format} value={format}>{format.toUpperCase()}</option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="block text-sm">
+                      QB Setting
+                      <select
+                        className="w-full mt-1 p-2 rounded bg-slate-800 border border-slate-700"
+                        value={draftConfig.qb_setting}
+                        onChange={e => handleAdpChange('qb_setting', e.target.value)}
+                      >
+                        {validQbSettings.map(setting => (
+                          <option key={setting} value={setting}>{setting.toUpperCase()}</option>
                         ))}
                       </select>
                     </label>
@@ -85,7 +137,7 @@ export default function DraftSettingsModal({
                         value={draftConfig.scoring}
                         onChange={e => handleAdpChange('scoring', e.target.value)}
                       >
-                        {SCORING_FORMATS.map(scoring => (
+                        {validScoring.map(scoring => (
                           <option key={scoring} value={scoring}>{scoring.toUpperCase()}</option>
                         ))}
                       </select>
@@ -98,12 +150,24 @@ export default function DraftSettingsModal({
                         value={draftConfig.platform}
                         onChange={e => handleAdpChange('platform', e.target.value)}
                       >
-                        {PLATFORMS.map(platform => (
+                        {validPlatforms.map(platform => (
                           <option key={platform} value={platform}>{platform.toUpperCase()}</option>
                         ))}
                       </select>
                     </label>
                   </div>
+
+                  {/* ✅ Confirm Button */}
+                  {isPaidUser && (
+                    <div className="pt-4 flex justify-end">
+                      <button
+                        onClick={handleConfirm}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                      >
+                        Confirm
+                      </button>
+                    </div>
+                  )}
                 </fieldset>
 
                 {!isPaidUser && (
