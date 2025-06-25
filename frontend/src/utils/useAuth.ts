@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { auth, listenToAuth } from "./firebase";
-import { persistUser } from "./auth"; 
 import type { User } from "firebase/auth";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
+  const [isPaidUser, setIsPaidUser] = useState(false);
 
   useEffect(() => {
     const unsubscribe = listenToAuth(async (firebaseUser) => {
@@ -12,15 +14,31 @@ export function useAuth() {
 
       if (firebaseUser) {
         try {
-          await persistUser(); // 👈 ping backend when user logs in
+          const token = await firebaseUser.getIdToken();
+          const res = await fetch(`${BACKEND_URL}/auth/persist`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const json = await res.json();
+          setIsPaidUser(json?.stripe_active === true);
         } catch (err) {
-          console.error("❌ Failed to persist user:", err);
+          console.error("❌ Error persisting user / getting Stripe status:", err);
+          setIsPaidUser(false);
         }
+      } else {
+        setIsPaidUser(false);
       }
     });
 
     return () => unsubscribe();
   }, []);
 
-  return { user, isLoggedIn: !!user };
+  return {
+    user,
+    isLoggedIn: !!user,
+    isPaidUser,
+  };
 }

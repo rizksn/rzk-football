@@ -48,4 +48,5 @@ export type ECRPlayerData = {
 export type MockNavbarProps = {
   draftStarted: boolean;
   onStartDraft: () => void;
+  onOpenSettings: () => void;
 };

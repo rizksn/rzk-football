@@ -5,3 +5,7 @@ export const TOTAL_PICKS = NUM_TEAMS * NUM_ROUNDS;
 export function getSnakedTeamIndex(round: number, indexInRound: number): number {
   return round % 2 === 0 ? indexInRound : NUM_TEAMS - 1 - indexInRound;
 }
+
+export const LEAGUE_FORMATS = ['1QB', 'superflex'];
+export const SCORING_FORMATS = ['ppr', '0.5-ppr', 'non-ppr', 'te-premium'];
+export const PLATFORMS = ['sleeper', 'ffpc', 'yahoo', 'cbs', 'espn'];

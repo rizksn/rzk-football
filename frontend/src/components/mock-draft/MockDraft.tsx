@@ -9,6 +9,8 @@ import { API_BASE_URL } from '@/utils/config';
 import MockNavbar from './MockNavbar';
 import DraftBoard from './draft-board/DraftBoard';
 import LowerPanel from './lower-panel/LowerPanel';
+import DraftSettingsModal from './DraftSettingsModal';
+import { useAuthContext } from '@/context/AuthContext'; 
 
 interface DraftConfig {
   adpFormatKey: string;
@@ -19,6 +21,9 @@ interface DraftConfig {
 }
 
 export default function MockDraft() {
+  const { isPaidUser } = useAuthContext(); // 🆕 get stripe access state
+  const [showSettings, setShowSettings] = useState(false); // 🆕 modal state
+
   const [draftConfig, setDraftConfig] = useState<DraftConfig>({
     adpFormatKey: 'dynasty_1qb_1_ppr_sleeper',
     leagueFormat: '1QB',
@@ -42,7 +47,6 @@ export default function MockDraft() {
 
   const sortedPlayers = [...players].sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity));
 
-  // Fetch players using the active config
   useEffect(() => {
     async function fetchPlayers() {
       try {
@@ -146,7 +150,11 @@ export default function MockDraft() {
   return (
     <div className="w-full max-w-[1600px] min-w-[1250px] mx-auto h-full">
       <div className="flex flex-col h-screen overflow-hidden">
-        <MockNavbar draftStarted={draftStarted} onStartDraft={handleStartDraft} />
+        <MockNavbar
+          draftStarted={draftStarted}
+          onStartDraft={handleStartDraft}
+          onOpenSettings={() => setShowSettings(true)} // 🆕 modal trigger
+        />
 
         <div className="flex-1 overflow-y-auto relative z-0">
           <DraftBoard
@@ -179,6 +187,17 @@ export default function MockDraft() {
           />
         </div>
       </div>
+
+      {/* 🆕 Draft Settings Modal */}
+      {showSettings && (
+        <DraftSettingsModal
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+          draftConfig={draftConfig}
+          setDraftConfig={setDraftConfig}
+          isPaidUser={isPaidUser}
+        />
+      )}
     </div>
   );
 }

@@ -2,15 +2,16 @@
 
 import { MockNavbarProps } from "@/types";
 
-const MockNavbar = ({ draftStarted, onStartDraft }: MockNavbarProps) => {
+const MockNavbar = ({ draftStarted, onStartDraft, onOpenSettings }: MockNavbarProps) => {
   return (
     <div className="w-full h-8 bg-slate-850 flex items-center justify-between px-4 text-white text-xs">
-      <div className="flex gap-3 opacity-80">
-        {/* Replace with dynamic values soon */}
-        <span>Dynasty</span>
-        <span>1QB</span>
-        <span>PPR</span>
-        <span>Sleeper</span>
+      <div className="flex items-center gap-3">
+        <button
+          className="text-xs px-3 py-[2px] border border-white/20 rounded-md hover:bg-white/10 transition"
+          onClick={onOpenSettings}
+        >
+          Draft Settings
+        </button>
       </div>
 
       <button
