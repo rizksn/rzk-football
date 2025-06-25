@@ -9,10 +9,11 @@ export const persistUser = async () => {
   const token = await user.getIdToken();
 
   try {
-    const res = await fetch(`${BACKEND_URL}/auth/persist`, {
+    const res = await fetch(`${BACKEND_URL}/api/auth/persist`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
     });
 

@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext } from "react";
 import { useAuth } from "@/utils/useAuth";
-import { loginWithGoogle, logout } from "@/utils/firebase"; // ✅ bring these in
+import { loginWithGoogle, logout } from "@/utils/firebase"; 
 
 const AuthContext = createContext<ReturnType<typeof useAuth> & {
   loginWithGoogle: () => void;

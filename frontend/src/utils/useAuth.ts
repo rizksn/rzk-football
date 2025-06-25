@@ -15,7 +15,7 @@ export function useAuth() {
       if (firebaseUser) {
         try {
           const token = await firebaseUser.getIdToken();
-          const res = await fetch(`${BACKEND_URL}/auth/persist`, {
+          const res = await fetch(`${BACKEND_URL}/api/auth/persist`, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
