@@ -222,8 +222,8 @@ export default function MockDraft() {
             setDraftConfig(newConfig);
             setPlayers([]);
           }}
-          isPaidUser={isPaidUser}
-          isLoggedIn={isLoggedIn}
+          isPaidUser={true}
+          isLoggedIn={true}
         />
       )}
     </div>

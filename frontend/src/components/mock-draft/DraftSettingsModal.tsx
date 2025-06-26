@@ -23,23 +23,50 @@ interface DraftSettingsModalProps {
   isLoggedIn: boolean;
 }
 
+function buildAdpFormatKey(config: DraftConfig) {
+  return `${config.leagueFormat}_${config.qb_setting}_${config.scoring}_${config.platform}`;
+}
+
 export default function DraftSettingsModal({
   isOpen,
   onClose,
   draftConfig,
   setDraftConfig,
-  onConfirm, // ✅ NEW
+  onConfirm,
   isPaidUser,
 }: DraftSettingsModalProps) {
   const [activeTab, setActiveTab] = useState<'adp' | 'roster'>('adp');
 
   const handleAdpChange = (field: keyof DraftConfig, value: string) => {
-    setDraftConfig({ ...draftConfig, [field]: value });
+    const newDraftConfig = {
+      ...draftConfig,
+      [field]: value,
+    };
+
+    const adpFormatKey = buildAdpFormatKey(newDraftConfig);
+
+    const isValid = ADP_OPTIONS.some(
+      o =>
+        o.format === newDraftConfig.leagueFormat &&
+        o.qb_setting === newDraftConfig.qb_setting &&
+        o.scoring === newDraftConfig.scoring &&
+        o.platform === newDraftConfig.platform
+    );
+
+    if (isValid) {
+      setDraftConfig({
+        ...newDraftConfig,
+        adpFormatKey,
+      });
+    } else {
+      console.warn('⚠️ No matching ADP format key found');
+    }
   };
 
+
   const handleConfirm = () => {
-    onConfirm(draftConfig);  // ✅ Send config back to parent
-    onClose();               // ✅ Close modal
+    onConfirm(draftConfig);  
+    onClose();               
   };
 
   const validFormats = Array.from(new Set(ADP_OPTIONS.map(o => o.format)));
