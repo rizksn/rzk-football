@@ -50,7 +50,9 @@ export default function MockDraft() {
   const [isSplit, setIsSplit] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const sortedPlayers = [...players].sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity));
+  const sortedPlayers = Array.isArray(players)
+    ? [...players].sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity))
+    : [];
 
   useEffect(() => {
     async function fetchPlayers() {
@@ -58,9 +60,21 @@ export default function MockDraft() {
         setLoading(true);
         const res = await fetch(`${API_BASE_URL}/api/players?format=${draftConfig.adpFormatKey}`);
         const json: { data: Player[] } = await res.json();
+        console.log("🔍 Raw /api/players response:", json);
+
+
+        if (!Array.isArray(json.data)) {
+          throw new Error('Expected an array of players');
+        }
+
+        if (json.data.some((p) => typeof p !== 'object' || !('player_id' in p))) {
+          throw new Error('Invalid player format');
+        }
+
         setPlayers(json.data);
       } catch (err) {
         console.error('❌ Failed to fetch player data:', err);
+        setPlayers([]);
       } finally {
         setLoading(false);
       }
@@ -161,7 +175,7 @@ export default function MockDraft() {
         <MockNavbar
           draftStarted={draftStarted}
           onStartDraft={handleStartDraft}
-          onOpenSettings={() => setShowSettings(true)} // 🆕 modal trigger
+          onOpenSettings={() => setShowSettings(true)}
         />
 
         <div className="flex-1 overflow-y-auto relative z-0">
@@ -196,7 +210,6 @@ export default function MockDraft() {
         </div>
       </div>
 
-      {/* 🆕 Draft Settings Modal */}
       {showSettings && (
         <DraftSettingsModal
           isOpen={showSettings}
@@ -204,11 +217,11 @@ export default function MockDraft() {
           draftConfig={draftConfig}
           setDraftConfig={setDraftConfig}
           onConfirm={(newConfig) => {
-            setDraftConfig(newConfig);            
-            setPlayers([]);                       
+            setDraftConfig(newConfig);
+            setPlayers([]);
           }}
-          isPaidUser={true}
-          isLoggedIn={true}
+          isPaidUser={isPaidUser}
+          isLoggedIn={isLoggedIn}
         />
       )}
     </div>
