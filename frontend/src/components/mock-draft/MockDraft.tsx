@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Player } from '@/types';
-import { useCpuDraft } from './hooks/useCpuDraft';
 import { NUM_TEAMS, NUM_ROUNDS, TOTAL_PICKS, getSnakedTeamIndex } from '@/utils/constants';
 import { API_BASE_URL } from '@/utils/config';
 
@@ -54,6 +53,8 @@ export default function MockDraft() {
     ? [...players].sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity))
     : [];
 
+  const draftComplete = currentPickIndex >= TOTAL_PICKS;
+
   useEffect(() => {
     async function fetchPlayers() {
       try {
@@ -61,7 +62,6 @@ export default function MockDraft() {
         const res = await fetch(`${API_BASE_URL}/api/players?format=${draftConfig.adpFormatKey}`);
         const json: { data: Player[] } = await res.json();
         console.log("🔍 Raw /api/players response:", json);
-
 
         if (!Array.isArray(json.data)) {
           throw new Error('Expected an array of players');
@@ -88,20 +88,25 @@ export default function MockDraft() {
   const teamIndex = getSnakedTeamIndex(round, indexInRound);
   const isUserTurn = draftStarted && userDraftSlot === teamIndex;
 
-  useCpuDraft({
-    draftStarted,
-    isUserTurn,
-    currentPickIndex,
-    draftBoard,
-    players,
-    onCpuPick: makePick,
-    totalPicks: TOTAL_PICKS,
-    numTeams: NUM_TEAMS,
-    leagueFormat: draftConfig.leagueFormat,
-    useAI: draftConfig.useAI,
-  });
+  useEffect(() => {
+    if (!draftStarted || userDraftSlot == null || draftComplete) return;
+
+    const round = Math.floor(currentPickIndex / NUM_TEAMS);
+    const indexInRound = currentPickIndex % NUM_TEAMS;
+    const teamIndex = getSnakedTeamIndex(round, indexInRound);
+
+    if (teamIndex !== userDraftSlot) {
+      const timeout = setTimeout(() => {
+        simulateCpuPick();
+      }, 800); 
+
+      return () => clearTimeout(timeout); 
+    }
+  }, [currentPickIndex, draftStarted, userDraftSlot]);
 
   function makePick(player: Player) {
+    if (draftComplete) return;
+
     const round = Math.floor(currentPickIndex / NUM_TEAMS);
     const indexInRound = currentPickIndex % NUM_TEAMS;
     const snakedTeamIndex = getSnakedTeamIndex(round, indexInRound);
@@ -119,12 +124,14 @@ export default function MockDraft() {
   }
 
   function handleUserPick(player: Player) {
-    if (!isUserTurn) return;
+    if (!draftStarted || !isUserTurn || draftComplete) return;
     setUserRoster(prev => [...prev, player]);
     makePick(player);
   }
 
-  async function handleStartDraft() {
+  async function simulateCpuPick() {
+    if (!draftStarted || draftComplete) return;
+
     const round = Math.floor(currentPickIndex / NUM_TEAMS);
     const indexInRound = currentPickIndex % NUM_TEAMS;
     const teamIndex = getSnakedTeamIndex(round, indexInRound);
@@ -135,9 +142,8 @@ export default function MockDraft() {
         teamIndex,
         use_ai: draftConfig.useAI,
         leagueFormat: draftConfig.leagueFormat,
+        adpFormatKey: draftConfig.adpFormatKey,
       };
-
-      console.log('📤 Sending to /api/simulate:', payload);
 
       const res = await fetch(`${API_BASE_URL}/api/simulate`, {
         method: 'POST',
@@ -145,28 +151,20 @@ export default function MockDraft() {
         body: JSON.stringify(payload),
       });
 
-      console.log("🌐 Response status:", res.status);
       const data = await res.json();
-      console.log("📩 Response data:", data);
-
       if (!data?.result) {
-        console.error('❌ No AI pick returned:', data);
+        console.error("❌ No AI pick returned:", data);
         return;
       }
 
-      const aiPick = data.result as Player;
-      console.log('🧠 ANUBIS pick:', aiPick);
-
-      setDraftBoard(Array.from({ length: NUM_ROUNDS }, () => Array(NUM_TEAMS).fill(null)));
-      setQueuePlayers([]);
-      setUserRoster([]);
-      setCurrentPickIndex(0);
-      setDraftStarted(true);
-
-      makePick(aiPick);
+      makePick(data.result);
     } catch (err) {
-      console.error('❌ Draft simulation crashed:', err);
+      console.error("❌ Failed to simulate CPU pick:", err);
     }
+  }
+
+  async function handleStartDraft() {
+    setDraftStarted(true);
   }
 
   return (
@@ -208,6 +206,10 @@ export default function MockDraft() {
             isSplit={isSplit}
           />
         </div>
+
+        {draftComplete && (
+          <div className="text-center mt-4 text-lg font-bold">✅ Draft Complete</div>
+        )}
       </div>
 
       {showSettings && (
