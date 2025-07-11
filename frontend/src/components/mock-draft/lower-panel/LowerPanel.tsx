@@ -45,15 +45,24 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
         rightPlayer={rightPlayer}
         isSplit={isSplit}
       />
-      
+
       {/* ✅ Perspective wrapper: sets up 3D space */}
       <div
-        className="w-full max-w-[1600px] min-w-[960px] mx-auto h-full"
+        className="w-full max-w-[1600px] min-w-[960px] mx-auto h-full relative"
         style={{ perspective: '1200px' }}
       >
+        {/* ✅ Background circuit layer */}
+        {/* <div
+          className="absolute inset-0 bg-cover bg-center opacity-10 pointer-events-none z-14"
+          style={{ 
+            backgroundImage: "url('/circuit5.jpeg')",
+            // backgroundPosition: 'center -100px',
+           }}
+        /> */}
+
         {/* ✅ Tilt only the lower panel grid (not the blue panels) */}
         <div
-          className="flex gap-0 h-full transition-all duration-300 ease-in-out bg-[#4b02e942]"
+          className="flex gap-0 h-full transition-all duration-300 ease-in-out bg-[#4b02e942] relative z-10"
           style={{
             transform: 'rotateX(2deg)',
             transformOrigin: 'top center',
@@ -88,5 +97,3 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
 };
 
 export default LowerPanel;
-
-//  060111af

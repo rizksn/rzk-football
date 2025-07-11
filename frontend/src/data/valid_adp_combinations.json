@@ -1,126 +1,126 @@
 [
   {
-    "format": "best_ball",
+    "leagueFormat": "best_ball",
     "qb_setting": "1qb",
     "scoring": "0.5-ppr",
     "platform": "underdog"
   },
   {
-    "format": "best_ball",
+    "leagueFormat": "best_ball",
     "qb_setting": "1qb",
     "scoring": "te-premium",
     "platform": "ffpc"
   },
   {
-    "format": "dynasty",
+    "leagueFormat": "dynasty",
     "qb_setting": "1qb",
     "scoring": "0.5-ppr",
     "platform": "sleeper"
   },
   {
-    "format": "dynasty",
+    "leagueFormat": "dynasty",
     "qb_setting": "1qb",
     "scoring": "1-ppr",
     "platform": "sleeper"
   },
   {
-    "format": "dynasty",
+    "leagueFormat": "dynasty",
     "qb_setting": "1qb",
     "scoring": "non-ppr",
     "platform": "sleeper"
   },
   {
-    "format": "dynasty",
+    "leagueFormat": "dynasty",
     "qb_setting": "superflex",
     "scoring": "1-ppr",
     "platform": "sleeper"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "1qb",
     "scoring": "0.5-ppr",
     "platform": "consensus"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "1qb",
     "scoring": "0.5-ppr",
     "platform": "sleeper"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "1qb",
     "scoring": "0.5-ppr",
     "platform": "yahoo"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "1qb",
     "scoring": "1-ppr",
     "platform": "cbs"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "1qb",
     "scoring": "1-ppr",
     "platform": "consensus"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "1qb",
     "scoring": "1-ppr",
     "platform": "espn"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "1qb",
     "scoring": "1-ppr",
     "platform": "ffpc"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "1qb",
     "scoring": "1-ppr",
     "platform": "sleeper"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "1qb",
     "scoring": "non-ppr",
     "platform": "cbs"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "1qb",
     "scoring": "non-ppr",
     "platform": "consensus"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "1qb",
     "scoring": "non-ppr",
     "platform": "sleeper"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "1qb",
     "scoring": "te-premium",
     "platform": "ffpc"
   },
   {
-    "format": "redraft",
+    "leagueFormat": "redraft",
     "qb_setting": "superflex",
     "scoring": "1-ppr",
     "platform": "sleeper"
   },
   {
-    "format": "rookie",
+    "leagueFormat": "rookie",
     "qb_setting": "1qb",
     "scoring": "1-ppr",
     "platform": "sleeper"
   },
   {
-    "format": "rookie",
+    "leagueFormat": "rookie",
     "qb_setting": "superflex",
     "scoring": "1-ppr",
     "platform": "sleeper"

@@ -33,20 +33,3 @@ export type RosterState = {
   def: number;
   bn: number;
 };
-
-export type ECRPlayerData = {
-  name: string;
-  team: string;
-  position: string;
-  tier: number;
-  best: number;
-  worst: number;
-  avg: number;
-  stdDev: number;
-};
-
-export type MockNavbarProps = {
-  draftStarted: boolean;
-  onStartDraft: () => void;
-  onOpenSettings: () => void;
-};

@@ -2,23 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { Player } from '@/types';
+import type { DraftConfig } from '@/types/draft';
 import { NUM_TEAMS, NUM_ROUNDS, TOTAL_PICKS, getSnakedTeamIndex } from '@/utils/constants';
 import { API_BASE_URL } from '@/utils/config';
 
+import { useAuthContext } from '@/context/AuthContext';
 import MockNavbar from './MockNavbar';
 import DraftBoard from './draft-board/DraftBoard';
 import LowerPanel from './lower-panel/LowerPanel';
 import DraftSettingsModal from './DraftSettingsModal';
-import { useAuthContext } from '@/context/AuthContext'; 
-
-interface DraftConfig {
-  adpFormatKey: string;
-  leagueFormat: string;
-  qb_setting: string;
-  scoring: string;
-  platform: string;
-  useAI: boolean;
-}
 
 export default function MockDraft() {
   const { user, isPaidUser } = useAuthContext(); 
@@ -30,10 +22,13 @@ export default function MockDraft() {
     adpFormatKey: 'dynasty_1qb_1_ppr_sleeper',
     leagueFormat: 'dynasty',
     qb_setting: '1qb',
-    scoring: 'ppr',
+    scoring: '1-ppr',
     platform: 'sleeper',
     useAI: false,
   });
+
+  console.log("🧪 Initial draftConfig:", draftConfig);
+
 
   const [players, setPlayers] = useState<Player[]>([]);
   const [draftBoard, setDraftBoard] = useState<(Player | null)[][]>(
@@ -56,32 +51,27 @@ export default function MockDraft() {
   const draftComplete = currentPickIndex >= TOTAL_PICKS;
 
   useEffect(() => {
-    async function fetchPlayers() {
+    async function fetchDefaultPlayers() {
       try {
         setLoading(true);
         const res = await fetch(`${API_BASE_URL}/api/players?format=${draftConfig.adpFormatKey}`);
         const json: { data: Player[] } = await res.json();
-        console.log("🔍 Raw /api/players response:", json);
+        console.log("🔍 Loaded default /api/players:", json);
 
         if (!Array.isArray(json.data)) {
           throw new Error('Expected an array of players');
         }
 
-        if (json.data.some((p) => typeof p !== 'object' || !('player_id' in p))) {
-          throw new Error('Invalid player format');
-        }
-
         setPlayers(json.data);
       } catch (err) {
-        console.error('❌ Failed to fetch player data:', err);
-        setPlayers([]);
+        console.error('❌ Failed to fetch default player data:', err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchPlayers();
-  }, [draftConfig]);
+    fetchDefaultPlayers();
+  }, [draftConfig.adpFormatKey]);
 
   const round = Math.floor(currentPickIndex / NUM_TEAMS);
   const indexInRound = currentPickIndex % NUM_TEAMS;
@@ -218,9 +208,8 @@ export default function MockDraft() {
           onClose={() => setShowSettings(false)}
           draftConfig={draftConfig}
           setDraftConfig={setDraftConfig}
-          onConfirm={(newConfig) => {
-            setDraftConfig(newConfig);
-            setPlayers([]);
+          onConfirm={async (newConfig) => {
+            setDraftConfig(newConfig); 
           }}
           isPaidUser={true}
           isLoggedIn={true}

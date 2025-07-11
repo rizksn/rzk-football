@@ -2,29 +2,18 @@
 
 import { Dialog } from '@headlessui/react';
 import { useState } from 'react';
+import { buildAdpFormatKey } from '@/utils/adp';
+import type { DraftConfig } from '@/types/draft';
 import ADP_OPTIONS from '@/data/valid_adp_combinations.json';
-
-interface DraftConfig {
-  adpFormatKey: string;
-  leagueFormat: string;
-  qb_setting: string;
-  scoring: string;
-  platform: string;
-  useAI: boolean;
-}
 
 interface DraftSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   draftConfig: DraftConfig;
   setDraftConfig: (config: DraftConfig) => void;
-  onConfirm: (config: DraftConfig) => void; 
+  onConfirm: (config: DraftConfig) => void;
   isPaidUser: boolean;
   isLoggedIn: boolean;
-}
-
-function buildAdpFormatKey(config: DraftConfig) {
-  return `${config.leagueFormat}_${config.qb_setting}_${config.scoring}_${config.platform}`;
 }
 
 export default function DraftSettingsModal({
@@ -37,74 +26,64 @@ export default function DraftSettingsModal({
 }: DraftSettingsModalProps) {
   const [activeTab, setActiveTab] = useState<'adp' | 'roster'>('adp');
 
-  const handleAdpChange = (field: keyof DraftConfig, value: string) => {
-    const newDraftConfig = {
-      ...draftConfig,
-      [field]: value,
-    };
+  const getValidOptions = (field: keyof DraftConfig, current: DraftConfig): string[] => {
+    if (field === 'leagueFormat') {
+      return Array.from(new Set(ADP_OPTIONS.map((o) => o.leagueFormat)));
+    }
 
-    const adpFormatKey = buildAdpFormatKey(newDraftConfig);
+    return Array.from(
+      new Set(
+        ADP_OPTIONS
+          .filter((o) => o.leagueFormat === current.leagueFormat)
+          .map((o) => o[field as keyof typeof o])
+      )
+    );
+  };
 
-    const isValid = ADP_OPTIONS.some(
+  const handleAdpChange = (
+    field: 'leagueFormat' | 'qb_setting' | 'scoring' | 'platform',
+    value: string
+  ) => {
+
+    const updated = { ...draftConfig, [field]: value };
+
+    let match = ADP_OPTIONS.find(
       o =>
-        o.format === newDraftConfig.leagueFormat &&
-        o.qb_setting === newDraftConfig.qb_setting &&
-        o.scoring === newDraftConfig.scoring &&
-        o.platform === newDraftConfig.platform
+        o.leagueFormat === updated.leagueFormat &&
+        o.qb_setting === updated.qb_setting &&
+        o.scoring === updated.scoring &&
+        o.platform === updated.platform
     );
 
-    if (isValid) {
+    if (!match) {
+      // Fallback to first valid combo that includes the changed field
+      match = ADP_OPTIONS.find(o => o[field] === value);
+    }
+
+    if (match) {
       setDraftConfig({
-        ...newDraftConfig,
-        adpFormatKey,
+        ...match,
+        adpFormatKey: buildAdpFormatKey(match),
+        useAI: draftConfig.useAI,
       });
-    } else {
-      console.warn('⚠️ No matching ADP format key found');
     }
   };
 
-
   const handleConfirm = () => {
-    onConfirm(draftConfig);  
-    onClose();               
+    onConfirm(draftConfig);
+    onClose();
   };
 
-  const validFormats = Array.from(new Set(ADP_OPTIONS.map(o => o.format)));
-  const validQbSettings = Array.from(
-    new Set(
-      ADP_OPTIONS
-        .filter(o => o.format === draftConfig.leagueFormat)
-        .map(o => o.qb_setting)
-    )
-  );
-  const validScoring = Array.from(
-    new Set(
-      ADP_OPTIONS
-        .filter(o =>
-          o.format === draftConfig.leagueFormat &&
-          o.qb_setting === draftConfig.qb_setting
-        )
-        .map(o => o.scoring)
-    )
-  );
-  const validPlatforms = Array.from(
-    new Set(
-      ADP_OPTIONS
-        .filter(o =>
-          o.format === draftConfig.leagueFormat &&
-          o.qb_setting === draftConfig.qb_setting &&
-          o.scoring === draftConfig.scoring
-        )
-        .map(o => o.platform)
-    )
-  );
+  const validFormats = getValidOptions('leagueFormat', draftConfig);
+  const validQbSettings = getValidOptions('qb_setting', draftConfig);
+  const validScoring = getValidOptions('scoring', draftConfig);
+  const validPlatforms = getValidOptions('platform', draftConfig);
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="bg-slate-900 text-white max-w-4xl w-full rounded-xl shadow-xl flex">
-          {/* Tabs */}
           <div className="w-48 border-r border-white/10 flex flex-col">
             <button
               onClick={() => setActiveTab('adp')}
@@ -122,7 +101,6 @@ export default function DraftSettingsModal({
             </button>
           </div>
 
-          {/* Content */}
           <div className="flex-1 p-6 overflow-y-auto">
             {activeTab === 'adp' && (
               <div className="space-y-4">
@@ -130,7 +108,6 @@ export default function DraftSettingsModal({
 
                 <fieldset disabled={!isPaidUser} className={!isPaidUser ? 'opacity-40 pointer-events-none' : ''}>
                   <div className="space-y-2">
-                    {/* Dropdowns */}
                     <label className="block text-sm">
                       Format
                       <select
@@ -184,7 +161,6 @@ export default function DraftSettingsModal({
                     </label>
                   </div>
 
-                  {/* ✅ Confirm Button */}
                   {isPaidUser && (
                     <div className="pt-4 flex justify-end">
                       <button
