@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { MockNavbarProps } from "@/types";
+import { MockNavbarProps } from "@/types/ui";
 
 const MockNavbar = ({ draftStarted, onStartDraft, onOpenSettings }: MockNavbarProps) => {
   return (
