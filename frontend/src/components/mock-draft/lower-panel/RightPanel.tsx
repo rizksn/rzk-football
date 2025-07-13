@@ -4,13 +4,15 @@ import { useState, useEffect } from 'react';
 import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 
-import { Player } from '@/types';
+import { Player } from '@/types/core/player';
 import Queue from './Queue';
 import Roster from './Roster';
+import { DraftRosterSettings } from "@/types/draft/config";
 
 type RightPanelProps = {
   queuedPlayers: Player[];
   userRoster: Player[];
+  rosterSettings: DraftRosterSettings;
   onRemoveFromQueue: (playerId: string) => void;
 };
 

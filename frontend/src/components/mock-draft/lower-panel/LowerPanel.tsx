@@ -2,14 +2,16 @@
 
 import LeftPanel from './LeftPanel';
 import RightPanel from './RightPanel';
-import { Player } from '../../../types';
+import { Player } from '../../../types/core/player';
 import DisplayPanels from '../display-panels/DisplayPanels';
+import { DraftRosterSettings } from "@/types/draft/config";
 
 type LowerPanelProps = {
   players: Player[];
   draftedPlayers: Player[];
   onDraftPlayer: (player: Player) => void;
   isUserTurn: boolean;
+
   queuePlayers: Player[];
   onAddToQueue: (player: Player) => void;
   onRemoveFromQueue: (playerId: string) => void;
@@ -17,6 +19,7 @@ type LowerPanelProps = {
   leftPlayer: Player | null;
   rightPlayer: Player | null;
   isSplit: boolean;
+  rosterSettings: DraftRosterSettings;
 };
 
 const LowerPanel: React.FC<LowerPanelProps> = ({
@@ -31,6 +34,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   leftPlayer, 
   rightPlayer,
   isSplit,
+  rosterSettings,
 }) => {
   const handleDraft = (player: Player) => {
     onRemoveFromQueue(player.player_id); 
@@ -86,6 +90,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               <RightPanel
                 queuedPlayers={queuePlayers}
                 userRoster={userRoster}
+                rosterSettings={rosterSettings}
                 onRemoveFromQueue={onRemoveFromQueue}
               />
             </div>

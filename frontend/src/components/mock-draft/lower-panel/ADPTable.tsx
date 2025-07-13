@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Player } from "@/types";
+import { Player } from "@/types/core/player";
 
 export default function ADPTable() {
   const [players, setPlayers] = useState<Player[]>([]);

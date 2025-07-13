@@ -1,4 +1,4 @@
-import { Player } from '@/types';
+import { Player } from '@/types/core/player';
 import DisplayPanel from './DisplayPanel';
 
 interface DisplayPanelsProps {

@@ -1,6 +1,6 @@
 'use client';
 
-import { Player } from '@/types';
+import { Player } from '@/types/core/player';
 
 /**
  * Props for each individual draft slot cell.

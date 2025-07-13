@@ -7,7 +7,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { useState, useEffect } from 'react';
-import { Player } from '@/types';
+import { Player } from '@/types/core/player';
 import QueuePlayer from './QueuePlayer';
 
 type QueueProps = {

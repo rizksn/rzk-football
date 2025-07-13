@@ -1,24 +1,27 @@
 'use client';
 
 import DraftSlot from '../draft-board/DraftSlot';
-import { Player } from '@/types';
+import { Player } from '@/types/core/player';
+import type { DraftPick } from '@/components/mock-draft/MockDraft';
 
 type DraftBoardProps = {
   draftStarted: boolean;
-  draftGrid: (Player | null)[][];
+  draftPlan: DraftPick[]; 
   claimedTeamIndex: number | null;
   onClaimTeam: (teamIndex: number) => void;
+  numTeams: number;
+  numRounds: number;
 };
 
 const DraftBoard = ({
   draftStarted,
-  draftGrid,
+  draftPlan,
   claimedTeamIndex,
   onClaimTeam,
+  numTeams,
+  numRounds,
 }: DraftBoardProps) => {
-  const numRounds = draftGrid.length;
-  const numTeams = draftGrid[0]?.length || 0;
-
+  const totalPicks = draftPlan.length;
   return (
     <div className="w-full px-[2vw] py-4">
       {/* Header row with claim buttons */}
@@ -41,20 +44,24 @@ const DraftBoard = ({
 
       {/* Draft Grid */}
       <div className="grid grid-cols-12 gap-0.5">
-        {draftGrid.map((round, roundIndex) =>
-          round.map((player, teamIndex) => {
-            const actualTeamIndex = roundIndex % 2 === 0 ? teamIndex : numTeams - 1 - teamIndex;
-            const pickLabel = `${roundIndex + 1}.${actualTeamIndex + 1}`;
+        {draftPlan.map((pick, pickIndex) => {
+          const round = Math.floor(pickIndex / numTeams);
+          const pickInRound = pickIndex % numTeams;
 
-            return (
-              <DraftSlot
-                key={pickLabel}
-                pickNumber={pickLabel}
-                player={player || undefined}
-              />
-            );
-          })
-        )}
+          // Handle snake logic
+          const teamIndex =
+            round % 2 === 0 ? pickInRound : numTeams - 1 - pickInRound;
+
+          const pickLabel = `${round + 1}.${teamIndex + 1}`;
+
+          return (
+            <DraftSlot
+              key={pickLabel}
+              pickNumber={pickLabel}
+              player={pick.draftedPlayer || undefined}
+            />
+          );
+        })}
       </div>
     </div>
   );

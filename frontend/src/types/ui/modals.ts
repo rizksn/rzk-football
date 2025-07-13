@@ -1,10 +1,4 @@
-import type { DraftConfig } from './draft';
-
-export type MockNavbarProps = {
-  draftStarted: boolean;
-  onStartDraft: () => void;
-  onOpenSettings: () => void;
-};
+import type { DraftConfig } from '../draft/config';
 
 export type DraftSettingsModalProps = {
   isOpen: boolean;

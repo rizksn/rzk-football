@@ -3,7 +3,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Player } from '@/types';
+import { Player } from '@/types/core/player';
 import PlayerImage from '@/components/shared/PlayerImage';
 
 type QueueItemProps = {
