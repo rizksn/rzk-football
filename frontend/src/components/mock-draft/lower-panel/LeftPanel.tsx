@@ -1,33 +1,22 @@
 'use client';
 
-import { Player } from '../../../types/core/player';
+import { Player } from '@/types/core/player';
 
 type LeftPanelProps = {
   players: Player[];
   onAddToQueue: (player: Player) => void;
-  onDraftPlayer: (player: Player) => void;
-  draftedPlayers: Player[];
+  onDraftClick: (player: Player) => void;
   isUserTurn: boolean;
 };
 
 const LeftPanel = ({
   players,
   onAddToQueue,
-  onDraftPlayer,
-  draftedPlayers,
+  onDraftClick,
   isUserTurn,
 }: LeftPanelProps) => {
-  const filteredPlayers = players.filter(
-    (p) => !draftedPlayers.some((d) => d.player_id === p.player_id)
-  );
-
   return (
     <div className="relative flex flex-col h-full w-full overflow-visible bg-[rgba(28,29,46,0.58)] rounded-md">
-
-      {/* 🟢 Green bar */}
-      {/* <div className="bg-[#59ff00] h-[2px] w-full relative z-20" /> */}
-
-      {/* Main Scrollable Area */}
       <div className="overflow-y-auto h-full w-full border-r border-slate-800 rounded-md">
         <table className="w-full text-xs text-white">
           <thead className="sticky top-0 z-20">
@@ -42,19 +31,19 @@ const LeftPanel = ({
             </tr>
           </thead>
           <tbody>
-            {filteredPlayers.map((p, index) => (
+            {players.map((p, index) => (
               <tr
                 key={`${p.full_name}-${p.team}`}
                 className={`border-b border-slate-700 hover:bg-slate-800 ${
                   index % 2 === 0
-                    ? 'bg-[rgba(28,29,46,0.23)]'  // Slightly transparent dark
-                    : 'bg-[rgba(28,29,46,0.05)]' // Slightly different shade
+                    ? 'bg-[rgba(28,29,46,0.23)]'
+                    : 'bg-[rgba(28,29,46,0.05)]'
                 }`}
               >
                 <td className="px-2 py-0">
                   <button
                     disabled={!isUserTurn}
-                    onClick={() => onDraftPlayer(p)}
+                    onClick={() => isUserTurn && onDraftClick(p)}
                     className={`text-[9px] font-bold px-2 py-0.5 rounded transition ${
                       isUserTurn
                         ? 'bg-[#181c28] hover:bg-[#617fb9] text-[#ff2600] cursor-pointer'
@@ -88,6 +77,3 @@ const LeftPanel = ({
 };
 
 export default LeftPanel;
-
-//? 'bg-[rgba(45,53,72,0.7)]' // Slightly transparent dark
-//: 'bg-[rgba(50,61,79,0.7)]' // Slightly different shade

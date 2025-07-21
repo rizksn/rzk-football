@@ -16,7 +16,7 @@ type RightPanelProps = {
   onRemoveFromQueue: (playerId: string) => void;
 };
 
-const RightPanel = ({ queuedPlayers, userRoster, onRemoveFromQueue }: RightPanelProps) => {
+const RightPanel = ({ queuedPlayers, userRoster, rosterSettings, onRemoveFromQueue }: RightPanelProps) => {
   const [queueOrder, setQueueOrder] = useState<string[]>([]);
 
   // Sync drag order

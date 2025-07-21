@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import LeftPanel from './LeftPanel';
 import RightPanel from './RightPanel';
 import { Player } from '../../../types/core/player';
@@ -11,34 +12,37 @@ type LowerPanelProps = {
   draftedPlayers: Player[];
   onDraftPlayer: (player: Player) => void;
   isUserTurn: boolean;
-
-  queuePlayers: Player[];
-  onAddToQueue: (player: Player) => void;
-  onRemoveFromQueue: (playerId: string) => void;
   userRoster: Player[];
-  leftPlayer: Player | null;
-  rightPlayer: Player | null;
-  isSplit: boolean;
   rosterSettings: DraftRosterSettings;
 };
 
 const LowerPanel: React.FC<LowerPanelProps> = ({
   players,
   draftedPlayers,
-  onAddToQueue,
   onDraftPlayer,
   isUserTurn,
-  queuePlayers,
-  onRemoveFromQueue,
   userRoster,
-  leftPlayer, 
-  rightPlayer,
-  isSplit,
   rosterSettings,
 }) => {
-  const handleDraft = (player: Player) => {
-    onRemoveFromQueue(player.player_id); 
-    onDraftPlayer(player); 
+  const [queuePlayers, setQueuePlayers] = useState<Player[]>([]);
+  const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
+  const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
+  const [isSplit, setIsSplit] = useState(false);
+
+  const handleAddToQueue = (player: Player) => {
+    if (!queuePlayers.some(p => p.player_id === player.player_id)) {
+      setQueuePlayers(prev => [...prev, player]);
+    }
+  };
+
+  const handleRemoveFromQueue = (playerId: string) => {
+    setQueuePlayers(prev => prev.filter(p => p.player_id !== playerId));
+  };
+
+  const handleUserDraft = (player: Player) => {
+    if (!isUserTurn) return;
+    handleRemoveFromQueue(player.player_id);
+    onDraftPlayer(player);
   };
 
   return (
@@ -55,15 +59,6 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
         className="w-full max-w-[1600px] min-w-[960px] mx-auto h-full relative"
         style={{ perspective: '1200px' }}
       >
-        {/* ✅ Background circuit layer */}
-        {/* <div
-          className="absolute inset-0 bg-cover bg-center opacity-10 pointer-events-none z-14"
-          style={{ 
-            backgroundImage: "url('/circuit5.jpeg')",
-            // backgroundPosition: 'center -100px',
-           }}
-        /> */}
-
         {/* ✅ Tilt only the lower panel grid (not the blue panels) */}
         <div
           className="flex gap-0 h-full transition-all duration-300 ease-in-out bg-[#4b02e942] relative z-10"
@@ -77,9 +72,8 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
           <div className="w-1/2 flex flex-col h-full transition-all duration-300">
             <LeftPanel
               players={players}
-              onAddToQueue={onAddToQueue}
-              draftedPlayers={draftedPlayers}
-              onDraftPlayer={handleDraft}
+              onAddToQueue={handleAddToQueue}
+              onDraftClick={handleUserDraft}
               isUserTurn={isUserTurn}
             />
           </div>
@@ -91,7 +85,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
                 queuedPlayers={queuePlayers}
                 userRoster={userRoster}
                 rosterSettings={rosterSettings}
-                onRemoveFromQueue={onRemoveFromQueue}
+                onRemoveFromQueue={handleRemoveFromQueue}
               />
             </div>
           </div>

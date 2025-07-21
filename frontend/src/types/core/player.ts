@@ -7,7 +7,7 @@ export type Player = {
   scoring: string;
   platform: string;
   type: string;
-  rank?: number;
+  rank: number;
   tier?: number;
   lastYearFinish?: number;
   isAlpha?: boolean;
