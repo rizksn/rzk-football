@@ -55,7 +55,7 @@ export default function MockDraft() {
     async function fetchInitialData() {
       try {
         setLoading(true);
-        const res = await fetch(`${API_BASE_URL}/api/players?format=${draftConfig.adpFormatKey}`);
+        const res = await fetch(`${API_BASE_URL}/api/draft-players?format=${draftConfig.adpFormatKey}`);
         const json = await res.json();
 
         if (!Array.isArray(json.adp) || !Array.isArray(json.scored)) {
@@ -152,12 +152,16 @@ export default function MockDraft() {
     if (!draftStarted || !isUserTurn || draftComplete) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/pick`, {
+      const res = await fetch(`${API_BASE_URL}/api/simulate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           draftPlan,
-          teamIndex: userDraftSlot,
+          scoredPlayers,     
+          teamIndex: currentPick.teamIndex,
+          use_ai: false, 
+          leagueFormat: draftConfig.leagueFormat,
+          adpFormatKey: draftConfig.adpFormatKey, 
           selectedPlayerId: player.player_id,
         }),
       });
@@ -168,15 +172,24 @@ export default function MockDraft() {
         return;
       }
 
-      updateDraftPlanFromBackend(data.draftPlan);
-    } catch (err) {
-      console.error('❌ Failed to process user pick:', err);
-    }
-  };
+        updateDraftPlanFromBackend(data.draftPlan);
+      } catch (err) {
+        console.error('❌ Failed to process user pick:', err);
+      }
+    };
 
-  const handleStartDraft = () => {
-    setDraftStarted(true);
-  };
+    const handleStartDraft = () => {
+      setDraftStarted(true);
+    };
+
+    const draftBoardByRound = useMemo(() => {
+      const result: DraftPick[][] = [];
+      for (let i = 0; i < numRounds; i++) {
+        result.push(draftPlan.slice(i * NUM_TEAMS, (i + 1) * NUM_TEAMS));
+      }
+      return result;
+    }, [draftPlan, numRounds, NUM_TEAMS]);
+
 
   return (
     <div className="w-full max-w-[1600px] min-w-[1250px] mx-auto h-full">
@@ -190,7 +203,7 @@ export default function MockDraft() {
         <div className="flex-1 overflow-y-auto relative z-0">
           <DraftBoard
             draftStarted={draftStarted}
-            draftPlan={draftPlan}
+            draftGrid={draftBoardByRound}
             claimedTeamIndex={userDraftSlot}
             onClaimTeam={setUserDraftSlot}
             numTeams={NUM_TEAMS}
