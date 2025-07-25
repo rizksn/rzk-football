@@ -226,6 +226,7 @@ export default function MockDraft() {
 
   const handleStartDraft = () => {
     setDraftStarted(true);
+    setIsTicking(true);
   };
 
   const draftBoardByRound = useMemo(() => {
@@ -235,7 +236,6 @@ export default function MockDraft() {
     }
     return result;
   }, [draftPlan, numRounds, NUM_TEAMS]);
-
 
   return (
     <div className="w-full max-w-[1600px] min-w-[1250px] mx-auto h-full">

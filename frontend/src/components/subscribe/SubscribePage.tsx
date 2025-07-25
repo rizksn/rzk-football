@@ -1,16 +1,16 @@
 'use client';
 
-import { useAuthContext } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { loginWithGoogle } from '@/utils/firebase'; // make sure this path is correct
+import { useRouter } from 'next/navigation';
+import { useAuthContext } from '@/context/AuthContext';
+import { loginWithGoogle, auth } from '@/utils/firebase';
 
 export default function SubscribePage() {
   const { user, isPaidUser } = useAuthContext();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  // Redirect paid users immediately
+  // 🔁 Redirect if user is already paid
   useEffect(() => {
     if (isPaidUser) {
       router.push('/draft');
@@ -20,18 +20,30 @@ export default function SubscribePage() {
   const handleSubscribe = async () => {
     setLoading(true);
     try {
-      if (!user) {
+      let currentUser = user;
+
+      // 🔐 Force login if not logged in
+      if (!currentUser) {
         await loginWithGoogle();
-        // Wait briefly to ensure user context updates (optional tweak)
-        await new Promise((r) => setTimeout(r, 500));
+
+        // Wait for Firebase to hydrate currentUser
+        currentUser = auth.currentUser;
+        let retries = 10;
+        while (!currentUser && retries-- > 0) {
+          await new Promise((r) => setTimeout(r, 200));
+          currentUser = auth.currentUser;
+        }
       }
 
-      console.log("📦 Sending user_id:", user?.uid);
+      if (!currentUser) throw new Error("Login failed. Please try again.");
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/create-checkout-session`, {
+      const token = await currentUser.getIdToken();
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/checkout`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user?.uid }),
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const data = await res.json();
@@ -66,7 +78,6 @@ export default function SubscribePage() {
             <li>More features coming this season</li>
           </ul>
 
-          {/* Stripe payment button */}
           <button
             onClick={handleSubscribe}
             disabled={loading}
