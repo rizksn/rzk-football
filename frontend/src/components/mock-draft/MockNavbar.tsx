@@ -4,9 +4,18 @@ import Link from "next/link";
 import { MockNavbarProps } from "@/types/ui/components";
 import { Menu } from '@headlessui/react';
 import { useAuth } from '@/utils/useAuth';
-import { User, LogOut, Power, Pause, CreditCard, Settings } from 'lucide-react';
+import { User, LogOut, CreditCard, Settings } from 'lucide-react';
+import TimerControls from './timer/TimerControls';
 
-const MockNavbar = ({ draftStarted, onStartDraft, onOpenSettings }: MockNavbarProps) => {
+const MockNavbar = ({
+  draftStarted,
+  onStartDraft,
+  onOpenSettings,
+  timer,
+  setTimer,
+  isTicking,
+  setIsTicking,
+}: MockNavbarProps) => {
   const { user, isLoggedIn, isPaidUser, logout } = useAuth();
 
   return (
@@ -18,23 +27,15 @@ const MockNavbar = ({ draftStarted, onStartDraft, onOpenSettings }: MockNavbarPr
         </Link>
       </div>
 
-      {/* CENTER: Start Button */}
-      <div className="absolute left-1/2 -translate-x-1/2">
-        <button
-          onClick={onStartDraft}
-          disabled={draftStarted}
-          className="p-2 m-1 bg-[#39fb1fae] hover:bg-[#39fb1f] rounded text-white shadow-[0_0_10px_rgba(0,136,255,0.6)] hover:shadow-[0_0_14px_rgba(0,255,160,0.8)] transition-all duration-200 transform hover:scale-110 hover:-translate-y-[1px]"
-        >
-          <Power className="w-3 h-3"/>
-        </button>
-        <button
-          onClick={onStartDraft}
-          disabled={draftStarted}
-          className="p-2 m-1 bg-[#fb391faf] hover:bg-[#fb391f] rounded text-white shadow-[0_0_10px_rgba(0,136,255,0.6)] hover:shadow-[0_0_14px_rgba(0,255,160,0.8)] transition-all duration-200 transform hover:scale-110 hover:-translate-y-[1px]"
-        >
-          <Pause className="w-3 h-3"/>
-        </button>
-      </div>
+      {/* CENTER: Timer & Controls */}
+      <TimerControls
+        timer={timer}
+        setTimer={setTimer}
+        isTicking={isTicking}
+        setIsTicking={setIsTicking}
+        draftStarted={draftStarted}
+        onStartDraft={onStartDraft}
+      />
 
       {/* RIGHT: Settings + Avatar */}
       <div className="flex items-center gap-0">

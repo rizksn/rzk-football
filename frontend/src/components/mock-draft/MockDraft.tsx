@@ -50,6 +50,19 @@ export default function MockDraft() {
   const draftComplete = currentPickIndex === -1;
   const isUserTurn = draftStarted && userDraftSlot === currentPick?.teamIndex;
 
+  const [timer, setTimer] = useState(120);
+  const [isTicking, setIsTicking] = useState(false);
+
+  useEffect(() => {
+    if (!draftStarted || draftComplete) return;
+
+    if (isUserTurn) {
+      setTimer(120);       // Reset timer at start of user's turn
+      setIsTicking(true);  // Start ticking
+    } else {
+      setIsTicking(false); // Pause if not user’s turn
+    }
+  }, [isUserTurn, draftStarted, draftComplete]);
 
   useEffect(() => {
     async function fetchInitialData() {
@@ -155,6 +168,23 @@ export default function MockDraft() {
     }
   }, [draftStarted, userDraftSlot, draftComplete, currentPick?.teamIndex, simulateCpuPick]);
 
+  useEffect(() => {
+    if (!draftStarted || !isUserTurn || draftComplete) return;
+
+    if (timer === 0) {
+      console.warn("⏰ Timer expired — forcing pick for user...");
+
+      const topQueuedPlayer = null; // Replace with actual logic if you have a queue
+      const fallbackPlayer = availablePlayers[0];
+
+      if (fallbackPlayer) {
+        handleUserPick(fallbackPlayer);
+      }
+
+      setTimer(120);
+    }
+  }, [timer, draftStarted, isUserTurn, draftComplete, availablePlayers]);
+
   const handleUserPick = async (player: Player) => {
     if (!draftStarted || !isUserTurn || draftComplete) return;
 
@@ -187,6 +217,8 @@ export default function MockDraft() {
       }
 
       updateDraftPlanFromBackend(data.draftPlan);
+      setIsTicking(false);
+      setTimer(120);
     } catch (err) {
       console.error('❌ Failed to process user pick:', err);
     }
@@ -212,6 +244,10 @@ export default function MockDraft() {
           draftStarted={draftStarted}
           onStartDraft={handleStartDraft}
           onOpenSettings={() => setShowSettings(true)}
+          timer={timer}
+          setTimer={setTimer}
+          isTicking={isTicking}
+          setIsTicking={setIsTicking}
         />
 
         <div className="flex-1 overflow-y-auto relative z-0">
