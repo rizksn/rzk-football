@@ -114,18 +114,25 @@ export default function MockDraft() {
   const simulateCpuPick = useCallback(async () => {
     if (!draftStarted || draftComplete || !currentPick) return;
 
+    const payload = {
+      draftPlan,
+      scoredPlayers,
+      teamIndex: currentPick.teamIndex,
+      leagueFormat: draftConfig.leagueFormat,
+      adpFormatKey: draftConfig.adpFormatKey,
+      roster_config: {
+        positions: rosterSettings.positions,
+        bench_count: rosterSettings.benchCount,
+        total_rounds: rosterSettings.totalRounds,
+      },
+      use_ai: draftConfig.useAI,
+    };
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/simulate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          draftPlan,
-          scoredPlayers,     
-          teamIndex: currentPick.teamIndex,
-          use_ai: draftConfig.useAI,
-          leagueFormat: draftConfig.leagueFormat,
-          adpFormatKey: draftConfig.adpFormatKey,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -138,7 +145,7 @@ export default function MockDraft() {
     } catch (err) {
       console.error('❌ Failed to simulate CPU pick:', err);
     }
-  }, [draftPlan, scoredPlayers, draftStarted, draftComplete, currentPick, draftConfig]);
+  }, [draftPlan, scoredPlayers, draftStarted, draftComplete, currentPick, draftConfig, rosterSettings]);
 
   useEffect(() => {
     if (!draftStarted || userDraftSlot == null || draftComplete) return;
@@ -151,19 +158,26 @@ export default function MockDraft() {
   const handleUserPick = async (player: Player) => {
     if (!draftStarted || !isUserTurn || draftComplete) return;
 
+    const payload = {
+      draftPlan,
+      scoredPlayers,
+      teamIndex: currentPick.teamIndex,
+      leagueFormat: draftConfig.leagueFormat,
+      adpFormatKey: draftConfig.adpFormatKey,
+      roster_config: {
+        positions: rosterSettings.positions,
+        bench_count: rosterSettings.benchCount,
+        total_rounds: rosterSettings.totalRounds,
+      },
+      use_ai: false,
+      selectedPlayerId: player.player_id,
+    };
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/simulate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          draftPlan,
-          scoredPlayers,     
-          teamIndex: currentPick.teamIndex,
-          use_ai: false, 
-          leagueFormat: draftConfig.leagueFormat,
-          adpFormatKey: draftConfig.adpFormatKey, 
-          selectedPlayerId: player.player_id,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -172,23 +186,23 @@ export default function MockDraft() {
         return;
       }
 
-        updateDraftPlanFromBackend(data.draftPlan);
-      } catch (err) {
-        console.error('❌ Failed to process user pick:', err);
-      }
-    };
+      updateDraftPlanFromBackend(data.draftPlan);
+    } catch (err) {
+      console.error('❌ Failed to process user pick:', err);
+    }
+  };
 
-    const handleStartDraft = () => {
-      setDraftStarted(true);
-    };
+  const handleStartDraft = () => {
+    setDraftStarted(true);
+  };
 
-    const draftBoardByRound = useMemo(() => {
-      const result: DraftPick[][] = [];
-      for (let i = 0; i < numRounds; i++) {
-        result.push(draftPlan.slice(i * NUM_TEAMS, (i + 1) * NUM_TEAMS));
-      }
-      return result;
-    }, [draftPlan, numRounds, NUM_TEAMS]);
+  const draftBoardByRound = useMemo(() => {
+    const result: DraftPick[][] = [];
+    for (let i = 0; i < numRounds; i++) {
+      result.push(draftPlan.slice(i * NUM_TEAMS, (i + 1) * NUM_TEAMS));
+    }
+    return result;
+  }, [draftPlan, numRounds, NUM_TEAMS]);
 
 
   return (

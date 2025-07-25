@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { auth, listenToAuth } from "./firebase";
 import type { User } from "firebase/auth";
+import { logout } from './firebase';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -40,5 +41,6 @@ export function useAuth() {
     user,
     isLoggedIn: !!user,
     isPaidUser,
+    logout,
   };
 }
