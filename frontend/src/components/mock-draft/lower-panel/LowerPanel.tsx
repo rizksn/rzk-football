@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import LeftPanel from './LeftPanel';
-import RightPanel from './RightPanel';
-import { Player } from '../../../types/core/player';
-import DisplayPanels from '../display-panels/DisplayPanels';
+import { useState } from "react";
+import LeftPanel from "./LeftPanel";
+import RightPanel from "./RightPanel";
+import { Player } from "../../../types/core/player";
+import DisplayPanels from "../display-panels/DisplayPanels";
 import { DraftRosterSettings } from "@/types/draft/config";
 
 type LowerPanelProps = {
@@ -27,16 +27,15 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   const [queuePlayers, setQueuePlayers] = useState<Player[]>([]);
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
   const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
-  const [isSplit, setIsSplit] = useState(false);
 
   const handleAddToQueue = (player: Player) => {
-    if (!queuePlayers.some(p => p.player_id === player.player_id)) {
-      setQueuePlayers(prev => [...prev, player]);
+    if (!queuePlayers.some((p) => p.player_id === player.player_id)) {
+      setQueuePlayers((prev) => [...prev, player]);
     }
   };
 
   const handleRemoveFromQueue = (playerId: string) => {
-    setQueuePlayers(prev => prev.filter(p => p.player_id !== playerId));
+    setQueuePlayers((prev) => prev.filter((p) => p.player_id !== playerId));
   };
 
   const handleUserDraft = (player: Player) => {
@@ -48,24 +47,20 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   return (
     <div className="relative w-full h-full flex flex-col bg-transparent overflow-visible px-[14px]">
       {/* ✅ Flat HUD / Display Panels */}
-      <DisplayPanels
-        leftPlayer={leftPlayer}
-        rightPlayer={rightPlayer}
-        isSplit={isSplit}
-      />
+      <DisplayPanels leftPlayer={leftPlayer} rightPlayer={rightPlayer} />
 
       {/* ✅ Perspective wrapper: sets up 3D space */}
       <div
         className="w-full max-w-[1600px] min-w-[960px] mx-auto h-full relative"
-        style={{ perspective: '1200px' }}
+        style={{ perspective: "1200px" }}
       >
         {/* ✅ Tilt only the lower panel grid (not the blue panels) */}
         <div
           className="flex gap-0 h-full transition-all duration-300 ease-in-out bg-[#4b02e942] relative z-10"
           style={{
-            transform: 'rotateX(2deg)',
-            transformOrigin: 'top center',
-            willChange: 'transform',
+            transform: "rotateX(2deg)",
+            transformOrigin: "top center",
+            willChange: "transform",
           }}
         >
           {/* ✅ Left Panel */}
@@ -75,6 +70,8 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               onAddToQueue={handleAddToQueue}
               onDraftClick={handleUserDraft}
               isUserTurn={isUserTurn}
+              onDisplayLeft={(player) => setLeftPlayer(player)}
+              onDisplayRight={(player) => setRightPlayer(player)}
             />
           </div>
 

@@ -16,6 +16,8 @@ export function useAuth() {
       if (firebaseUser) {
         try {
           const token = await firebaseUser.getIdToken();
+          console.log("🌍 BACKEND_URL:", BACKEND_URL);
+
           const res = await fetch(`${BACKEND_URL}/api/auth/persist`, {
             method: "POST",
             headers: {
@@ -24,7 +26,8 @@ export function useAuth() {
           });
 
           const json = await res.json();
-          setIsPaidUser(json?.stripe_active === true);
+          console.log("🔥 Persist response:", json); 
+          setIsPaidUser(json?.is_premium === true);
         } catch (err) {
           console.error("❌ Error persisting user / getting Stripe status:", err);
           setIsPaidUser(false);

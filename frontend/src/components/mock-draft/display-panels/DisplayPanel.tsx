@@ -1,5 +1,6 @@
-import React from 'react';
-import { Player } from '@/types/core/player';
+import React from "react";
+import { Player } from "@/types/core/player";
+import PlayerImage from "@/components/shared/PlayerImage";
 
 interface Props {
   player: Player | null;
@@ -27,13 +28,26 @@ export default function DisplayPanel({ player, wide = false }: Props) {
       <div className="absolute inset-0 z-0 bg-[radial-gradient(rgba(0,255,255,0.08)_1px,transparent_1px)] bg-[size:20px_20px] opacity-40 pointer-events-none" />
 
       {/* Main content */}
-      <div className="relative z-10 p-4 text-white flex flex-col justify-center h-full">
+      <div className="relative z-10 px-4 py-2 text-white flex flex-row items-center justify-between h-full gap-4">
         {player ? (
           <>
-            <h2 className="text-lg font-semibold mb-1">{player.full_name}</h2>
-            <p className="text-sm text-gray-300">
-              {player.position} – {player.team}
-            </p>
+            {/* LEFT: Player info */}
+            <div className="flex flex-col justify-center">
+              <h2 className="text-lg font-semibold mb-1">{player.full_name}</h2>
+              <p className="text-sm text-gray-300">
+                {player.position} – {player.team}
+              </p>
+            </div>
+
+            {/* RIGHT: Player image */}
+            <div className="flex items-center justify-center">
+              <PlayerImage
+                playerId={player.player_id}
+                alt={player.full_name}
+                height={72} // or 80–100
+                className="rounded-full ring-1 ring-slate-600"
+              />
+            </div>
           </>
         ) : (
           <p className="text-sm text-gray-500 italic">No player selected</p>

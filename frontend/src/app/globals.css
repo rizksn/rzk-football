@@ -2,9 +2,9 @@
 
 body {
   margin: 0;
-  background-color: #14111d; 
-  background-image: radial-gradient(#5f1cca 0.5px, transparent 0.5px);
-  background-size: 20px 20px;
+  background-color: #14111c; 
+  /* background-image: radial-gradient(#5f1cca 0.5px, transparent 0.5px); */
+  /* background-size: 20px 20px; */
 }
 
 /* globals.css */

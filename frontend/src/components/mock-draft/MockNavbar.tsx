@@ -81,7 +81,7 @@ const MockNavbar = ({
       </div>
 
       {/* RIGHT: Settings + Avatar */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1">
         <button
           onClick={onOpenSettings}
           title="Draft Settings"

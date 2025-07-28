@@ -1,10 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { Player } from '@/types/core/player';
-import PlayerImage from '@/components/shared/PlayerImage';
+import React from "react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Player } from "@/types/core/player";
 
 type QueueItemProps = {
   player: Player;
@@ -12,13 +11,8 @@ type QueueItemProps = {
 };
 
 const QueueItem = ({ player, onRemove }: QueueItemProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: player.full_name });
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: player.full_name });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -61,7 +55,9 @@ const QueueItem = ({ player, onRemove }: QueueItemProps) => {
       </div>
 
       {/* Team */}
-      <div className="w-[40px] text-xs text-slate-400 text-right">{player.team}</div>
+      <div className="w-[40px] text-xs text-slate-400 text-right">
+        {player.team}
+      </div>
 
       {/* Remove button */}
       <button

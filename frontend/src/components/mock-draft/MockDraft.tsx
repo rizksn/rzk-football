@@ -11,7 +11,7 @@ import { useAuthContext } from '@/context/AuthContext';
 import MockNavbar from './MockNavbar';
 import DraftBoard from './draft-board/DraftBoard';
 import LowerPanel from './lower-panel/LowerPanel';
-import DraftSettingsModal from './DraftSettingsModal';
+import DraftSettingsModal from './draft-settings/DraftSettingsModal';
 
 export interface DraftPick {
   pickIndex: number;
