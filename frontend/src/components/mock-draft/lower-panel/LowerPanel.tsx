@@ -56,7 +56,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
       >
         {/* ✅ Tilt only the lower panel grid (not the blue panels) */}
         <div
-          className="flex gap-0 h-full transition-all duration-300 ease-in-out bg-[#4b02e942] relative z-10"
+          className="flex gap-0 h-full transition-all duration-300 ease-in-out bg-[#2d3649] relative z-10"
           style={{
             transform: "rotateX(2deg)",
             transformOrigin: "top center",

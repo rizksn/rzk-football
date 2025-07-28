@@ -1,4 +1,4 @@
-import { defaultMetadata } from './metadata';
+import { defaultMetadata } from "./metadata";
 import { AuthProvider } from "@/context/AuthContext";
 import ClientNavbarWrapper from "@/components/layout/ClientNavbarWrapper";
 import "./globals.css";
@@ -19,20 +19,38 @@ const structuredData = {
   offers: {
     "@type": "Offer",
     price: "0.00",
-    priceCurrency: "USD"
-  }
+    priceCurrency: "USD",
+  },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <head>
+        {/* 🧠 Performance + font optimization */}
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+          rel="stylesheet"
+        />
+
+        {/* 🔍 Structured data for SEO */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
-      <body className="overflow-x-hidden w-full">
+      <body className="overflow-x-hidden w-full font-sans bg-base text-white">
         <AuthProvider>
           <ClientNavbarWrapper />
           {children}

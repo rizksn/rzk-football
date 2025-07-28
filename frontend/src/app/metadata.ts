@@ -9,10 +9,11 @@ export const defaultMetadata = {
     description:
       "Use our realistic fantasy football mock draft simulator to dominate your 2025 draft. Built with live data and smart drafting logic.",
     url: "https://rzkfootball.com/mockdraft",
+    siteName: "RZK Football",
     type: "website",
     images: [
       {
-        url: "/opengraph-preview.png",
+        url: "https://rzkfootball.com/opengraph-preview.png",
         width: 1200,
         height: 630,
         alt: "RZK Fantasy Draft Simulator Preview",
@@ -24,7 +25,7 @@ export const defaultMetadata = {
     title: "Fantasy Mock Draft Simulator | RZK",
     description:
       "Dominate your 2025 fantasy football draft with our fast, AI-powered mock draft simulator.",
-    images: ["/opengraph-preview.png"],
+    images: ["https://rzkfootball.com/opengraph-preview.png"],
   },
   icons: {
     icon: "/favicon.ico",

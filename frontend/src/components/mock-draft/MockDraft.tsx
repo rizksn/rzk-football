@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Player } from '@/types/core/player';
-import type { DraftConfig } from '@/types/draft/config';
-import { NUM_TEAMS, getSnakedTeamIndex } from '@/utils/constants';
-import { API_BASE_URL, DEFAULT_ROSTER_SETTINGS } from '@/utils/config';
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { Player } from "@/types/core/player";
+import type { DraftConfig } from "@/types/draft/config";
+import { NUM_TEAMS, getSnakedTeamIndex } from "@/utils/constants";
+import { API_BASE_URL, DEFAULT_ROSTER_SETTINGS } from "@/utils/config";
 
-import { useAuthContext } from '@/context/AuthContext';
+import { useAuthContext } from "@/context/AuthContext";
 
-import MockNavbar from './MockNavbar';
-import DraftBoard from './draft-board/DraftBoard';
-import LowerPanel from './lower-panel/LowerPanel';
-import DraftSettingsModal from './draft-settings/DraftSettingsModal';
+import MockNavbar from "./MockNavbar";
+import DraftBoard from "./draft-board/DraftBoard";
+import LowerPanel from "./lower-panel/LowerPanel";
+import DraftSettingsModal from "./draft-settings/DraftSettingsModal";
 
 export interface DraftPick {
   pickIndex: number;
@@ -27,11 +27,11 @@ export default function MockDraft() {
 
   const [showSettings, setShowSettings] = useState(false);
   const [draftConfig, setDraftConfig] = useState<DraftConfig>({
-    adpFormatKey: 'dynasty_1qb_1_ppr_sleeper',
-    leagueFormat: 'dynasty',
-    qb_setting: '1qb',
-    scoring: '1-ppr',
-    platform: 'sleeper',
+    adpFormatKey: "dynasty_1qb_1_ppr_sleeper",
+    leagueFormat: "dynasty",
+    qb_setting: "1qb",
+    scoring: "1-ppr",
+    platform: "sleeper",
     useAI: false,
   });
 
@@ -45,7 +45,7 @@ export default function MockDraft() {
 
   const numRounds = rosterSettings.totalRounds;
 
-  const currentPickIndex = draftPlan.findIndex(p => !p.draftedPlayer);
+  const currentPickIndex = draftPlan.findIndex((p) => !p.draftedPlayer);
   const currentPick = draftPlan[currentPickIndex];
   const draftComplete = currentPickIndex === -1;
   const isUserTurn = draftStarted && userDraftSlot === currentPick?.teamIndex;
@@ -57,8 +57,8 @@ export default function MockDraft() {
     if (!draftStarted || draftComplete) return;
 
     if (isUserTurn) {
-      setTimer(120);       // Reset timer at start of user's turn
-      setIsTicking(true);  // Start ticking
+      setTimer(120); // Reset timer at start of user's turn
+      setIsTicking(true); // Start ticking
     } else {
       setIsTicking(false); // Pause if not user’s turn
     }
@@ -68,27 +68,32 @@ export default function MockDraft() {
     async function fetchInitialData() {
       try {
         setLoading(true);
-        const res = await fetch(`${API_BASE_URL}/api/draft-players?format=${draftConfig.adpFormatKey}`);
+        const res = await fetch(
+          `${API_BASE_URL}/api/draft-players?format=${draftConfig.adpFormatKey}`
+        );
         const json = await res.json();
 
         if (!Array.isArray(json.adp) || !Array.isArray(json.scored)) {
-          throw new Error('Expected adp and scored arrays from backend');
+          throw new Error("Expected adp and scored arrays from backend");
         }
 
-        setAdpPlayers(json.adp);       // Fixed ADP order for UI
+        setAdpPlayers(json.adp); // Fixed ADP order for UI
         setScoredPlayers(json.scored); // Used internally by backend for simulation
 
         const totalPicks = rosterSettings.totalRounds * NUM_TEAMS;
-        const newDraftPlan: DraftPick[] = Array.from({ length: totalPicks }, (_, i) => {
-          const round = Math.floor(i / NUM_TEAMS);
-          const pickInRound = i % NUM_TEAMS;
-          const teamIndex = getSnakedTeamIndex(round, pickInRound);
-          return { pickIndex: i, round, pickInRound, teamIndex };
-        });
+        const newDraftPlan: DraftPick[] = Array.from(
+          { length: totalPicks },
+          (_, i) => {
+            const round = Math.floor(i / NUM_TEAMS);
+            const pickInRound = i % NUM_TEAMS;
+            const teamIndex = getSnakedTeamIndex(round, pickInRound);
+            return { pickIndex: i, round, pickInRound, teamIndex };
+          }
+        );
 
         setDraftPlan(newDraftPlan);
       } catch (err) {
-        console.error('❌ Failed to fetch draft data:', err);
+        console.error("❌ Failed to fetch draft data:", err);
       } finally {
         setLoading(false);
       }
@@ -97,27 +102,26 @@ export default function MockDraft() {
     fetchInitialData();
   }, [draftConfig.adpFormatKey, rosterSettings.totalRounds]);
 
-
-  const draftedPlayers = useMemo(() =>
-    draftPlan.filter(p => p.draftedPlayer).map(p => p.draftedPlayer!),
+  const draftedPlayers = useMemo(
+    () => draftPlan.filter((p) => p.draftedPlayer).map((p) => p.draftedPlayer!),
     [draftPlan]
   );
 
   const availablePlayers = useMemo(() => {
     const draftedIds = draftPlan
-      .map(pick => pick.draftedPlayer?.player_id)
+      .map((pick) => pick.draftedPlayer?.player_id)
       .filter(Boolean);
 
     return adpPlayers
-      .filter(p => !draftedIds.includes(p.player_id))
-      .sort((a, b) => a.rank - b.rank); 
+      .filter((p) => !draftedIds.includes(p.player_id))
+      .sort((a, b) => a.rank - b.rank);
   }, [adpPlayers, draftPlan]);
 
   const userRoster = useMemo(() => {
     if (userDraftSlot == null) return [];
     return draftPlan
-      .filter(p => p.teamIndex === userDraftSlot && p.draftedPlayer)
-      .map(p => p.draftedPlayer!);
+      .filter((p) => p.teamIndex === userDraftSlot && p.draftedPlayer)
+      .map((p) => p.draftedPlayer!);
   }, [draftPlan, userDraftSlot]);
 
   const updateDraftPlanFromBackend = (newPlan: DraftPick[]) => {
@@ -143,22 +147,30 @@ export default function MockDraft() {
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/simulate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       if (!Array.isArray(data?.draftPlan)) {
-        console.error('❌ No draftPlan returned:', data);
+        console.error("❌ No draftPlan returned:", data);
         return;
       }
 
       updateDraftPlanFromBackend(data.draftPlan);
     } catch (err) {
-      console.error('❌ Failed to simulate CPU pick:', err);
+      console.error("❌ Failed to simulate CPU pick:", err);
     }
-  }, [draftPlan, scoredPlayers, draftStarted, draftComplete, currentPick, draftConfig, rosterSettings]);
+  }, [
+    draftPlan,
+    scoredPlayers,
+    draftStarted,
+    draftComplete,
+    currentPick,
+    draftConfig,
+    rosterSettings,
+  ]);
 
   useEffect(() => {
     if (!draftStarted || userDraftSlot == null || draftComplete) return;
@@ -166,7 +178,13 @@ export default function MockDraft() {
       const timeout = setTimeout(simulateCpuPick, 800);
       return () => clearTimeout(timeout);
     }
-  }, [draftStarted, userDraftSlot, draftComplete, currentPick?.teamIndex, simulateCpuPick]);
+  }, [
+    draftStarted,
+    userDraftSlot,
+    draftComplete,
+    currentPick?.teamIndex,
+    simulateCpuPick,
+  ]);
 
   useEffect(() => {
     if (!draftStarted || !isUserTurn || draftComplete) return;
@@ -205,14 +223,14 @@ export default function MockDraft() {
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/simulate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       if (!Array.isArray(data?.draftPlan)) {
-        console.error('❌ No draftPlan returned:', data);
+        console.error("❌ No draftPlan returned:", data);
         return;
       }
 
@@ -220,7 +238,7 @@ export default function MockDraft() {
       setIsTicking(false);
       setTimer(120);
     } catch (err) {
-      console.error('❌ Failed to process user pick:', err);
+      console.error("❌ Failed to process user pick:", err);
     }
   };
 
@@ -238,7 +256,7 @@ export default function MockDraft() {
   }, [draftPlan, numRounds, NUM_TEAMS]);
 
   return (
-    <div className="w-full max-w-[1600px] min-w-[1250px] mx-auto h-full">
+    <div className="w-full max-w-[1600px] min-w-[1400px] mx-auto h-full">
       <div className="flex flex-col h-screen overflow-hidden">
         <MockNavbar
           draftStarted={draftStarted}
@@ -273,7 +291,9 @@ export default function MockDraft() {
         </div>
 
         {draftComplete && (
-          <div className="text-center mt-4 text-lg font-bold">✅ Draft Complete</div>
+          <div className="text-center mt-4 text-lg font-bold">
+            ✅ Draft Complete
+          </div>
         )}
       </div>
 
@@ -287,11 +307,17 @@ export default function MockDraft() {
           setRosterSettings={setRosterSettings}
           onConfirm={async (newConfig, newRosterSettings) => {
             const { positions, benchCount } = newRosterSettings;
-            const totalPositions = Object.values(positions).reduce((sum, slot) => sum + slot.count, 0);
+            const totalPositions = Object.values(positions).reduce(
+              (sum, slot) => sum + slot.count,
+              0
+            );
             const newTotalRounds = totalPositions + benchCount;
 
             setDraftConfig(newConfig);
-            setRosterSettings({ ...newRosterSettings, totalRounds: newTotalRounds });
+            setRosterSettings({
+              ...newRosterSettings,
+              totalRounds: newTotalRounds,
+            });
           }}
           isPaidUser={true}
           isLoggedIn={isLoggedIn}
