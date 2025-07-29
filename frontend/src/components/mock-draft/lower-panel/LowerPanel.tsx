@@ -45,26 +45,27 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col bg-transparent overflow-visible px-[14px]">
-      {/* ✅ Flat HUD / Display Panels */}
-      <DisplayPanels leftPlayer={leftPlayer} rightPlayer={rightPlayer} />
+    <div className="w-full min-w-[960px] max-w-[1600px] mx-auto h-[55vh] flex flex-col px-[14px] mb-[40px]">
+      {/* ✅ Fixed DisplayPanels height */}
+      <div className="h-[120px] shrink-0">
+        <DisplayPanels leftPlayer={leftPlayer} rightPlayer={rightPlayer} />
+      </div>
 
-      {/* ✅ Perspective wrapper: sets up 3D space */}
+      {/* ✅ Fill the remaining height below DisplayPanels */}
       <div
-        className="w-full max-w-[1600px] min-w-[960px] mx-auto h-full relative"
+        className="h-[calc(55vh-136px)] w-full relative"
         style={{ perspective: "1200px" }}
       >
-        {/* ✅ Tilt only the lower panel grid (not the blue panels) */}
         <div
-          className="flex gap-0 h-full transition-all duration-300 ease-in-out bg-[#2d3649] relative z-10"
+          className="flex gap-0 h-full bg-transparent relative z-10"
           style={{
             transform: "rotateX(2deg)",
             transformOrigin: "top center",
             willChange: "transform",
           }}
         >
-          {/* ✅ Left Panel */}
-          <div className="w-1/2 flex flex-col h-full transition-all duration-300">
+          {/* Left */}
+          <div className="w-1/2 flex flex-col overflow-y-auto">
             <LeftPanel
               players={players}
               onAddToQueue={handleAddToQueue}
@@ -75,16 +76,14 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
             />
           </div>
 
-          {/* ✅ Right Panel */}
-          <div className="w-1/2 flex flex-col h-full">
-            <div className="flex-1 overflow-hidden h-full">
-              <RightPanel
-                queuedPlayers={queuePlayers}
-                userRoster={userRoster}
-                rosterSettings={rosterSettings}
-                onRemoveFromQueue={handleRemoveFromQueue}
-              />
-            </div>
+          {/* Right */}
+          <div className="w-1/2 flex flex-col overflow-y-auto">
+            <RightPanel
+              queuedPlayers={queuePlayers}
+              userRoster={userRoster}
+              rosterSettings={rosterSettings}
+              onRemoveFromQueue={handleRemoveFromQueue}
+            />
           </div>
         </div>
       </div>

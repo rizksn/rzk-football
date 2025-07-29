@@ -38,7 +38,7 @@ const LeftPanel = ({
   }, [players, searchTerm, positionFilter]);
 
   return (
-    <div className="relative flex flex-col h-full w-full overflow-visible bg-[rgba(28,29,46,0.58)] rounded-md">
+    <div className="relative flex flex-col h-full w-full overflow-visible bg-[rgba(92,149,247,0.17)] rounded-md">
       {/* Row: Search left, filters centered absolutely */}
       <div className="relative w-full px-3 py-2 flex items-center h-[36px]">
         {/* Search Bar */}
@@ -69,7 +69,7 @@ const LeftPanel = ({
       </div>
 
       {/* Player Table */}
-      <div className="overflow-y-auto h-full w-full border-r border-slate-800 rounded-md">
+      <div className="overflow-y-auto h-full w-full border-slate-800">
         <table className="w-full text-xs text-white">
           <thead className="sticky top-0 z-20">
             <tr>

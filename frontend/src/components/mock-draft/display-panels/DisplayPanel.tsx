@@ -26,7 +26,7 @@ export default function DisplayPanel({ player, wide = false }: Props) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!player || stats[year]) return;
+    if (!player) return;
 
     const fetchStats = async () => {
       setLoading(true);
@@ -56,7 +56,7 @@ export default function DisplayPanel({ player, wide = false }: Props) {
     };
 
     fetchStats();
-  }, [player, year, stats, player?.player_id]);
+  }, [player?.player_id, year]);
 
   const renderStats = () => {
     const statData = stats[year];
@@ -123,11 +123,11 @@ export default function DisplayPanel({ player, wide = false }: Props) {
   return (
     <div
       className={`
-        w-full min-h-[90px] xl:min-h-[100px] 2xl:min-h-[150px] max-h-[200px]
-        bg-[#000000af] rounded-md ring-1 ring-[#010a0db4] relative
-        overflow-hidden transition-all duration-300
-        [transform:rotateX(3deg)] [transform-style:preserve-3d] [backface-visibility:hidden]
-      `}
+    w-full h-[110px]
+    bg-[#000000af] rounded-md ring-1 ring-[#010a0db4] relative
+    overflow-hidden transition-all duration-300
+    [transform:rotateX(3deg)] [transform-style:preserve-3d] [backface-visibility:hidden]
+  `}
     >
       {/* Glow + Dot Grid */}
       <div className="absolute inset-0 z-0 bg-[rgba(16,94,82,0.51)] blur-sm pointer-events-none" />
@@ -159,7 +159,9 @@ export default function DisplayPanel({ player, wide = false }: Props) {
             </div>
 
             {/* CENTER/RIGHT: Stats */}
-            <div className="flex-1 overflow-y-auto pr-2">{renderStats()}</div>
+            <div className="flex-1 overflow-y-auto pr-2 pb-4">
+              {renderStats()}
+            </div>
           </>
         ) : (
           <p className="text-sm text-gray-500 italic">No player selected</p>
@@ -169,9 +171,9 @@ export default function DisplayPanel({ player, wide = false }: Props) {
       {/* Bottom Controls */}
       {player && (
         <div className="absolute bottom-1 w-full flex justify-center z-10">
-          <div className="text-white text-xs flex items-center gap-x-15 bg-black/30 px-4 py-1 rounded-md">
-            {/* Year Buttons */}
-            <div className="flex items-center space-x-2">
+          <div className="flex gap-10">
+            {/* Year Selector */}
+            <div className="text-white text-xs flex items-center gap-x-2 bg-black/30 px-3 rounded-sm">
               <button
                 className={`font-bold ${
                   year === "2024" ? "text-cyan-300" : "text-white/60"
@@ -191,8 +193,8 @@ export default function DisplayPanel({ player, wide = false }: Props) {
               </button>
             </div>
 
-            {/* Stat Category Buttons */}
-            <div className="flex items-center space-x-2">
+            {/* Category Selector */}
+            <div className="text-white text-xs flex items-center gap-x-2 bg-black/30 px-3 py-0.5 rounded-sm">
               <button
                 className={`font-bold ${
                   category === "passing" ? "text-cyan-300" : "text-white/60"
