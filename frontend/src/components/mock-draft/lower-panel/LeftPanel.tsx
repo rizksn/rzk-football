@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Player } from "@/types/core/player";
 import { ChevronsLeft, ChevronsRight, ListPlus } from "lucide-react";
+import classNames from "classnames";
 
 const POSITIONS = ["All", "QB", "RB", "WR", "TE", "FLEX", "K"] as const;
 
@@ -13,6 +14,8 @@ type LeftPanelProps = {
   isUserTurn: boolean;
   onDisplayLeft: (player: Player) => void;
   onDisplayRight: (player: Player) => void;
+  assignModeIndex?: number | null;
+  onManualAssignPlayer?: (player: Player) => void;
 };
 
 const LeftPanel = ({
@@ -22,6 +25,8 @@ const LeftPanel = ({
   isUserTurn,
   onDisplayLeft,
   onDisplayRight,
+  assignModeIndex,
+  onManualAssignPlayer,
 }: LeftPanelProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [positionFilter, setPositionFilter] = useState<"All" | string>("All");
@@ -87,11 +92,25 @@ const LeftPanel = ({
             {filteredPlayers.map((p, index) => (
               <tr
                 key={`${p.full_name}-${p.team}`}
-                className={`border-b border-slate-700 hover:bg-slate-800 ${
+                onClick={() => {
+                  if (assignModeIndex !== null && onManualAssignPlayer) {
+                    onManualAssignPlayer(p);
+                  }
+                }}
+                className={classNames(
+                  "border-b border-slate-700 transition-all duration-150",
                   index % 2 === 0
                     ? "bg-[rgba(28,29,46,0.23)]"
-                    : "bg-[rgba(28,29,46,0.05)]"
-                }`}
+                    : "bg-[rgba(28,29,46,0.05)]",
+                  assignModeIndex !== null &&
+                    "border border-cyan-400 animate-pulse-border cursor-copy"
+                )}
+                style={{
+                  animationDelay:
+                    assignModeIndex !== null
+                      ? `${(index % 6) * 100}ms`
+                      : undefined,
+                }}
               >
                 <td className="px-2 py-0">
                   <button

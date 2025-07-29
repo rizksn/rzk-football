@@ -1,21 +1,17 @@
 "use client";
 
 import { Player } from "@/types/core/player";
+import { PlusCircle } from "lucide-react";
+import classNames from "classnames";
 
-/**
- * Props for each individual draft slot cell.
- *
- * @property {string} pickNumber - The pick label (e.g. "1.01", "3.05").
- * @property {Player} [player] - The drafted player (if this pick has been made).
- */
 type DraftSlotProps = {
   pickNumber: string;
   player?: Player;
+  isHovered?: boolean;
+  isAssigning?: boolean;
+  onClick?: () => void;
 };
 
-/**
- * Formats a player's name as "F. Lastname"
- */
 function formatPlayerName(fullName?: string): string {
   if (!fullName) return "Unknown Player";
   const [first, ...rest] = fullName.split(" ");
@@ -23,44 +19,57 @@ function formatPlayerName(fullName?: string): string {
   return `${first.charAt(0)}. ${last}`;
 }
 
-/**
- * Returns a background color class based on the player's position.
- */
 function getPositionColor(position: string): string {
   switch (position) {
     case "WR":
-      return "#04005786"; // purple-ish
+      return "#04005786";
     case "RB":
-      return "#00340196"; // dark greenish
+      return "#00340196";
     case "QB":
-      return "#5b050096"; // deep red
+      return "#5b050096";
     case "TE":
-      return "#b12f0096"; // lavender
+      return "#b12f0096";
     default:
-      return "#1e293bcc"; // slate-800 fallback
+      return "#1e293bcc";
   }
 }
 
-/**
- * DraftSlot component displays a single draft grid cell.
- */
-const DraftSlot = ({ pickNumber, player }: DraftSlotProps) => {
+const DraftSlot = ({
+  pickNumber,
+  player,
+  isHovered = false,
+  isAssigning = false,
+  onClick,
+}: DraftSlotProps) => {
   const backgroundColor = player
     ? getPositionColor(player.position)
     : "bg-[#0e172c9f]";
 
   return (
     <div
-      className={`relative h-[44px] w-full min-w-[110px] rounded-md border border-slate-700 transition-colors duration-200 ${backgroundColor}`}
-      style={{ backgroundColor }}
+      className={classNames(
+        "relative h-[44px] w-full min-w-[110px] rounded-md border border-slate-700 transition-all duration-200",
+        !player && "cursor-pointer",
+        isHovered && !player && "bg-cyan-900/40",
+        isAssigning && "ring-4 ring-cyan-400 animate-pulse"
+      )}
+      style={{ backgroundColor: player ? backgroundColor : undefined }}
+      onClick={onClick}
     >
-      {/* Pick number in top right */}
-      <div className="absolute top-[2px] right-[3px] text-[8.5px] text-[#07f1dd]">
+      {/* ➕ Green Plus Icon (hovered) */}
+      {isHovered && !player && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <PlusCircle className="text-green-400 w-6 h-6 opacity-90" />
+        </div>
+      )}
+
+      {/* Pick number */}
+      <div className="absolute top-[2px] right-[3px] text-[8.5px] text-[#07f1dd] z-10">
         {pickNumber}
       </div>
 
-      {/* Drafted player info */}
-      <div className="h-full w-full flex flex-col justify-center px-2 leading-tight text-[11px] text-white font-medium">
+      {/* Player Info */}
+      <div className="h-full w-full flex flex-col justify-center px-2 leading-tight text-[11px] text-white font-medium z-10">
         {player && (
           <>
             <div className="text-left">

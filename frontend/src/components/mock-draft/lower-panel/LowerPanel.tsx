@@ -14,6 +14,8 @@ type LowerPanelProps = {
   isUserTurn: boolean;
   userRoster: Player[];
   rosterSettings: DraftRosterSettings;
+  assignModeIndex?: number | null;
+  onManualAssignPlayer?: (player: Player) => void;
 };
 
 const LowerPanel: React.FC<LowerPanelProps> = ({
@@ -23,6 +25,8 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   isUserTurn,
   userRoster,
   rosterSettings,
+  assignModeIndex,
+  onManualAssignPlayer,
 }) => {
   const [queuePlayers, setQueuePlayers] = useState<Player[]>([]);
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
@@ -73,6 +77,8 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               isUserTurn={isUserTurn}
               onDisplayLeft={(player) => setLeftPlayer(player)}
               onDisplayRight={(player) => setRightPlayer(player)}
+              assignModeIndex={assignModeIndex}
+              onManualAssignPlayer={onManualAssignPlayer}
             />
           </div>
 

@@ -18,7 +18,35 @@ module.exports = {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
       },
+      keyframes: {
+        pulseBorder: {
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(34,211,238,0.7)" }, // cyan-400
+          "50%": { boxShadow: "0 0 0 2px rgba(34,211,238,1)" },
+        },
+      },
+      animation: {
+        "pulse-border": "pulseBorder 1.5s ease-in-out infinite",
+      },
+      animationDelay: {
+        100: "100ms",
+        200: "200ms",
+        300: "300ms",
+        400: "400ms",
+        500: "500ms",
+        600: "600ms",
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        ".delay-100": { "animation-delay": "100ms" },
+        ".delay-200": { "animation-delay": "200ms" },
+        ".delay-300": { "animation-delay": "300ms" },
+        ".delay-400": { "animation-delay": "400ms" },
+        ".delay-500": { "animation-delay": "500ms" },
+        ".delay-600": { "animation-delay": "600ms" },
+      });
+    },
+  ],
 };

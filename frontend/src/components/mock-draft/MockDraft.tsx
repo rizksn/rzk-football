@@ -52,6 +52,7 @@ export default function MockDraft() {
 
   const [timer, setTimer] = useState(120);
   const [isTicking, setIsTicking] = useState(false);
+  const [assignModeIndex, setAssignModeIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (!draftStarted || draftComplete) return;
@@ -242,6 +243,19 @@ export default function MockDraft() {
     }
   };
 
+  const handleManualAssignPlayer = (player: Player) => {
+    if (assignModeIndex === null) return;
+
+    const updated = [...draftPlan];
+    updated[assignModeIndex] = {
+      ...updated[assignModeIndex],
+      draftedPlayer: player,
+    };
+
+    setDraftPlan(updated);
+    setAssignModeIndex(null);
+  };
+
   const handleStartDraft = () => {
     setDraftStarted(true);
     setIsTicking(true);
@@ -276,6 +290,8 @@ export default function MockDraft() {
             onClaimTeam={setUserDraftSlot}
             numTeams={NUM_TEAMS}
             numRounds={numRounds}
+            assignModeIndex={assignModeIndex}
+            setAssignModeIndex={setAssignModeIndex}
           />
         </div>
 
@@ -287,6 +303,8 @@ export default function MockDraft() {
             onDraftPlayer={handleUserPick}
             userRoster={userRoster}
             rosterSettings={rosterSettings}
+            assignModeIndex={assignModeIndex}
+            onManualAssignPlayer={handleManualAssignPlayer}
           />
         </div>
 

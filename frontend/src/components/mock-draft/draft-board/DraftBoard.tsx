@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import DraftSlot from "../draft-board/DraftSlot";
 import type { DraftPick } from "@/components/mock-draft/MockDraft";
 
@@ -10,6 +11,8 @@ type DraftBoardProps = {
   onClaimTeam: (teamIndex: number) => void;
   numTeams: number;
   numRounds: number;
+  assignModeIndex: number | null;
+  setAssignModeIndex: (index: number | null) => void;
 };
 
 const DraftBoard = ({
@@ -19,7 +22,11 @@ const DraftBoard = ({
   onClaimTeam,
   numTeams,
   numRounds,
+  assignModeIndex,
+  setAssignModeIndex,
 }: DraftBoardProps) => {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   return (
     <div className="w-full px-[2vw] py-4">
       {/* Header row with claim buttons */}
@@ -40,7 +47,7 @@ const DraftBoard = ({
         ))}
       </div>
 
-      {/* 🧠 Draft Grid — NO logic here */}
+      {/* Draft grid */}
       {draftGrid.map((round, roundIndex) => {
         const row = roundIndex % 2 === 0 ? round : [...round].reverse();
         return (
@@ -48,14 +55,30 @@ const DraftBoard = ({
             key={`round-${roundIndex}`}
             className="grid grid-cols-12 gap-0.5 mb-0.5"
           >
-            {row.map((pick, pickIndex) => {
+            {row.map((pick) => {
+              const flatIndex = pick.pickIndex;
               const pickLabel = `${pick.round + 1}.${pick.pickInRound + 1}`;
+              const isHovered = hoveredIndex === flatIndex;
+              const isAssigning = assignModeIndex === flatIndex;
+
               return (
-                <DraftSlot
+                <div
                   key={pickLabel}
-                  pickNumber={pickLabel}
-                  player={pick.draftedPlayer}
-                />
+                  onMouseEnter={() => setHoveredIndex(flatIndex)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                >
+                  <DraftSlot
+                    pickNumber={pickLabel}
+                    player={pick.draftedPlayer}
+                    isHovered={isHovered}
+                    isAssigning={isAssigning}
+                    onClick={() =>
+                      setAssignModeIndex(
+                        assignModeIndex === flatIndex ? null : flatIndex
+                      )
+                    }
+                  />
+                </div>
               );
             })}
           </div>
