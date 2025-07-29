@@ -24,7 +24,7 @@ export interface DraftPick {
 
 export default function MockDraft() {
   // 🔐 Auth & User
-  const { user } = useAuthContext();
+  const { user, isPaidUser } = useAuthContext();
   const isLoggedIn = !!user;
 
   // ⚙️ Draft Configuration
@@ -358,6 +358,14 @@ export default function MockDraft() {
         draftConfig={draftConfig}
         numTeams={NUM_TEAMS}
         user={user}
+        isPaidUser={isPaidUser}
+        onLoadKeeperSet={({ draftPlan, adpFormatKey }) => {
+          setDraftPlan(draftPlan);
+          setDraftConfig((prev) => ({
+            ...prev,
+            adpFormatKey,
+          }));
+        }}
       />
     </div>
   );

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/context/AuthContext';
-import { loginWithGoogle, auth } from '@/utils/firebase';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthContext } from "@/context/AuthContext";
+import { loginWithGoogle, auth } from "@/utils/firebase";
 
 export default function SubscribePage() {
   const { user, isPaidUser } = useAuthContext();
@@ -13,7 +13,7 @@ export default function SubscribePage() {
   // 🔁 Redirect if user is already paid
   useEffect(() => {
     if (isPaidUser) {
-      router.push('/draft');
+      router.push("/draft");
     }
   }, [isPaidUser, router]);
 
@@ -39,22 +39,25 @@ export default function SubscribePage() {
 
       const token = await currentUser.getIdToken();
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/checkout`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/checkout`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await res.json();
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        alert('Failed to start checkout session.');
+        alert("Failed to start checkout session.");
       }
     } catch (err) {
-      console.error('❌ Stripe checkout error:', err);
-      alert('Something went wrong.');
+      console.error("❌ Stripe checkout error:", err);
+      alert("Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -65,12 +68,15 @@ export default function SubscribePage() {
       <div className="max-w-2xl w-full space-y-8 text-center">
         <h1 className="text-4xl font-bold">Unlock Premium Draft Tools</h1>
         <p className="text-white/70 text-lg">
-          Gain access to advanced settings like format, scoring, and platform filters — plus future AI features.
+          Gain access to advanced settings like format, scoring, and platform
+          filters — plus future AI features.
         </p>
 
         <div className="bg-slate-900 rounded-xl p-6 shadow-lg space-y-4">
           <h2 className="text-2xl font-semibold">RZK Premium</h2>
-          <p className="text-white/60">One-time purchase. Full access to all draft formats.</p>
+          <p className="text-white/60">
+            Recurring monthly membership. Cancel anytime.
+          </p>
           <ul className="text-left list-disc pl-6 text-white/70 space-y-1">
             <li>Draft format customization (1QB, Superflex, etc)</li>
             <li>Platform-specific ADP (Sleeper, FFPC, Yahoo...)</li>
@@ -82,14 +88,18 @@ export default function SubscribePage() {
             onClick={handleSubscribe}
             disabled={loading}
             className={`w-full px-6 py-3 rounded-lg font-semibold ${
-              loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+              loading
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
             } text-white transition`}
           >
-            {loading ? 'Please wait...' : 'Subscribe for $0.99'}
+            {loading ? "Please wait..." : "Subscribe for $0.99/month"}
           </button>
         </div>
 
-        <p className="text-xs text-white/40">Already subscribed? Changes take effect automatically.</p>
+        <p className="text-xs text-white/40">
+          Already subscribed? Changes take effect automatically.
+        </p>
       </div>
     </div>
   );
