@@ -8,10 +8,11 @@ import { API_BASE_URL, DEFAULT_ROSTER_SETTINGS } from "@/utils/config";
 
 import { useAuthContext } from "@/context/AuthContext";
 
-import MockNavbar from "./MockNavbar";
-import DraftBoard from "./draft-board/DraftBoard";
-import LowerPanel from "./lower-panel/LowerPanel";
-import DraftSettingsModal from "./draft-settings/DraftSettingsModal";
+import MockNavbar from "@/components/mock-draft/MockNavbar";
+import DraftBoard from "@/components/mock-draft/draft-board/DraftBoard";
+import LowerPanel from "@/components/mock-draft/lower-panel/LowerPanel";
+import DraftSettingsModal from "@/components/mock-draft/modals/DraftSettingsModal";
+import KeeperModal from "@/components/mock-draft/modals/KeeperModal";
 
 export interface DraftPick {
   pickIndex: number;
@@ -22,10 +23,11 @@ export interface DraftPick {
 }
 
 export default function MockDraft() {
+  // 🔐 Auth & User
   const { user } = useAuthContext();
   const isLoggedIn = !!user;
 
-  const [showSettings, setShowSettings] = useState(false);
+  // ⚙️ Draft Configuration
   const [draftConfig, setDraftConfig] = useState<DraftConfig>({
     adpFormatKey: "dynasty_1qb_1_ppr_sleeper",
     leagueFormat: "dynasty",
@@ -34,25 +36,31 @@ export default function MockDraft() {
     platform: "sleeper",
     useAI: false,
   });
-
   const [rosterSettings, setRosterSettings] = useState(DEFAULT_ROSTER_SETTINGS);
-  const [adpPlayers, setAdpPlayers] = useState<Player[]>([]);
-  const [draftPlan, setDraftPlan] = useState<DraftPick[]>([]);
-  const [scoredPlayers, setScoredPlayers] = useState<Player[]>([]);
-  const [draftStarted, setDraftStarted] = useState(false);
-  const [userDraftSlot, setUserDraftSlot] = useState<number | null>(null);
+
+  // 🖥 UI Modals & Toggles
+  const [showSettings, setShowSettings] = useState(false);
+  const [showKeeperModal, setShowKeeperModal] = useState(false);
+
+  // 🧠 Draft Engine State
+  const [draftPlan, setDraftPlan] = useState<DraftPick[]>([]); // Full pick plan
+  const [scoredPlayers, setScoredPlayers] = useState<Player[]>([]); // AI-ranked
+  const [adpPlayers, setAdpPlayers] = useState<Player[]>([]); // ADP order
+  const [draftStarted, setDraftStarted] = useState(false); // Is the draft running?
+  const [userDraftSlot, setUserDraftSlot] = useState<number | null>(null); // Claimed team
   const [loading, setLoading] = useState(false);
 
-  const numRounds = rosterSettings.totalRounds;
+  // ⏱ Timer & Interaction Logic
+  const [timer, setTimer] = useState(120); // Countdown timer
+  const [isTicking, setIsTicking] = useState(false); // Is timer running?
+  const [assignModeIndex, setAssignModeIndex] = useState<number | null>(null); // Manual assign index
 
+  // 📊 Derived Values
+  const numRounds = rosterSettings.totalRounds;
   const currentPickIndex = draftPlan.findIndex((p) => !p.draftedPlayer);
   const currentPick = draftPlan[currentPickIndex];
   const draftComplete = currentPickIndex === -1;
   const isUserTurn = draftStarted && userDraftSlot === currentPick?.teamIndex;
-
-  const [timer, setTimer] = useState(120);
-  const [isTicking, setIsTicking] = useState(false);
-  const [assignModeIndex, setAssignModeIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (!draftStarted || draftComplete) return;
@@ -280,6 +288,7 @@ export default function MockDraft() {
           setTimer={setTimer}
           isTicking={isTicking}
           setIsTicking={setIsTicking}
+          onOpenKeeperModal={() => setShowKeeperModal(true)}
         />
 
         <div className="flex-1 overflow-y-auto relative z-0">
@@ -341,6 +350,15 @@ export default function MockDraft() {
           isLoggedIn={isLoggedIn}
         />
       )}
+
+      <KeeperModal
+        isOpen={showKeeperModal}
+        onClose={() => setShowKeeperModal(false)}
+        draftPlan={draftPlan}
+        draftConfig={draftConfig}
+        numTeams={NUM_TEAMS}
+        user={user}
+      />
     </div>
   );
 }

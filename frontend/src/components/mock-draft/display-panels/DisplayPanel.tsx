@@ -124,7 +124,8 @@ export default function DisplayPanel({ player, wide = false }: Props) {
     <div
       className={`
     w-full h-[110px]
-    bg-[#000000af] rounded-md ring-1 ring-[#010a0db4] relative
+    ${player ? "bg-panel-on" : "bg-panel-off"}
+    rounded-md ring-1 ring-[#010a0db4] relative
     overflow-hidden transition-all duration-300
     [transform:rotateX(3deg)] [transform-style:preserve-3d] [backface-visibility:hidden]
   `}

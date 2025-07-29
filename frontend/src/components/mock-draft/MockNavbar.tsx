@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
 import Link from "next/link";
 import { MockNavbarProps } from "@/types/ui/components";
-import { Menu } from '@headlessui/react';
-import { useAuth } from '@/utils/useAuth';
-import { loginWithGoogle } from '@/utils/firebase';
-import { User, LogOut, CreditCard, Settings } from 'lucide-react';
-import TimerButtons from './timer/TimerButtons';
-import TimerDisplay from './timer/TimerDisplay';
+import { Menu } from "@headlessui/react";
+import { useAuth } from "@/utils/useAuth";
+import { loginWithGoogle } from "@/utils/firebase";
+import { User, LogOut, CreditCard, Settings, Save } from "lucide-react";
+import TimerButtons from "./timer/TimerButtons";
+import TimerDisplay from "./timer/TimerDisplay";
 
 const MockNavbar = ({
   draftStarted,
@@ -17,6 +17,7 @@ const MockNavbar = ({
   setTimer,
   isTicking,
   setIsTicking,
+  onOpenKeeperModal,
 }: MockNavbarProps) => {
   const { user, isLoggedIn, isPaidUser, logout } = useAuth();
 
@@ -24,12 +25,15 @@ const MockNavbar = ({
     const token = await user?.getIdToken();
     if (!token) return;
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/checkout`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/checkout`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     const { url } = await res.json();
     if (url) window.location.href = url;
@@ -39,12 +43,15 @@ const MockNavbar = ({
     const token = await user?.getIdToken();
     if (!token) return;
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/cancel`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/cancel`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     if (res.ok) {
       alert("Membership canceled. Refreshing...");
@@ -81,7 +88,14 @@ const MockNavbar = ({
       </div>
 
       {/* RIGHT: Settings + Avatar */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onOpenKeeperModal}
+          className="ml-2 text-white hover:text-accent transition"
+          title="Save or Load Keepers"
+        >
+          <Save className="w-5 h-5" />
+        </button>
         <button
           onClick={onOpenSettings}
           title="Draft Settings"
@@ -91,9 +105,13 @@ const MockNavbar = ({
         </button>
 
         <Menu as="div" className="relative">
-          <Menu.Button className="rounded-full overflow-hidden w-8 h-8">
+          <Menu.Button className="rounded-full overflow-hidden w-5 h-5">
             {user?.photoURL ? (
-              <img src={user.photoURL} alt="avatar" className="w-full h-full object-cover" />
+              <img
+                src={user.photoURL}
+                alt="avatar"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-white text-xs">
                 <User className="w-5 h-5 text-white" />
@@ -110,7 +128,11 @@ const MockNavbar = ({
                 </div>
                 <Menu.Item>
                   {({ active }) => (
-                    <button className={`w-full px-4 py-2 text-left flex items-center gap-2 ${active ? 'bg-slate-700' : ''}`}>
+                    <button
+                      className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
+                        active ? "bg-slate-700" : ""
+                      }`}
+                    >
                       <User className="w-4 h-4" /> Account
                     </button>
                   )}
@@ -119,10 +141,12 @@ const MockNavbar = ({
                   {({ active }) => (
                     <button
                       onClick={isPaidUser ? cancelMembership : subscribe}
-                      className={`w-full px-4 py-2 text-left flex items-center gap-2 ${active ? 'bg-slate-700' : ''}`}
+                      className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
+                        active ? "bg-slate-700" : ""
+                      }`}
                     >
                       <CreditCard className="w-4 h-4" />
-                      {isPaidUser ? 'Cancel Membership' : 'Subscribe'}
+                      {isPaidUser ? "Cancel Membership" : "Subscribe"}
                     </button>
                   )}
                 </Menu.Item>
@@ -130,7 +154,9 @@ const MockNavbar = ({
                   {({ active }) => (
                     <button
                       onClick={logout}
-                      className={`w-full px-4 py-2 text-left flex items-center gap-2 ${active ? 'bg-slate-700' : ''}`}
+                      className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
+                        active ? "bg-slate-700" : ""
+                      }`}
                     >
                       <LogOut className="w-4 h-4" /> Logout
                     </button>
@@ -142,7 +168,9 @@ const MockNavbar = ({
                 {({ active }) => (
                   <button
                     onClick={loginWithGoogle}
-                    className={`w-full px-4 py-2 text-left ${active ? 'bg-slate-700' : ''}`}
+                    className={`w-full px-4 py-2 text-left ${
+                      active ? "bg-slate-700" : ""
+                    }`}
                   >
                     Sign In
                   </button>

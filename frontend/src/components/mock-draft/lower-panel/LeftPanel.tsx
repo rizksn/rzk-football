@@ -92,7 +92,8 @@ const LeftPanel = ({
             {filteredPlayers.map((p, index) => (
               <tr
                 key={`${p.full_name}-${p.team}`}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   if (assignModeIndex !== null && onManualAssignPlayer) {
                     onManualAssignPlayer(p);
                   }

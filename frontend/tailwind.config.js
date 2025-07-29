@@ -14,6 +14,8 @@ module.exports = {
         accent: "#5f1cca", // purple for buttons or glow
         statbox: "#183049", // blue glow background
         highlight: "#9b88b9", // for bright stat numbers or SVG
+        "panel-off": "#10251f", // TV off
+        "panel-on": "#12352d", // TV on
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
