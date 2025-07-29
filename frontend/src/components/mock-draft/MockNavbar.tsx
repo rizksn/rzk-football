@@ -88,10 +88,10 @@ const MockNavbar = ({
       </div>
 
       {/* RIGHT: Settings + Avatar */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
         <button
           onClick={onOpenKeeperModal}
-          className="ml-2 text-white hover:text-accent transition"
+          className="text-white hover:text-accent transition"
           title="Save or Load Keepers"
         >
           <Save className="w-5 h-5" />
@@ -99,13 +99,13 @@ const MockNavbar = ({
         <button
           onClick={onOpenSettings}
           title="Draft Settings"
-          className="p-2 rounded-full hover:bg-white/10 hover:rotate-12 transition-all duration-150 ease-out"
+          className="rounded-full hover:bg-white/10 hover:rotate-12 transition-all duration-150 ease-out"
         >
           <Settings className="w-5 h-5 text-white" />
         </button>
 
         <Menu as="div" className="relative">
-          <Menu.Button className="rounded-full overflow-hidden w-5 h-5">
+          <Menu.Button className="rounded-full overflow-hidden w-6 h-6">
             {user?.photoURL ? (
               <img
                 src={user.photoURL}
