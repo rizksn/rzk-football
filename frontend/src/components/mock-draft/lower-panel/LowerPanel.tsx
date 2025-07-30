@@ -10,6 +10,7 @@ import { DraftRosterSettings } from "@/types/draft/config";
 type LowerPanelProps = {
   players: Player[];
   draftedPlayers: Player[];
+  rankingPlayers: Player[];
   onDraftPlayer: (player: Player) => void;
   isUserTurn: boolean;
   userRoster: Player[];
@@ -21,6 +22,7 @@ type LowerPanelProps = {
 const LowerPanel: React.FC<LowerPanelProps> = ({
   players,
   draftedPlayers,
+  rankingPlayers,
   onDraftPlayer,
   isUserTurn,
   userRoster,
@@ -86,6 +88,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
           <div className="w-1/2 flex flex-col overflow-y-auto">
             <RightPanel
               queuedPlayers={queuePlayers}
+              rankingPlayers={rankingPlayers}
               userRoster={userRoster}
               rosterSettings={rosterSettings}
               onRemoveFromQueue={handleRemoveFromQueue}
