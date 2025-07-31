@@ -16,7 +16,6 @@ import { useDraftSimulation } from "@/components/mock-draft/hooks/useDraftSimula
 import { useDraftTimer } from "@/components/mock-draft/hooks/useDraftTimer";
 import { useDraftUserActions } from "@/components/mock-draft/hooks/useDraftUserActions";
 import { useCurrentPickState } from "@/components/mock-draft/hooks/useCurrentPickState";
-import { useRankingsManager } from "@/components/mock-draft/hooks/useRankingsManager";
 
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -49,29 +48,25 @@ export default function MockDraft() {
     setDraftPlan,
     scoredPlayers,
     adpPlayers,
-    loading,
-    draftedPlayers,
-    availablePlayers,
-  } = useDraftState(draftConfig, rosterSettings, null);
-
-  const [userRoster, setUserRoster] = useState<Player[]>([]);
-
-  // 🔁 Rankings Manager
-  const {
-    rankedPlayers: savedRankings,
+    rankedPlayers, // 👈 add this
     setRankedPlayers,
     loadRankings,
     saveRankings,
     resetRankings,
     downloadRankings,
-  } = useRankingsManager(user, draftConfig, adpPlayers, draftPlan);
+    loading,
+    draftedPlayers,
+    availablePlayers,
+  } = useDraftState(draftConfig, rosterSettings, user);
+
+  const [userRoster, setUserRoster] = useState<Player[]>([]);
 
   const finalRankingPlayers = useMemo(() => {
     const draftedIds = draftPlan
       .map((pick) => pick.draftedPlayer?.player_id)
       .filter(Boolean);
-    if (savedRankings?.length) {
-      return savedRankings.filter(
+    if (rankedPlayers?.length) {
+      return rankedPlayers.filter(
         (player) => !draftedIds.includes(player.player_id)
       );
     }
@@ -79,7 +74,7 @@ export default function MockDraft() {
       ? availablePlayers
       : adpPlayers;
     return fallback.slice().sort((a, b) => a.rank - b.rank);
-  }, [savedRankings, draftPlan, availablePlayers, adpPlayers]);
+  }, [rankedPlayers, draftPlan, availablePlayers, adpPlayers]);
 
   const [queuedPlayers, setQueuedPlayers] = useState<Player[]>([]);
   const [queueOrder, setQueueOrder] = useState<string[]>([]);
