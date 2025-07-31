@@ -10,10 +10,9 @@ import Roster from "./Roster";
 import Rankings from "./Rankings";
 import { User } from "firebase/auth";
 import { DraftRosterSettings, DraftConfig } from "@/types/draft/config";
-import { toast } from "sonner";
-import { API_BASE_URL } from "@/utils/config";
 
-import { Save, Download, FolderOutput } from "lucide-react";
+import { Save, Download, FolderOutput, RotateCcw } from "lucide-react";
+import { useRankingsManager } from "@/components/mock-draft/hooks/useRankingsManager";
 
 type RightPanelProps = {
   queuedPlayers: Player[];
@@ -31,27 +30,28 @@ const RightPanel = ({
   userRoster,
   rosterSettings,
   onRemoveFromQueue,
-  rankingPlayers,
   user,
   draftConfig,
   adpPlayers,
 }: RightPanelProps) => {
   const [queueOrder, setQueueOrder] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"queue" | "rankings">("queue");
-  const [rankedPlayers, setRankedPlayers] = useState<Player[]>(rankingPlayers);
 
-  // Sync rankedPlayers when rankingPlayers prop changes
-  useEffect(() => {
-    setRankedPlayers(rankingPlayers);
-  }, [rankingPlayers]);
+  const {
+    rankedPlayers,
+    setRankedPlayers,
+    loadRankings,
+    saveRankings,
+    resetRankings,
+    downloadRankings,
+  } = useRankingsManager(user, draftConfig, adpPlayers);
 
   useEffect(() => {
     if (user && activeTab === "rankings") {
-      handleLoadRankings();
+      loadRankings();
     }
   }, [user, activeTab]);
 
-  // Sync queue order
   useEffect(() => {
     setQueueOrder(queuedPlayers.map((p) => p.player_id));
   }, [queuedPlayers]);
@@ -67,84 +67,14 @@ const RightPanel = ({
     });
   };
 
-  const handleSaveRankings = async () => {
-    if (!user) return;
-    try {
-      const token = await user.getIdToken();
-      await fetch(`${API_BASE_URL}/api/rankings/save`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          adp_format_key: draftConfig.adpFormatKey,
-          player_ids: rankedPlayers.map((p) => p.player_id),
-        }),
-      });
-      toast.success("✅ Rankings saved!");
-    } catch (err) {
-      console.error(err);
-      toast.error("❌ Failed to save rankings");
-    }
-  };
-
-  const handleLoadRankings = async () => {
-    if (!user) return;
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch(
-        `${API_BASE_URL}/api/rankings/load?format_key=${draftConfig.adpFormatKey}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "Failed to load");
-
-      const savedIds: string[] = data.rankings || [];
-      const uniqueIds = [...new Set(savedIds)];
-      const savedPlayers = uniqueIds
-        .map((id) => adpPlayers.find((p) => p.player_id === id))
-        .filter(Boolean) as Player[];
-
-      if (savedPlayers.length === 0) {
-        toast.success("✅ No saved rankings found – using default ADP");
-        return; // let `useMemo()` handle fallback
-      }
-
-      setRankedPlayers(savedPlayers);
-      toast.success("✅ Rankings restored");
-    } catch (err) {
-      toast.error("❌ Failed to load saved rankings");
-      console.error(err);
-    }
-  };
-
-  const handleDownloadRankings = () => {
-    const csv = rankedPlayers
-      .map((p, i) => `${i + 1},${p.full_name},${p.position},${p.team}`)
-      .join("\n");
-    const blob = new Blob([`Rank,Name,Position,Team\n${csv}`], {
-      type: "text/csv",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "rankings.csv";
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="flex h-full w-full bg-[rgba(28,29,46,0.58)] min-h-0">
       <div className="absolute inset-0 z-0 bg-[radial-gradient(rgba(0,255,255,0.08)_1px,transparent_1px)] bg-[size:20px_20px] opacity-40 pointer-events-none" />
 
-      {/* Player Queue */}
+      {/* Player Queue & Rankings */}
       <div className="w-1/2 border-r border-slate-700 px-3 flex flex-col h-full min-h-0">
         <div className="flex justify-between items-center mb-2">
-          {/* Left: Queue button */}
+          {/* Left: Tab Switcher */}
           <button
             className={`text-xs px-5 font-semibold rounded uppercase ${
               activeTab === "queue"
@@ -156,11 +86,11 @@ const RightPanel = ({
             Queue
           </button>
 
-          {/* Right: Icons + Rankings button */}
+          {/* Right: Action Buttons + Tab Switcher */}
           <div className="flex items-center gap-2">
             {activeTab === "queue" && (
               <button
-                onClick={handleLoadRankings}
+                onClick={loadRankings}
                 className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
               >
                 <FolderOutput size={16} />
@@ -170,17 +100,24 @@ const RightPanel = ({
             {activeTab === "rankings" && (
               <>
                 <button
-                  onClick={handleDownloadRankings}
-                  className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
-                >
-                  <Download size={16} />
-                </button>
-
-                <button
-                  onClick={handleSaveRankings}
+                  onClick={saveRankings}
                   className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
                 >
                   <Save size={16} />
+                </button>
+
+                <button
+                  onClick={resetRankings}
+                  className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
+                >
+                  <RotateCcw size={16} />
+                </button>
+
+                <button
+                  onClick={downloadRankings}
+                  className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
+                >
+                  <Download size={16} />
                 </button>
               </>
             )}
