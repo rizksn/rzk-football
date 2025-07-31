@@ -14,6 +14,9 @@ import type { DraftRosterSettings } from "@/types/draft/config";
 
 type RightPanelProps = {
   queuedPlayers: Player[];
+  queueOrder: string[];
+  setQueueOrder: React.Dispatch<React.SetStateAction<string[]>>;
+  handleQueueDragEnd: (event: DragEndEvent) => void;
   userRoster: Player[];
   rosterSettings: DraftRosterSettings;
   onRemoveFromQueue: (playerId: string) => void;
@@ -27,6 +30,9 @@ type RightPanelProps = {
 
 const RightPanel = ({
   queuedPlayers,
+  queueOrder,
+  setQueueOrder,
+  handleQueueDragEnd,
   userRoster,
   rosterSettings,
   onRemoveFromQueue,
@@ -37,7 +43,6 @@ const RightPanel = ({
   resetRankings,
   downloadRankings,
 }: RightPanelProps) => {
-  const [queueOrder, setQueueOrder] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"queue" | "rankings">("queue");
 
   const hasLoaded = useRef(false);
@@ -48,21 +53,6 @@ const RightPanel = ({
       hasLoaded.current = true;
     }
   }, [activeTab, loadRankings]);
-
-  useEffect(() => {
-    setQueueOrder(queuedPlayers.map((p) => p.player_id));
-  }, [queuedPlayers]);
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    setQueueOrder((prev) => {
-      const oldIndex = prev.indexOf(active.id as string);
-      const newIndex = prev.indexOf(over.id as string);
-      return arrayMove(prev, oldIndex, newIndex);
-    });
-  };
 
   return (
     <div className="flex h-full w-full bg-[rgba(28,29,46,0.58)] min-h-0">
@@ -138,7 +128,7 @@ const RightPanel = ({
               queuedPlayers={queuedPlayers}
               queueOrder={queueOrder}
               onRemoveFromQueue={onRemoveFromQueue}
-              onDragEnd={handleDragEnd}
+              onDragEnd={handleQueueDragEnd}
             />
           ) : (
             <Rankings

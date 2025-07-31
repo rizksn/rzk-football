@@ -12,7 +12,7 @@ type QueueItemProps = {
 
 const QueueItem = ({ player, onRemove }: QueueItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: player.full_name });
+    useSortable({ id: player.player_id });
 
   const style = {
     transform: CSS.Transform.toString(transform),

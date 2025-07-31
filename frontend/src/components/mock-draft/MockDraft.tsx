@@ -18,6 +18,9 @@ import { useDraftUserActions } from "@/components/mock-draft/hooks/useDraftUserA
 import { useCurrentPickState } from "@/components/mock-draft/hooks/useCurrentPickState";
 import { useRankingsManager } from "@/components/mock-draft/hooks/useRankingsManager";
 
+import { DragEndEvent } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
+
 export interface DraftPick {
   pickIndex: number;
   round: number;
@@ -78,6 +81,7 @@ export default function MockDraft() {
   }, [savedRankings, draftPlan, availablePlayers, adpPlayers]);
 
   const [queuedPlayers, setQueuedPlayers] = useState<Player[]>([]);
+  const [queueOrder, setQueueOrder] = useState<string[]>([]);
 
   // 🧠 Draft lifecycle state
   const [draftStarted, setDraftStarted] = useState(false);
@@ -184,11 +188,26 @@ export default function MockDraft() {
     }
   }, [draftPlan]);
 
+  useEffect(() => {
+    setQueueOrder(queuedPlayers.map((p) => p.player_id));
+  }, [queuedPlayers]);
+
   const numRounds = rosterSettings.totalRounds;
   const draftBoardByRound: DraftPick[][] = [];
   for (let i = 0; i < numRounds; i++) {
     draftBoardByRound.push(draftPlan.slice(i * NUM_TEAMS, (i + 1) * NUM_TEAMS));
   }
+
+  const handleQueueDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setQueueOrder((prev) => {
+      const oldIndex = prev.indexOf(active.id as string);
+      const newIndex = prev.indexOf(over.id as string);
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  };
 
   return (
     <div className="w-full max-w-[1600px] min-w-[1400px] mx-auto h-full">
@@ -244,6 +263,9 @@ export default function MockDraft() {
             queuedPlayers={queuedPlayers}
             onAddToQueue={handleAddToQueue}
             onRemoveFromQueue={handleRemoveFromQueue}
+            queueOrder={queueOrder}
+            setQueueOrder={setQueueOrder}
+            handleQueueDragEnd={handleQueueDragEnd}
           />
         </div>
 

@@ -7,6 +7,7 @@ import RightPanel from "./RightPanel";
 import { Player } from "../../../types/core/player";
 import DisplayPanels from "../display-panels/DisplayPanels";
 import { DraftConfig, DraftRosterSettings } from "@/types/draft/config";
+import { DragEndEvent } from "@dnd-kit/core";
 
 type LowerPanelProps = {
   players: Player[];
@@ -29,6 +30,9 @@ type LowerPanelProps = {
   queuedPlayers: Player[];
   onAddToQueue: (player: Player) => void;
   onRemoveFromQueue: (playerId: string) => void;
+  queueOrder: string[];
+  setQueueOrder: React.Dispatch<React.SetStateAction<string[]>>;
+  handleQueueDragEnd: (event: DragEndEvent) => void;
 };
 
 const LowerPanel: React.FC<LowerPanelProps> = ({
@@ -52,6 +56,9 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   queuedPlayers,
   onAddToQueue,
   onRemoveFromQueue,
+  queueOrder,
+  setQueueOrder,
+  handleQueueDragEnd,
 }) => {
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
   const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
@@ -109,6 +116,9 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               saveRankings={saveRankings}
               resetRankings={resetRankings}
               downloadRankings={downloadRankings}
+              queueOrder={queueOrder}
+              setQueueOrder={setQueueOrder}
+              handleQueueDragEnd={handleQueueDragEnd}
             />
           </div>
         </div>
