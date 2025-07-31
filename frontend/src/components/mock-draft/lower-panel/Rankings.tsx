@@ -35,7 +35,7 @@ function SortablePlayerRow({
 
   const handleClick = () => {
     if (disabled) {
-      toast.error("🔒 Upgrade to premium to reorder rankings!");
+      toast.error("🔒 Upgrade to premium to customize rankings!");
     }
   };
 
@@ -67,7 +67,7 @@ export default function Rankings({
 }: {
   rankedPlayers: Player[];
   setRankedPlayers: (players: Player[]) => void;
-  isPaidUser: boolean; // <--- add this prop
+  isPaidUser: boolean;
 }) {
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -88,14 +88,6 @@ export default function Rankings({
     () => rankedPlayers.map((p) => p.player_id),
     [rankedPlayers]
   );
-
-  if (!isPaidUser) {
-    return (
-      <div className="p-7 text-center text-cyan-400 font-semibold">
-        🔒 Upgrade to premium to view and reorder rankings.
-      </div>
-    );
-  }
 
   return (
     <div className="overflow-y-auto h-full">

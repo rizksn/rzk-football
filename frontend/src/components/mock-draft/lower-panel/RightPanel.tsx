@@ -78,7 +78,15 @@ const RightPanel = ({
           <div className="flex items-center gap-2">
             {activeTab === "queue" && (
               <button
-                onClick={loadRankings}
+                onClick={() => {
+                  if (!isPaidUser) {
+                    toast.error(
+                      "🔒 Upgrade to premium to migrate rankings to queue!"
+                    );
+                    return;
+                  }
+                  loadRankings();
+                }}
                 className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
               >
                 <FolderOutput size={16} />
@@ -88,21 +96,41 @@ const RightPanel = ({
             {activeTab === "rankings" && (
               <>
                 <button
-                  onClick={saveRankings}
+                  onClick={() => {
+                    if (!isPaidUser) {
+                      toast.error("🔒 Upgrade to premium to save rankings!");
+                      return;
+                    }
+                    saveRankings();
+                  }}
                   className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
                 >
                   <Save size={16} />
                 </button>
 
                 <button
-                  onClick={resetRankings}
+                  onClick={() => {
+                    if (!isPaidUser) {
+                      toast.error("🔒 Upgrade to premium to reset rankings!");
+                      return;
+                    }
+                    resetRankings();
+                  }}
                   className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
                 >
                   <RotateCcw size={16} />
                 </button>
 
                 <button
-                  onClick={downloadRankings}
+                  onClick={() => {
+                    if (!isPaidUser) {
+                      toast.error(
+                        "🔒 Upgrade to premium to download rankings!"
+                      );
+                      return;
+                    }
+                    downloadRankings();
+                  }}
                   className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
                 >
                   <Download size={16} />
@@ -118,6 +146,12 @@ const RightPanel = ({
               }`}
               onClick={() => {
                 if (activeTab === "rankings") {
+                  if (!isPaidUser) {
+                    toast.error(
+                      "🔒 Upgrade to premium to load saved rankings!"
+                    );
+                    return;
+                  }
                   loadRankings();
                   toast.success("✅ Saved rankings reloaded");
                 } else {
