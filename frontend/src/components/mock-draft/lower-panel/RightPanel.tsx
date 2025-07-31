@@ -26,6 +26,7 @@ type RightPanelProps = {
   saveRankings: () => Promise<void>;
   resetRankings: () => void;
   downloadRankings: () => void;
+  isPaidUser: boolean;
 };
 
 const RightPanel = ({
@@ -41,6 +42,7 @@ const RightPanel = ({
   saveRankings,
   resetRankings,
   downloadRankings,
+  isPaidUser,
 }: RightPanelProps) => {
   const [activeTab, setActiveTab] = useState<"queue" | "rankings">("queue");
 
@@ -140,6 +142,7 @@ const RightPanel = ({
             <Rankings
               rankedPlayers={rankingPlayers}
               setRankedPlayers={setRankedPlayers}
+              isPaidUser={isPaidUser}
             />
           )}
         </div>
@@ -147,7 +150,9 @@ const RightPanel = ({
 
       {/* Roster */}
       <div className="w-1/2 pl-4 pr-2 flex flex-col h-full min-h-0">
-        <h2 className="text-sm font-semibold text-[#fcf8f8] mb-2">ROSTER</h2>
+        <h2 className="text-sm font-semibold text-[#fcf8f8] mt-2 mb-2">
+          ROSTER
+        </h2>
         <div className="flex-1 min-h-0 overflow-y-auto">
           <Roster userRoster={userRoster} />
         </div>

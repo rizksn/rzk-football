@@ -32,6 +32,7 @@ type LowerPanelProps = {
   onRemoveFromQueue: (playerId: string) => void;
   queueOrder: string[];
   handleQueueDragEnd: (event: DragEndEvent) => void;
+  isPaidUser: boolean;
 };
 
 const LowerPanel: React.FC<LowerPanelProps> = ({
@@ -57,6 +58,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   onRemoveFromQueue,
   queueOrder,
   handleQueueDragEnd,
+  isPaidUser,
 }) => {
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
   const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
@@ -116,6 +118,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               downloadRankings={downloadRankings}
               queueOrder={queueOrder}
               handleQueueDragEnd={handleQueueDragEnd}
+              isPaidUser={isPaidUser}
             />
           </div>
         </div>

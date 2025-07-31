@@ -49,6 +49,10 @@ export default function KeeperModal({
   const [keeperSets, setKeeperSets] = useState<KeeperSetMeta[]>([]);
   const [selectedKeeperId, setSelectedKeeperId] = useState<string | null>(null);
 
+  const notifyPremiumRequired = () => {
+    toast.error("🔒 Premium required to use this feature. Please upgrade.");
+  };
+
   const fetchKeeperSets = async () => {
     if (!user) {
       console.warn("No user – cannot fetch keeper sets.");
@@ -78,7 +82,7 @@ export default function KeeperModal({
   const handleSaveKeepers = async () => {
     if (!user || !keeperName.trim()) return;
     if (!isPaidUser) {
-      toast.error("🔒 Premium required to save keepers.");
+      notifyPremiumRequired();
       return;
     }
 
@@ -118,6 +122,10 @@ export default function KeeperModal({
 
   const handleLoadSelectedKeeper = async () => {
     if (!selectedKeeperId || !user) return;
+    if (!isPaidUser) {
+      notifyPremiumRequired();
+      return;
+    }
 
     try {
       const token = await user.getIdToken();
@@ -195,11 +203,23 @@ export default function KeeperModal({
                   placeholder="e.g. Home League"
                   value={keeperName}
                   onChange={(e) => setKeeperName(e.target.value)}
+                  onFocus={() => {
+                    if (!isPaidUser) {
+                      notifyPremiumRequired();
+                      (document.activeElement as HTMLElement)?.blur();
+                    }
+                  }}
                   className="w-full px-3 py-2 bg-gray-900 text-white border border-gray-700 rounded-md mb-6"
                 />
 
                 <button
-                  onClick={handleSaveKeepers}
+                  onClick={() => {
+                    if (!isPaidUser) {
+                      notifyPremiumRequired();
+                      return;
+                    }
+                    handleSaveKeepers();
+                  }}
                   disabled={saving || !keeperName.trim()}
                   className={`w-full bg-accent text-white font-semibold py-2 rounded-lg hover:opacity-90 transition ${
                     saving ? "opacity-70 cursor-not-allowed" : ""
@@ -213,7 +233,19 @@ export default function KeeperModal({
                 {loading ? (
                   <p className="text-gray-400">Loading keeper sets...</p>
                 ) : keeperSets.length === 0 ? (
-                  <p className="text-gray-400">No saved keeper sets found.</p>
+                  !isPaidUser ? (
+                    <p className="text-red-400 font-semibold">
+                      Upgrade to save and load keeper sets.{" "}
+                      <a
+                        href="/subscribe"
+                        className="no-underline text-blue-400 hover:text-blue-600"
+                      >
+                        Upgrade now &rarr;
+                      </a>
+                    </p>
+                  ) : (
+                    <p className="text-gray-400">No saved keeper sets found.</p>
+                  )
                 ) : (
                   <ul className="space-y-3">
                     {keeperSets.map((keeper) => (
@@ -238,7 +270,13 @@ export default function KeeperModal({
                 )}
 
                 <button
-                  onClick={handleLoadSelectedKeeper}
+                  onClick={() => {
+                    if (!isPaidUser) {
+                      notifyPremiumRequired();
+                      return;
+                    }
+                    handleLoadSelectedKeeper();
+                  }}
                   disabled={!selectedKeeperId}
                   className="mt-6 w-full bg-accent text-white font-semibold py-2 rounded-lg hover:opacity-90 transition"
                 >

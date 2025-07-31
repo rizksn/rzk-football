@@ -100,8 +100,6 @@ export default function AdpSettingsForm({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold mb-4 text-white">Select ADP Source</h2>
-
       <div className={!isPaidUser ? "opacity-40" : ""}>
         {fields.map(({ label, field, value, options }) => (
           <label className="block text-sm text-white" key={field}>

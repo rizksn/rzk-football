@@ -17,7 +17,8 @@ import { fetchWithAuth } from "@/utils/fetchWithAuth";
 export function useDraftState(
   draftConfig: DraftConfig,
   rosterSettings: DraftRosterSettings,
-  user: User | null
+  user: User | null,
+  isPaidUser: boolean
 ) {
   const [draftPlan, setDraftPlan] = useState<DraftPick[]>([]);
   const [scoredPlayers, setScoredPlayers] = useState<Player[]>([]);
@@ -71,6 +72,14 @@ export function useDraftState(
 
   const loadRankings = useCallback(async () => {
     if (!user) return;
+
+    if (!isPaidUser) {
+      toast.error(
+        "🔒 Premium required to load saved rankings. Please upgrade."
+      );
+      return;
+    }
+
     try {
       const res = await fetchWithAuth(
         `${API_BASE_URL}/api/rankings/load?format_key=${draftConfig.adpFormatKey}`
@@ -99,10 +108,16 @@ export function useDraftState(
       toast.error("❌ Failed to load rankings");
       console.error(err);
     }
-  }, [user, draftConfig.adpFormatKey, adpPlayers]);
+  }, [user, isPaidUser, draftConfig.adpFormatKey, adpPlayers]);
 
   const saveRankings = async () => {
     if (!user) return;
+
+    if (!isPaidUser) {
+      toast.error("🔒 Premium required to save rankings. Please upgrade.");
+      return;
+    }
+
     try {
       const res = await fetchWithAuth(`${API_BASE_URL}/api/rankings/save`, {
         method: "POST",

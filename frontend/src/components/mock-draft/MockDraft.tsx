@@ -55,7 +55,7 @@ export default function MockDraft() {
     resetRankings,
     downloadRankings,
     loading,
-  } = useDraftState(draftConfig, rosterSettings, user);
+  } = useDraftState(draftConfig, rosterSettings, user, isPaidUser);
 
   // 🧠 Draft lifecycle state
   const [draftStarted, setDraftStarted] = useState(false);
@@ -266,6 +266,7 @@ export default function MockDraft() {
             onRemoveFromQueue={handleRemoveFromQueue}
             queueOrder={queueOrder}
             handleQueueDragEnd={handleQueueDragEnd}
+            isPaidUser={isPaidUser}
           />
         </div>
 

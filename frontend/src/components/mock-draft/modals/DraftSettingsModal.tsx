@@ -67,7 +67,12 @@ export default function DraftSettingsModal({
       className="fixed inset-0 z-50 flex items-center justify-center"
     >
       <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
+
       <Dialog.Panel className="relative w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-lg shadow-2xl overflow-hidden">
+        <Dialog.Title className="text-xl font-bold text-white border-b border-slate-700 px-6 py-4">
+          {activeTab === "adp" ? "Select ADP Source" : "Roster Settings"}
+        </Dialog.Title>
+
         <div className="grid grid-cols-[120px_1fr] min-h-[420px]">
           <div className="flex flex-col border-r border-slate-700 bg-slate-900">
             <button
@@ -92,7 +97,7 @@ export default function DraftSettingsModal({
             </button>
           </div>
 
-          <div className="p-6 overflow-y-auto">
+          <div className="p-6 overflow-y-auto max-h-[500px]">
             {activeTab === "adp" && (
               <AdpSettingsForm
                 draftConfig={draftConfig}

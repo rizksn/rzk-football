@@ -1,5 +1,3 @@
-"use client";
-
 import { Player } from "@/types/core/player";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -18,9 +16,15 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
+import { toast } from "sonner"; // <--- import toast here
 
-// Individual player row
-function SortablePlayerRow({ player }: { player: Player }) {
+function SortablePlayerRow({
+  player,
+  disabled,
+}: {
+  player: Player;
+  disabled: boolean;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: player.player_id });
 
@@ -29,13 +33,23 @@ function SortablePlayerRow({ player }: { player: Player }) {
     transition,
   };
 
+  const handleClick = () => {
+    if (disabled) {
+      toast.error("🔒 Upgrade to premium to reorder rankings!");
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center px-3 py-2 border-b border-slate-700 hover:bg-slate-800"
+      className={`flex items-center px-3 py-2 border-b border-slate-700 hover:bg-slate-800 ${
+        disabled ? "cursor-not-allowed opacity-50" : "cursor-grab"
+      }`}
+      onClick={handleClick}
+      {...(!disabled ? { ...attributes, ...listeners } : {})}
     >
-      <div {...attributes} {...listeners} className="cursor-grab mr-2">
+      <div className="mr-2">
         <GripVertical size={16} />
       </div>
       <div className="text-sm text-white font-medium">
@@ -46,17 +60,22 @@ function SortablePlayerRow({ player }: { player: Player }) {
   );
 }
 
-// Rankings list
 export default function Rankings({
   rankedPlayers,
   setRankedPlayers,
+  isPaidUser,
 }: {
   rankedPlayers: Player[];
   setRankedPlayers: (players: Player[]) => void;
+  isPaidUser: boolean; // <--- add this prop
 }) {
   const sensors = useSensors(useSensor(PointerSensor));
 
   const handleDragEnd = (event: DragEndEvent) => {
+    if (!isPaidUser) {
+      toast.error("🔒 Upgrade to premium to reorder rankings!");
+      return;
+    }
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -70,6 +89,14 @@ export default function Rankings({
     [rankedPlayers]
   );
 
+  if (!isPaidUser) {
+    return (
+      <div className="p-7 text-center text-cyan-400 font-semibold">
+        🔒 Upgrade to premium to view and reorder rankings.
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-y-auto h-full">
       <DndContext
@@ -82,7 +109,11 @@ export default function Rankings({
           strategy={verticalListSortingStrategy}
         >
           {rankedPlayers.map((player) => (
-            <SortablePlayerRow key={player.player_id} player={player} />
+            <SortablePlayerRow
+              key={player.player_id}
+              player={player}
+              disabled={!isPaidUser}
+            />
           ))}
         </SortableContext>
       </DndContext>
