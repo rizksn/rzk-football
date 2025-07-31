@@ -80,11 +80,6 @@ const RightPanel = ({
             {activeTab === "queue" && (
               <button
                 onClick={() => {
-                  if (!isPaidUser) {
-                    toast.error("🔒 Upgrade to premium to clear your queue!");
-                    return;
-                  }
-
                   if (queueOrder.length === 0) {
                     toast.info("Queue is already empty");
                     return;
