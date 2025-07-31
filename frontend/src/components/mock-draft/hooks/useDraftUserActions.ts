@@ -13,16 +13,25 @@ export function useDraftUserActions(
   assignModeIndex: number | null,
   setAssignModeIndex: (index: number | null) => void,
   setDraftStarted: (v: boolean) => void,
-  setIsTicking: (v: boolean) => void
+  setIsTicking: (v: boolean) => void,
+  userDraftSlot: number | null,
+  setUserRoster: React.Dispatch<React.SetStateAction<Player[]>>
 ) {
   const handleManualAssignPlayer = (player: Player) => {
     if (assignModeIndex === null) return;
 
+    const pickToAssign = draftPlan[assignModeIndex];
+    if (!pickToAssign || pickToAssign.draftedPlayer) return;
+
     const updated = [...draftPlan];
     updated[assignModeIndex] = {
-      ...updated[assignModeIndex],
+      ...pickToAssign,
       draftedPlayer: player,
     };
+
+    if (pickToAssign.teamIndex === userDraftSlot) {
+      setUserRoster((prev) => [...prev, player]);
+    }
 
     setDraftPlan(updated);
     setAssignModeIndex(null);

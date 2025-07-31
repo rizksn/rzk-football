@@ -131,28 +131,16 @@ export default function MockDraft() {
       handleUserPick(player, currentPick, setIsTicking, setTimer)
   );
 
-  const { handleManualAssignPlayer: baseManualAssignPlayer, handleStartDraft } =
-    useDraftUserActions(
-      draftPlan,
-      setDraftPlan,
-      assignModeIndex,
-      setAssignModeIndex,
-      setDraftStarted,
-      setIsTicking
-    );
-
-  const handleManualAssignPlayer = (player: Player) => {
-    const assignedPick = draftPlan.find(
-      (pick) => pick.teamIndex === assignModeIndex && !pick.draftedPlayer
-    );
-    if (!assignedPick) return;
-
-    if (assignModeIndex === userDraftSlot) {
-      setUserRoster((prev) => [...prev, player]);
-    }
-
-    baseManualAssignPlayer(player);
-  };
+  const { handleManualAssignPlayer, handleStartDraft } = useDraftUserActions(
+    draftPlan,
+    setDraftPlan,
+    assignModeIndex,
+    setAssignModeIndex,
+    setDraftStarted,
+    setIsTicking,
+    userDraftSlot,
+    setUserRoster
+  );
 
   // 🧠 Ensure CPU picks continue automatically
   useEffect(() => {
