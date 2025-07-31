@@ -10,7 +10,7 @@ import Queue from "./Queue";
 import Roster from "./Roster";
 import Rankings from "./Rankings";
 
-import { Save, Download, FolderOutput, RotateCcw } from "lucide-react";
+import { Save, Download, FolderOutput, RotateCcw, SquareX } from "lucide-react";
 import type { DraftRosterSettings } from "@/types/draft/config";
 
 type RightPanelProps = {
@@ -63,21 +63,43 @@ const RightPanel = ({
 
       {/* Player Queue & Rankings */}
       <div className="w-1/2 border-r border-slate-700 px-3 flex flex-col h-full min-h-0">
-        <div className="flex justify-between items-center mb-2">
-          {/* Left: Tab Switcher */}
-          <button
-            className={`text-xs px-5 font-semibold rounded uppercase ${
-              activeTab === "queue"
-                ? "bg-cyan-600 text-white"
-                : "bg-slate-700 text-slate-300 hover:bg-slate-600"
-            }`}
-            onClick={() => setActiveTab("queue")}
-          >
-            Queue
-          </button>
-
-          {/* Right: Action Buttons + Tab Switcher */}
+        <div className="flex items-center justify-between mb-2">
+          {/* Left Side (Queue tab only) */}
           <div className="flex items-center gap-2">
+            <button
+              className={`text-xs px-5 font-semibold rounded uppercase ${
+                activeTab === "queue"
+                  ? "bg-cyan-600 text-white"
+                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+              }`}
+              onClick={() => setActiveTab("queue")}
+            >
+              Queue
+            </button>
+
+            {activeTab === "queue" && (
+              <button
+                onClick={() => {
+                  if (!isPaidUser) {
+                    toast.error("🔒 Upgrade to premium to clear your queue!");
+                    return;
+                  }
+
+                  if (queueOrder.length === 0) {
+                    toast.info("Queue is already empty");
+                    return;
+                  }
+
+                  setQueueOrder([]);
+                  toast.success("✅ Queue cleared");
+                }}
+                className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
+                title="Clear Queue"
+              >
+                <SquareX size={16} />
+              </button>
+            )}
+
             {activeTab === "queue" && (
               <button
                 onClick={() => {
@@ -96,7 +118,10 @@ const RightPanel = ({
                 <FolderOutput size={16} />
               </button>
             )}
+          </div>
 
+          {/* Right Side (Rankings tab only) */}
+          <div className="flex items-center gap-2">
             {activeTab === "rankings" && (
               <>
                 <button
