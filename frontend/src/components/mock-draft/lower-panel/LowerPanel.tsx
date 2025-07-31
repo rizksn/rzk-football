@@ -1,11 +1,12 @@
 "use client";
 
+import type { User } from "firebase/auth";
 import { useState } from "react";
 import LeftPanel from "./LeftPanel";
 import RightPanel from "./RightPanel";
 import { Player } from "../../../types/core/player";
 import DisplayPanels from "../display-panels/DisplayPanels";
-import { DraftRosterSettings } from "@/types/draft/config";
+import { DraftConfig, DraftRosterSettings } from "@/types/draft/config";
 
 type LowerPanelProps = {
   players: Player[];
@@ -17,6 +18,9 @@ type LowerPanelProps = {
   rosterSettings: DraftRosterSettings;
   assignModeIndex?: number | null;
   onManualAssignPlayer?: (player: Player) => void;
+  user: User | null;
+  draftConfig: DraftConfig;
+  adpPlayers: Player[];
 };
 
 const LowerPanel: React.FC<LowerPanelProps> = ({
@@ -29,6 +33,9 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   rosterSettings,
   assignModeIndex,
   onManualAssignPlayer,
+  user,
+  draftConfig,
+  adpPlayers,
 }) => {
   const [queuePlayers, setQueuePlayers] = useState<Player[]>([]);
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
@@ -92,6 +99,9 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               userRoster={userRoster}
               rosterSettings={rosterSettings}
               onRemoveFromQueue={handleRemoveFromQueue}
+              user={user}
+              draftConfig={draftConfig}
+              adpPlayers={adpPlayers}
             />
           </div>
         </div>

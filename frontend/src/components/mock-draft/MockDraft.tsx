@@ -141,6 +141,9 @@ export default function MockDraft() {
             assignModeIndex={assignModeIndex}
             onManualAssignPlayer={handleManualAssignPlayer}
             rankingPlayers={rankingPlayers}
+            user={user}
+            draftConfig={draftConfig}
+            adpPlayers={adpPlayers}
           />
         </div>
 

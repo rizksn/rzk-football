@@ -10,6 +10,8 @@ import Roster from "./Roster";
 import Rankings from "./Rankings";
 import { User } from "firebase/auth";
 import { DraftRosterSettings, DraftConfig } from "@/types/draft/config";
+import { toast } from "sonner";
+import { API_BASE_URL } from "@/utils/config";
 
 import { Save, Download, FolderOutput } from "lucide-react";
 
@@ -19,6 +21,9 @@ type RightPanelProps = {
   rosterSettings: DraftRosterSettings;
   onRemoveFromQueue: (playerId: string) => void;
   rankingPlayers: Player[];
+  user: User | null;
+  draftConfig: DraftConfig;
+  adpPlayers: Player[];
 };
 
 const RightPanel = ({
@@ -27,6 +32,9 @@ const RightPanel = ({
   rosterSettings,
   onRemoveFromQueue,
   rankingPlayers,
+  user,
+  draftConfig,
+  adpPlayers,
 }: RightPanelProps) => {
   const [queueOrder, setQueueOrder] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"queue" | "rankings">("queue");
@@ -36,6 +44,12 @@ const RightPanel = ({
   useEffect(() => {
     setRankedPlayers(rankingPlayers);
   }, [rankingPlayers]);
+
+  useEffect(() => {
+    if (user && activeTab === "rankings") {
+      handleLoadRankings();
+    }
+  }, [user, activeTab]);
 
   // Sync queue order
   useEffect(() => {
@@ -53,36 +67,75 @@ const RightPanel = ({
     });
   };
 
-  // const handleSaveRankings = async () => {
-  //   if (!user) return;
+  const handleSaveRankings = async () => {
+    if (!user) return;
+    try {
+      const token = await user.getIdToken();
+      await fetch(`${API_BASE_URL}/api/rankings/save`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          adp_format_key: draftConfig.adpFormatKey,
+          player_ids: rankedPlayers.map((p) => p.player_id),
+        }),
+      });
+      toast.success("✅ Rankings saved!");
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Failed to save rankings");
+    }
+  };
 
-  //   const rankedIds = rankedPlayers.map((p) => p.player_id);
-  //   const payload = {
-  //     user_id: user.uid,
-  //     adp_format_key: draftConfig.adpFormatKey,
-  //     rankings: rankedIds,
-  //   };
+  const handleLoadRankings = async () => {
+    if (!user) return;
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(
+        `${API_BASE_URL}/api/rankings/load?format_key=${draftConfig.adpFormatKey}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-  //   try {
-  //     const res = await fetch(`${API_BASE_URL}/api/rankings/save`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${await user.getIdToken()}`,
-  //       },
-  //       body: JSON.stringify(payload),
-  //     });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to load");
 
-  //     if (res.ok) {
-  //       toast.success("Rankings saved!");
-  //     } else {
-  //       toast.error("Failed to save rankings.");
-  //     }
-  //   } catch (err) {
-  //     console.error("Save rankings error:", err);
-  //     toast.error("Unexpected error saving rankings.");
-  //   }
-  // };
+      const savedIds: string[] = data.rankings || [];
+      const uniqueIds = [...new Set(savedIds)];
+      const savedPlayers = uniqueIds
+        .map((id) => adpPlayers.find((p) => p.player_id === id))
+        .filter(Boolean) as Player[];
+
+      if (savedPlayers.length === 0) {
+        toast.success("✅ No saved rankings found – using default ADP");
+        return; // let `useMemo()` handle fallback
+      }
+
+      setRankedPlayers(savedPlayers);
+      toast.success("✅ Rankings restored");
+    } catch (err) {
+      toast.error("❌ Failed to load saved rankings");
+      console.error(err);
+    }
+  };
+
+  const handleDownloadRankings = () => {
+    const csv = rankedPlayers
+      .map((p, i) => `${i + 1},${p.full_name},${p.position},${p.team}`)
+      .join("\n");
+    const blob = new Blob([`Rank,Name,Position,Team\n${csv}`], {
+      type: "text/csv",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "rankings.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="flex h-full w-full bg-[rgba(28,29,46,0.58)] min-h-0">
@@ -107,10 +160,7 @@ const RightPanel = ({
           <div className="flex items-center gap-2">
             {activeTab === "queue" && (
               <button
-                onClick={() => {
-                  console.log("📂 Import rankings into queue");
-                  setQueueOrder(rankedPlayers.map((p) => p.player_id));
-                }}
+                onClick={handleLoadRankings}
                 className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
               >
                 <FolderOutput size={16} />
@@ -120,20 +170,14 @@ const RightPanel = ({
             {activeTab === "rankings" && (
               <>
                 <button
-                  onClick={() => {
-                    console.log("⬇️ Download rankings clicked");
-                    // TODO: Implement download logic
-                  }}
+                  onClick={handleDownloadRankings}
                   className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
                 >
                   <Download size={16} />
                 </button>
 
                 <button
-                  onClick={() => {
-                    console.log("💾 Save rankings clicked");
-                    // TODO: POST current rankings
-                  }}
+                  onClick={handleSaveRankings}
                   className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
                 >
                   <Save size={16} />
