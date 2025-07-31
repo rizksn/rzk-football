@@ -26,6 +26,9 @@ type LowerPanelProps = {
   saveRankings: () => Promise<void>;
   resetRankings: () => void;
   downloadRankings: () => void;
+  queuedPlayers: Player[];
+  onAddToQueue: (player: Player) => void;
+  onRemoveFromQueue: (playerId: string) => void;
 };
 
 const LowerPanel: React.FC<LowerPanelProps> = ({
@@ -46,24 +49,16 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   saveRankings,
   resetRankings,
   downloadRankings,
+  queuedPlayers,
+  onAddToQueue,
+  onRemoveFromQueue,
 }) => {
-  const [queuePlayers, setQueuePlayers] = useState<Player[]>([]);
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
   const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
 
-  const handleAddToQueue = (player: Player) => {
-    if (!queuePlayers.some((p) => p.player_id === player.player_id)) {
-      setQueuePlayers((prev) => [...prev, player]);
-    }
-  };
-
-  const handleRemoveFromQueue = (playerId: string) => {
-    setQueuePlayers((prev) => prev.filter((p) => p.player_id !== playerId));
-  };
-
   const handleUserDraft = (player: Player) => {
     if (!isUserTurn) return;
-    handleRemoveFromQueue(player.player_id);
+    onRemoveFromQueue(player.player_id);
     onDraftPlayer(player);
   };
 
@@ -91,7 +86,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
           <div className="w-1/2 flex flex-col overflow-y-auto">
             <LeftPanel
               players={players}
-              onAddToQueue={handleAddToQueue}
+              onAddToQueue={onAddToQueue}
               onDraftClick={handleUserDraft}
               isUserTurn={isUserTurn}
               onDisplayLeft={(player) => setLeftPlayer(player)}
@@ -104,11 +99,11 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
           {/* Right */}
           <div className="w-1/2 flex flex-col overflow-y-auto">
             <RightPanel
-              queuedPlayers={queuePlayers}
+              queuedPlayers={queuedPlayers}
               rankingPlayers={rankingPlayers}
               userRoster={userRoster}
               rosterSettings={rosterSettings}
-              onRemoveFromQueue={handleRemoveFromQueue}
+              onRemoveFromQueue={onRemoveFromQueue}
               setRankedPlayers={setRankedPlayers}
               loadRankings={loadRankings}
               saveRankings={saveRankings}

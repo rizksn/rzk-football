@@ -50,7 +50,7 @@ export default function MockDraft() {
     draftedPlayers,
     availablePlayers,
     userRoster,
-  } = useDraftState(draftConfig, rosterSettings, null, null); // 👈 temp null
+  } = useDraftState(draftConfig, rosterSettings, null, null);
 
   // 🔁 Rankings Manager
   const {
@@ -76,6 +76,8 @@ export default function MockDraft() {
       : adpPlayers;
     return fallback.slice().sort((a, b) => a.rank - b.rank);
   }, [savedRankings, draftPlan, availablePlayers, adpPlayers]);
+
+  const [queuedPlayers, setQueuedPlayers] = useState<Player[]>([]);
 
   // 🧠 Draft lifecycle state
   const [draftStarted, setDraftStarted] = useState(false);
@@ -140,15 +142,47 @@ export default function MockDraft() {
     currentPick,
   ]);
 
+  const handleAddToQueue = (player: Player) => {
+    if (!queuedPlayers.some((p) => p.player_id === player.player_id)) {
+      setQueuedPlayers((prev) => [...prev, player]);
+    }
+  };
+
+  const handleRemoveFromQueue = (playerId: string) => {
+    setQueuedPlayers((prev) => prev.filter((p) => p.player_id !== playerId));
+  };
+
   useEffect(() => {
     if (!draftStarted || draftComplete) return;
 
     if (isUserTurn) {
-      setIsTicking(true); // ✅ Start timer when it's user's pick
+      setIsTicking(true);
     } else {
-      setIsTicking(false); // ✅ Pause timer on CPU pick
+      setIsTicking(false);
     }
   }, [isUserTurn, draftStarted, draftComplete]);
+
+  useEffect(() => {
+    if (queuedPlayers.length === 0) return;
+
+    const draftedIds = draftPlan
+      .map((pick) => pick.draftedPlayer?.player_id)
+      .filter(Boolean);
+
+    const removed = queuedPlayers.filter((p) =>
+      draftedIds.includes(p.player_id)
+    );
+
+    if (removed.length > 0) {
+      console.log(
+        "Removed drafted players from queue:",
+        removed.map((p) => p.full_name)
+      );
+      setQueuedPlayers((prev) =>
+        prev.filter((p) => !draftedIds.includes(p.player_id))
+      );
+    }
+  }, [draftPlan]);
 
   const numRounds = rosterSettings.totalRounds;
   const draftBoardByRound: DraftPick[][] = [];
@@ -207,6 +241,9 @@ export default function MockDraft() {
             saveRankings={saveRankings}
             resetRankings={resetRankings}
             downloadRankings={downloadRankings}
+            queuedPlayers={queuedPlayers}
+            onAddToQueue={handleAddToQueue}
+            onRemoveFromQueue={handleRemoveFromQueue}
           />
         </div>
 
