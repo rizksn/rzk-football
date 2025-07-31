@@ -5,6 +5,7 @@ export type MockNavbarProps = {
   timer: number;
   setTimer: React.Dispatch<React.SetStateAction<number>>;
   isTicking: boolean;
-  setIsTicking: React.Dispatch<React.SetStateAction<boolean>>;
   onOpenKeeperModal: () => void;
+  onPause: () => void;
+  onResume: () => void;
 };

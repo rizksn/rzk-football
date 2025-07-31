@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 type TimerDisplayProps = {
   timer: number;
@@ -6,8 +6,10 @@ type TimerDisplayProps = {
 
 export default function TimerDisplay({ timer }: TimerDisplayProps) {
   const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60).toString().padStart(2, '0');
-    const s = (secs % 60).toString().padStart(2, '0');
+    const m = Math.floor(secs / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (secs % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
 

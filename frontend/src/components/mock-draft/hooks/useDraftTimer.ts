@@ -1,11 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import type { Player } from "@/types/core/player";
 
-/**
- * Handles timer state, ticking control, and auto-pick logic if timer hits 0.
- */
 export function useDraftTimer(
   draftStarted: boolean,
   draftComplete: boolean,
@@ -15,28 +12,72 @@ export function useDraftTimer(
 ) {
   const [timer, setTimer] = useState(120);
   const [isTicking, setIsTicking] = useState(false);
+  const [wasManuallyPaused, setWasManuallyPaused] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // 🎬 Start ticking unless user paused manually
+  useEffect(() => {
+    if (!draftStarted || draftComplete) return;
+
+    if (!wasManuallyPaused) {
+      setIsTicking(true);
+    }
+  }, [draftStarted, draftComplete, wasManuallyPaused]);
+
+  // ⏱ Tick every second
+  useEffect(() => {
+    if (!isTicking) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return;
+    }
+
+    intervalRef.current = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isTicking]);
+
+  // 🧠 Auto-pick if user time runs out
   useEffect(() => {
     if (!draftStarted || !isUserTurn || draftComplete) return;
 
     if (timer === 0) {
-      console.warn("⏰ Timer expired — forcing pick for user...");
-
-      const topQueuedPlayer = null; // Placeholder for future logic
       const fallbackPlayer = availablePlayers[0];
-
       if (fallbackPlayer) {
         handleUserPick(fallbackPlayer);
       }
 
       setTimer(120);
+      setIsTicking(false);
     }
   }, [timer, draftStarted, isUserTurn, draftComplete, availablePlayers]);
+
+  // 🧷 Controls
+  const pause = () => {
+    setIsTicking(false);
+    setWasManuallyPaused(true);
+  };
+
+  const resume = () => {
+    setIsTicking(true);
+    setWasManuallyPaused(false);
+  };
+
+  const showPauseButton = draftStarted && isTicking && !draftComplete;
+  const showPlayButton =
+    draftStarted && !isTicking && wasManuallyPaused && !draftComplete;
 
   return {
     timer,
     setTimer,
     isTicking,
     setIsTicking,
+    pause,
+    resume,
+    showPauseButton,
+    showPlayButton,
   };
 }

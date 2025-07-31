@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Player } from "@/types/core/player";
 import { useAuthContext } from "@/context/AuthContext";
 import MockNavbar from "@/components/mock-draft/MockNavbar";
@@ -52,7 +52,7 @@ export default function MockDraft() {
     userRoster,
   } = useDraftState(draftConfig, rosterSettings, null, null); // 👈 temp null
 
-  // 🔁 Rankings Manager (load/save/reset/download)
+  // 🔁 Rankings Manager
   const {
     rankedPlayers: savedRankings,
     setRankedPlayers,
@@ -66,26 +66,27 @@ export default function MockDraft() {
     const draftedIds = draftPlan
       .map((pick) => pick.draftedPlayer?.player_id)
       .filter(Boolean);
-
     if (savedRankings?.length) {
       return savedRankings.filter(
         (player) => !draftedIds.includes(player.player_id)
       );
     }
-
     const fallback = draftPlan.some((pick) => pick.draftedPlayer)
       ? availablePlayers
       : adpPlayers;
-
     return fallback.slice().sort((a, b) => a.rank - b.rank);
   }, [savedRankings, draftPlan, availablePlayers, adpPlayers]);
 
-  // 📊 Derived Pick Info
+  // 🧠 Draft lifecycle state
+  const [draftStarted, setDraftStarted] = useState(false);
   const [userDraftSlot, setUserDraftSlot] = useState<number | null>(null);
-  const { currentPickIndex, currentPick, draftComplete, isUserTurn } =
-    useCurrentPickState(draftPlan, true, userDraftSlot);
+  const [assignModeIndex, setAssignModeIndex] = useState<number | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showKeeperModal, setShowKeeperModal] = useState(false);
 
-  // 🧠 Sim Engine
+  const { currentPickIndex, currentPick, draftComplete, isUserTurn } =
+    useCurrentPickState(draftPlan, draftStarted, userDraftSlot);
+
   const { simulateCpuPick, handleUserPick } = useDraftSimulation(
     draftPlan,
     setDraftPlan,
@@ -94,9 +95,17 @@ export default function MockDraft() {
     rosterSettings
   );
 
-  // ⏱ Timer State + Auto Pick
-  const { timer, setTimer, isTicking, setIsTicking } = useDraftTimer(
-    true,
+  const {
+    timer,
+    setTimer,
+    isTicking,
+    setIsTicking,
+    showPauseButton,
+    showPlayButton,
+    pause,
+    resume,
+  } = useDraftTimer(
+    draftStarted,
     draftComplete,
     isUserTurn,
     availablePlayers,
@@ -104,22 +113,43 @@ export default function MockDraft() {
       handleUserPick(player, currentPick, setIsTicking, setTimer)
   );
 
-  // 🧠 UI Toggles
-  const [assignModeIndex, setAssignModeIndex] = useState<number | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showKeeperModal, setShowKeeperModal] = useState(false);
-
-  // 👤 User Actions
   const { handleManualAssignPlayer, handleStartDraft } = useDraftUserActions(
     draftPlan,
     setDraftPlan,
     assignModeIndex,
     setAssignModeIndex,
-    () => {}, // we already start draft on load
-    () => {} // timer handled externally
+    setDraftStarted,
+    setIsTicking
   );
 
-  // 📊 Draft board shape
+  // 🧠 Ensure CPU picks continue automatically
+  useEffect(() => {
+    if (!draftStarted || userDraftSlot == null || draftComplete) return;
+    if (currentPick?.teamIndex !== userDraftSlot) {
+      const timeout = setTimeout(() => {
+        simulateCpuPick(currentPick);
+      }, 800);
+      return () => clearTimeout(timeout);
+    }
+  }, [
+    draftStarted,
+    userDraftSlot,
+    draftComplete,
+    currentPick?.teamIndex,
+    simulateCpuPick,
+    currentPick,
+  ]);
+
+  useEffect(() => {
+    if (!draftStarted || draftComplete) return;
+
+    if (isUserTurn) {
+      setIsTicking(true); // ✅ Start timer when it's user's pick
+    } else {
+      setIsTicking(false); // ✅ Pause timer on CPU pick
+    }
+  }, [isUserTurn, draftStarted, draftComplete]);
+
   const numRounds = rosterSettings.totalRounds;
   const draftBoardByRound: DraftPick[][] = [];
   for (let i = 0; i < numRounds; i++) {
@@ -130,19 +160,20 @@ export default function MockDraft() {
     <div className="w-full max-w-[1600px] min-w-[1400px] mx-auto h-full">
       <div className="flex flex-col h-screen overflow-hidden">
         <MockNavbar
-          draftStarted={true}
+          draftStarted={draftStarted}
           onStartDraft={() => handleStartDraft()}
           onOpenSettings={() => setShowSettings(true)}
           timer={timer}
           setTimer={setTimer}
           isTicking={isTicking}
-          setIsTicking={setIsTicking}
           onOpenKeeperModal={() => setShowKeeperModal(true)}
+          onPause={pause}
+          onResume={resume}
         />
 
         <div className="flex-1 overflow-y-auto relative z-0">
           <DraftBoard
-            draftStarted={true}
+            draftStarted={draftStarted}
             draftGrid={draftBoardByRound}
             claimedTeamIndex={userDraftSlot}
             onClaimTeam={setUserDraftSlot}
@@ -208,10 +239,7 @@ export default function MockDraft() {
         isPaidUser={isPaidUser}
         onLoadKeeperSet={({ draftPlan, adpFormatKey }) => {
           setDraftPlan(draftPlan);
-          setDraftConfig((prev) => ({
-            ...prev,
-            adpFormatKey,
-          }));
+          setDraftConfig((prev) => ({ ...prev, adpFormatKey }));
         }}
       />
     </div>

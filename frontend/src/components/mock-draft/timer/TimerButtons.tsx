@@ -1,37 +1,43 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { Power, Pause, Play } from 'lucide-react';
+import { useEffect, useRef } from "react";
+import { Power, Pause, Play } from "lucide-react";
 
 type TimerButtonsProps = {
   timer: number;
   setTimer: React.Dispatch<React.SetStateAction<number>>;
   isTicking: boolean;
-  setIsTicking: React.Dispatch<React.SetStateAction<boolean>>;
   draftStarted: boolean;
   onStartDraft: () => void;
+  onPause: () => void;
+  onResume: () => void;
 };
 
 export default function TimerButtons({
   timer,
   setTimer,
   isTicking,
-  setIsTicking,
   draftStarted,
   onStartDraft,
+  onPause,
+  onResume,
 }: TimerButtonsProps) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const DEFAULT_TIMER = 120;
 
   useEffect(() => {
-    if (isTicking && timer > 0) {
-      clearInterval(intervalRef.current as NodeJS.Timeout);
+    if (isTicking) {
       intervalRef.current = setInterval(() => {
-        setTimer(prev => prev - 1);
+        setTimer((prev) => {
+          if (prev > 0) return prev - 1;
+          clearInterval(intervalRef.current as NodeJS.Timeout);
+          return 0;
+        });
       }, 1000);
     }
+
     return () => clearInterval(intervalRef.current as NodeJS.Timeout);
-  }, [isTicking, timer]);
+  }, [isTicking]);
 
   const showPlayIcon = draftStarted && !isTicking;
 
@@ -40,7 +46,6 @@ export default function TimerButtons({
       <button
         onClick={() => {
           onStartDraft();
-          setIsTicking(true); 
         }}
         disabled={draftStarted}
         className="p-2 m-1 bg-[#39fb1fae] hover:bg-[#39fb1f] rounded text-white shadow-[0_0_10px_rgba(0,136,255,0.6)] hover:shadow-[0_0_14px_rgba(0,255,160,0.8)] transition-all duration-200 transform hover:scale-110 hover:-translate-y-[1px] disabled:opacity-40 disabled:cursor-not-allowed"
@@ -49,7 +54,13 @@ export default function TimerButtons({
       </button>
 
       <button
-        onClick={() => setIsTicking(prev => !prev)}
+        onClick={() => {
+          if (isTicking) {
+            onPause();
+          } else {
+            onResume();
+          }
+        }}
         disabled={!draftStarted}
         className="p-2 bg-[#fb391faf] hover:bg-[#fb391f] rounded text-white shadow-[0_0_10px_rgba(0,136,255,0.6)] hover:shadow-[0_0_14px_rgba(0,255,160,0.8)] transition-all duration-200 transform hover:scale-110 hover:-translate-y-[1px] disabled:opacity-40 disabled:cursor-not-allowed"
       >

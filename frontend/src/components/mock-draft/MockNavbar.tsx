@@ -16,8 +16,9 @@ const MockNavbar = ({
   timer,
   setTimer,
   isTicking,
-  setIsTicking,
   onOpenKeeperModal,
+  onPause,
+  onResume,
 }: MockNavbarProps) => {
   const { user, isLoggedIn, isPaidUser, logout } = useAuth();
 
@@ -77,10 +78,12 @@ const MockNavbar = ({
             timer={timer}
             setTimer={setTimer}
             isTicking={isTicking}
-            setIsTicking={setIsTicking}
             draftStarted={draftStarted}
             onStartDraft={onStartDraft}
+            onPause={onPause}
+            onResume={onResume}
           />
+
           <div className="ml-4">
             <TimerDisplay timer={timer} />
           </div>
