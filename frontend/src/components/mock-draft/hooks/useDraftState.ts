@@ -14,7 +14,6 @@ import type { DraftPick } from "../MockDraft";
 export function useDraftState(
   draftConfig: DraftConfig,
   rosterSettings: DraftRosterSettings,
-  userDraftSlot: number | null,
   savedRankings: Player[] | null
 ) {
   const [draftPlan, setDraftPlan] = useState<DraftPick[]>([]);
@@ -75,13 +74,6 @@ export function useDraftState(
       .sort((a, b) => a.rank - b.rank);
   }, [adpPlayers, draftPlan]);
 
-  const userRoster = useMemo(() => {
-    if (userDraftSlot == null) return [];
-    return draftPlan
-      .filter((p) => p.teamIndex === userDraftSlot && p.draftedPlayer)
-      .map((p) => p.draftedPlayer!);
-  }, [draftPlan, userDraftSlot]);
-
   return {
     draftPlan,
     setDraftPlan,
@@ -90,6 +82,5 @@ export function useDraftState(
     loading,
     draftedPlayers,
     availablePlayers,
-    userRoster,
   };
 }

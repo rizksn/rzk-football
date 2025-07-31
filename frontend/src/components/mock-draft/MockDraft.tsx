@@ -52,8 +52,9 @@ export default function MockDraft() {
     loading,
     draftedPlayers,
     availablePlayers,
-    userRoster,
-  } = useDraftState(draftConfig, rosterSettings, null, null);
+  } = useDraftState(draftConfig, rosterSettings, null);
+
+  const [userRoster, setUserRoster] = useState<Player[]>([]);
 
   // 🔁 Rankings Manager
   const {
@@ -93,13 +94,29 @@ export default function MockDraft() {
   const { currentPickIndex, currentPick, draftComplete, isUserTurn } =
     useCurrentPickState(draftPlan, draftStarted, userDraftSlot);
 
-  const { simulateCpuPick, handleUserPick } = useDraftSimulation(
+  const {
+    simulateCpuPick,
+    handleUserPick: baseHandleUserPick, // 👈 renaming here
+  } = useDraftSimulation(
     draftPlan,
     setDraftPlan,
     scoredPlayers,
     draftConfig,
     rosterSettings
   );
+
+  const handleUserPick = (
+    player: Player,
+    pick: DraftPick,
+    setIsTicking: (val: boolean) => void,
+    setTimer: (val: number) => void
+  ) => {
+    if (pick?.teamIndex === userDraftSlot) {
+      setUserRoster((prev) => [...prev, player]);
+    }
+
+    baseHandleUserPick(player, pick, setIsTicking, setTimer);
+  };
 
   const {
     timer,
@@ -119,14 +136,28 @@ export default function MockDraft() {
       handleUserPick(player, currentPick, setIsTicking, setTimer)
   );
 
-  const { handleManualAssignPlayer, handleStartDraft } = useDraftUserActions(
-    draftPlan,
-    setDraftPlan,
-    assignModeIndex,
-    setAssignModeIndex,
-    setDraftStarted,
-    setIsTicking
-  );
+  const { handleManualAssignPlayer: baseManualAssignPlayer, handleStartDraft } =
+    useDraftUserActions(
+      draftPlan,
+      setDraftPlan,
+      assignModeIndex,
+      setAssignModeIndex,
+      setDraftStarted,
+      setIsTicking
+    );
+
+  const handleManualAssignPlayer = (player: Player) => {
+    const assignedPick = draftPlan.find(
+      (pick) => pick.teamIndex === assignModeIndex && !pick.draftedPlayer
+    );
+    if (!assignedPick) return;
+
+    if (assignModeIndex === userDraftSlot) {
+      setUserRoster((prev) => [...prev, player]);
+    }
+
+    baseManualAssignPlayer(player);
+  };
 
   // 🧠 Ensure CPU picks continue automatically
   useEffect(() => {
