@@ -59,8 +59,6 @@ export default function MockDraft() {
     availablePlayers,
   } = useDraftState(draftConfig, rosterSettings, user);
 
-  const [userRoster, setUserRoster] = useState<Player[]>([]);
-
   const finalRankingPlayers = useMemo(() => {
     const draftedIds = draftPlan
       .map((pick) => pick.draftedPlayer?.player_id)
@@ -100,16 +98,19 @@ export default function MockDraft() {
     rosterSettings
   );
 
+  const userRoster = useMemo(() => {
+    if (userDraftSlot == null) return [];
+    return draftPlan
+      .filter((pick) => pick.teamIndex === userDraftSlot && pick.draftedPlayer)
+      .map((pick) => pick.draftedPlayer!);
+  }, [draftPlan, userDraftSlot]);
+
   const handleUserPick = (
     player: Player,
     pick: DraftPick,
     setIsTicking: (val: boolean) => void,
     setTimer: (val: number) => void
   ) => {
-    if (pick?.teamIndex === userDraftSlot) {
-      setUserRoster((prev) => [...prev, player]);
-    }
-
     baseHandleUserPick(player, pick, setIsTicking, setTimer);
   };
 
@@ -138,8 +139,7 @@ export default function MockDraft() {
     setAssignModeIndex,
     setDraftStarted,
     setIsTicking,
-    userDraftSlot,
-    setUserRoster
+    userDraftSlot
   );
 
   // 🧠 Ensure CPU picks continue automatically
@@ -181,26 +181,17 @@ export default function MockDraft() {
   }, [isUserTurn, draftStarted, draftComplete]);
 
   useEffect(() => {
-    if (queuedPlayers.length === 0) return;
+    if (!queuedPlayers.length) return;
 
-    const draftedIds = draftPlan
-      .map((pick) => pick.draftedPlayer?.player_id)
-      .filter(Boolean);
-
-    const removed = queuedPlayers.filter((p) =>
-      draftedIds.includes(p.player_id)
+    const draftedIds = new Set(
+      draftPlan.map((p) => p.draftedPlayer?.player_id).filter(Boolean)
     );
 
-    if (removed.length > 0) {
-      console.log(
-        "Removed drafted players from queue:",
-        removed.map((p) => p.full_name)
-      );
-      setQueuedPlayers((prev) =>
-        prev.filter((p) => !draftedIds.includes(p.player_id))
-      );
+    const filtered = queuedPlayers.filter((p) => !draftedIds.has(p.player_id));
+    if (filtered.length !== queuedPlayers.length) {
+      setQueuedPlayers(filtered);
     }
-  }, [draftPlan]);
+  }, [draftPlan, queuedPlayers]);
 
   useEffect(() => {
     setQueueOrder(queuedPlayers.map((p) => p.player_id));
