@@ -265,6 +265,7 @@ export default function MockDraft() {
             onAddToQueue={handleAddToQueue}
             onRemoveFromQueue={handleRemoveFromQueue}
             queueOrder={queueOrder}
+            setQueueOrder={setQueueOrder}
             handleQueueDragEnd={handleQueueDragEnd}
             isPaidUser={isPaidUser}
           />

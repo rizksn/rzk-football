@@ -27,6 +27,7 @@ type RightPanelProps = {
   resetRankings: () => void;
   downloadRankings: () => void;
   isPaidUser: boolean;
+  setQueueOrder: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 const RightPanel = ({
@@ -43,6 +44,7 @@ const RightPanel = ({
   resetRankings,
   downloadRankings,
   isPaidUser,
+  setQueueOrder,
 }: RightPanelProps) => {
   const [activeTab, setActiveTab] = useState<"queue" | "rankings">("queue");
 
@@ -85,7 +87,9 @@ const RightPanel = ({
                     );
                     return;
                   }
-                  loadRankings();
+
+                  setQueueOrder(rankingPlayers.map((p) => p.player_id));
+                  toast.success("✅ Rankings migrated to queue!");
                 }}
                 className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
               >

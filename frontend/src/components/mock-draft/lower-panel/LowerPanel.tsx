@@ -33,6 +33,7 @@ type LowerPanelProps = {
   queueOrder: string[];
   handleQueueDragEnd: (event: DragEndEvent) => void;
   isPaidUser: boolean;
+  setQueueOrder: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 const LowerPanel: React.FC<LowerPanelProps> = ({
@@ -59,6 +60,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   queueOrder,
   handleQueueDragEnd,
   isPaidUser,
+  setQueueOrder,
 }) => {
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
   const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
@@ -117,6 +119,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               resetRankings={resetRankings}
               downloadRankings={downloadRankings}
               queueOrder={queueOrder}
+              setQueueOrder={setQueueOrder}
               handleQueueDragEnd={handleQueueDragEnd}
               isPaidUser={isPaidUser}
             />
