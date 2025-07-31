@@ -31,7 +31,6 @@ type LowerPanelProps = {
   onAddToQueue: (player: Player) => void;
   onRemoveFromQueue: (playerId: string) => void;
   queueOrder: string[];
-  setQueueOrder: React.Dispatch<React.SetStateAction<string[]>>;
   handleQueueDragEnd: (event: DragEndEvent) => void;
 };
 
@@ -57,7 +56,6 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   onAddToQueue,
   onRemoveFromQueue,
   queueOrder,
-  setQueueOrder,
   handleQueueDragEnd,
 }) => {
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
@@ -117,7 +115,6 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               resetRankings={resetRankings}
               downloadRankings={downloadRankings}
               queueOrder={queueOrder}
-              setQueueOrder={setQueueOrder}
               handleQueueDragEnd={handleQueueDragEnd}
             />
           </div>

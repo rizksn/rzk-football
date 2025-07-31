@@ -15,7 +15,6 @@ import type { DraftRosterSettings } from "@/types/draft/config";
 type RightPanelProps = {
   queuedPlayers: Player[];
   queueOrder: string[];
-  setQueueOrder: React.Dispatch<React.SetStateAction<string[]>>;
   handleQueueDragEnd: (event: DragEndEvent) => void;
   userRoster: Player[];
   rosterSettings: DraftRosterSettings;
@@ -31,7 +30,6 @@ type RightPanelProps = {
 const RightPanel = ({
   queuedPlayers,
   queueOrder,
-  setQueueOrder,
   handleQueueDragEnd,
   userRoster,
   rosterSettings,

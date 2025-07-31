@@ -75,7 +75,6 @@ export default function MockDraft() {
   }, [rankedPlayers, draftPlan, availablePlayers, adpPlayers]);
 
   const [queuedPlayers, setQueuedPlayers] = useState<Player[]>([]);
-  const [queueOrder, setQueueOrder] = useState<string[]>([]);
 
   // 🧠 Draft lifecycle state
   const [draftStarted, setDraftStarted] = useState(false);
@@ -193,9 +192,10 @@ export default function MockDraft() {
     }
   }, [draftPlan, queuedPlayers]);
 
-  useEffect(() => {
-    setQueueOrder(queuedPlayers.map((p) => p.player_id));
-  }, [queuedPlayers]);
+  const queueOrder = useMemo(
+    () => queuedPlayers.map((p) => p.player_id),
+    [queuedPlayers]
+  );
 
   const numRounds = rosterSettings.totalRounds;
   const draftBoardByRound: DraftPick[][] = [];
@@ -207,9 +207,9 @@ export default function MockDraft() {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    setQueueOrder((prev) => {
-      const oldIndex = prev.indexOf(active.id as string);
-      const newIndex = prev.indexOf(over.id as string);
+    setQueuedPlayers((prev) => {
+      const oldIndex = prev.findIndex((p) => p.player_id === active.id);
+      const newIndex = prev.findIndex((p) => p.player_id === over.id);
       return arrayMove(prev, oldIndex, newIndex);
     });
   };
@@ -269,7 +269,6 @@ export default function MockDraft() {
             onAddToQueue={handleAddToQueue}
             onRemoveFromQueue={handleRemoveFromQueue}
             queueOrder={queueOrder}
-            setQueueOrder={setQueueOrder}
             handleQueueDragEnd={handleQueueDragEnd}
           />
         </div>
