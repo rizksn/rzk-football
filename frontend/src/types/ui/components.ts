@@ -8,4 +8,6 @@ export type MockNavbarProps = {
   onOpenKeeperModal: () => void;
   onPause: () => void;
   onResume: () => void;
+  showPauseButton: boolean;
+  showPlayButton: boolean;
 };

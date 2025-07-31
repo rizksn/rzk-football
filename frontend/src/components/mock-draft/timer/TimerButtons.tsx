@@ -11,6 +11,8 @@ type TimerButtonsProps = {
   onStartDraft: () => void;
   onPause: () => void;
   onResume: () => void;
+  showPauseButton: boolean;
+  showPlayButton: boolean;
 };
 
 export default function TimerButtons({
@@ -21,6 +23,8 @@ export default function TimerButtons({
   onStartDraft,
   onPause,
   onResume,
+  showPauseButton,
+  showPlayButton,
 }: TimerButtonsProps) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const DEFAULT_TIMER = 120;
@@ -38,8 +42,6 @@ export default function TimerButtons({
 
     return () => clearInterval(intervalRef.current as NodeJS.Timeout);
   }, [isTicking]);
-
-  const showPlayIcon = draftStarted && !isTicking;
 
   return (
     <div className="flex items-center space-x-2">
@@ -64,7 +66,7 @@ export default function TimerButtons({
         disabled={!draftStarted}
         className="p-2 bg-[#fb391faf] hover:bg-[#fb391f] rounded text-white shadow-[0_0_10px_rgba(0,136,255,0.6)] hover:shadow-[0_0_14px_rgba(0,255,160,0.8)] transition-all duration-200 transform hover:scale-110 hover:-translate-y-[1px] disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {showPlayIcon ? (
+        {showPlayButton ? (
           <Play className="w-3 h-3" />
         ) : (
           <Pause className="w-3 h-3" />

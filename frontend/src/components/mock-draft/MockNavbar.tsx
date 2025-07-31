@@ -19,6 +19,8 @@ const MockNavbar = ({
   onOpenKeeperModal,
   onPause,
   onResume,
+  showPauseButton,
+  showPlayButton,
 }: MockNavbarProps) => {
   const { user, isLoggedIn, isPaidUser, logout } = useAuth();
 
@@ -82,6 +84,8 @@ const MockNavbar = ({
             onStartDraft={onStartDraft}
             onPause={onPause}
             onResume={onResume}
+            showPauseButton={showPauseButton}
+            showPlayButton={showPlayButton}
           />
 
           <div className="ml-4">

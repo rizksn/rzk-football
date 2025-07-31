@@ -100,10 +100,10 @@ export default function MockDraft() {
     setTimer,
     isTicking,
     setIsTicking,
-    showPauseButton,
-    showPlayButton,
     pause,
     resume,
+    showPauseButton,
+    showPlayButton,
   } = useDraftTimer(
     draftStarted,
     draftComplete,
@@ -169,6 +169,8 @@ export default function MockDraft() {
           onOpenKeeperModal={() => setShowKeeperModal(true)}
           onPause={pause}
           onResume={resume}
+          showPauseButton={showPauseButton}
+          showPlayButton={showPlayButton}
         />
 
         <div className="flex-1 overflow-y-auto relative z-0">
