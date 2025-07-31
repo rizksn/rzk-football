@@ -22,11 +22,9 @@ export function useDraftUserActions(
     const pickToAssign = draftPlan[assignModeIndex];
     if (!pickToAssign || pickToAssign.draftedPlayer) return;
 
-    const updated = [...draftPlan];
-    updated[assignModeIndex] = {
-      ...pickToAssign,
-      draftedPlayer: player,
-    };
+    const updated = draftPlan.map((pick, i) =>
+      i === assignModeIndex ? { ...pick, draftedPlayer: player } : pick
+    );
 
     setDraftPlan(updated);
     setAssignModeIndex(null);
