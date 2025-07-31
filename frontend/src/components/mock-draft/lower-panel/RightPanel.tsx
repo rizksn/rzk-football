@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 
@@ -8,11 +8,9 @@ import { Player } from "@/types/core/player";
 import Queue from "./Queue";
 import Roster from "./Roster";
 import Rankings from "./Rankings";
-import { User } from "firebase/auth";
-import { DraftRosterSettings, DraftConfig } from "@/types/draft/config";
 
 import { Save, Download, FolderOutput, RotateCcw } from "lucide-react";
-import { useRankingsManager } from "@/components/mock-draft/hooks/useRankingsManager";
+import type { DraftRosterSettings } from "@/types/draft/config";
 
 type RightPanelProps = {
   queuedPlayers: Player[];
@@ -20,9 +18,11 @@ type RightPanelProps = {
   rosterSettings: DraftRosterSettings;
   onRemoveFromQueue: (playerId: string) => void;
   rankingPlayers: Player[];
-  user: User | null;
-  draftConfig: DraftConfig;
-  adpPlayers: Player[];
+  setRankedPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
+  loadRankings: () => Promise<void>;
+  saveRankings: () => Promise<void>;
+  resetRankings: () => void;
+  downloadRankings: () => void;
 };
 
 const RightPanel = ({
@@ -30,27 +30,24 @@ const RightPanel = ({
   userRoster,
   rosterSettings,
   onRemoveFromQueue,
-  user,
-  draftConfig,
-  adpPlayers,
+  rankingPlayers,
+  setRankedPlayers,
+  loadRankings,
+  saveRankings,
+  resetRankings,
+  downloadRankings,
 }: RightPanelProps) => {
   const [queueOrder, setQueueOrder] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"queue" | "rankings">("queue");
 
-  const {
-    rankedPlayers,
-    setRankedPlayers,
-    loadRankings,
-    saveRankings,
-    resetRankings,
-    downloadRankings,
-  } = useRankingsManager(user, draftConfig, adpPlayers);
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    if (user && activeTab === "rankings") {
+    if (activeTab === "rankings" && !hasLoaded.current) {
       loadRankings();
+      hasLoaded.current = true;
     }
-  }, [user, activeTab]);
+  }, [activeTab, loadRankings]);
 
   useEffect(() => {
     setQueueOrder(queuedPlayers.map((p) => p.player_id));
@@ -145,7 +142,7 @@ const RightPanel = ({
             />
           ) : (
             <Rankings
-              rankedPlayers={rankedPlayers}
+              rankedPlayers={rankingPlayers}
               setRankedPlayers={setRankedPlayers}
             />
           )}

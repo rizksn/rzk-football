@@ -21,6 +21,11 @@ type LowerPanelProps = {
   user: User | null;
   draftConfig: DraftConfig;
   adpPlayers: Player[];
+  setRankedPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
+  loadRankings: () => Promise<void>;
+  saveRankings: () => Promise<void>;
+  resetRankings: () => void;
+  downloadRankings: () => void;
 };
 
 const LowerPanel: React.FC<LowerPanelProps> = ({
@@ -36,6 +41,11 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   user,
   draftConfig,
   adpPlayers,
+  setRankedPlayers,
+  loadRankings,
+  saveRankings,
+  resetRankings,
+  downloadRankings,
 }) => {
   const [queuePlayers, setQueuePlayers] = useState<Player[]>([]);
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
@@ -99,9 +109,11 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               userRoster={userRoster}
               rosterSettings={rosterSettings}
               onRemoveFromQueue={handleRemoveFromQueue}
-              user={user}
-              draftConfig={draftConfig}
-              adpPlayers={adpPlayers}
+              setRankedPlayers={setRankedPlayers}
+              loadRankings={loadRankings}
+              saveRankings={saveRankings}
+              resetRankings={resetRankings}
+              downloadRankings={downloadRankings}
             />
           </div>
         </div>

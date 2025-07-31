@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Player } from "@/types/core/player";
 import { useAuthContext } from "@/context/AuthContext";
 import MockNavbar from "@/components/mock-draft/MockNavbar";
@@ -16,6 +16,7 @@ import { useDraftSimulation } from "@/components/mock-draft/hooks/useDraftSimula
 import { useDraftTimer } from "@/components/mock-draft/hooks/useDraftTimer";
 import { useDraftUserActions } from "@/components/mock-draft/hooks/useDraftUserActions";
 import { useCurrentPickState } from "@/components/mock-draft/hooks/useCurrentPickState";
+import { useRankingsManager } from "@/components/mock-draft/hooks/useRankingsManager";
 
 export interface DraftPick {
   pickIndex: number;
@@ -39,9 +40,6 @@ export default function MockDraft() {
     updateConfigWithTotalRounds,
   } = useDraftConfig();
 
-  // 🧠 Rankings (future: DB/localStorage)
-  const [savedRankings, setSavedRankings] = useState<Player[] | null>(null);
-
   // 🧠 Draft State (players, plan, fetch)
   const {
     draftPlan,
@@ -51,9 +49,36 @@ export default function MockDraft() {
     loading,
     draftedPlayers,
     availablePlayers,
-    rankingPlayers,
     userRoster,
-  } = useDraftState(draftConfig, rosterSettings, null, savedRankings);
+  } = useDraftState(draftConfig, rosterSettings, null, null); // 👈 temp null
+
+  // 🔁 Rankings Manager (load/save/reset/download)
+  const {
+    rankedPlayers: savedRankings,
+    setRankedPlayers,
+    loadRankings,
+    saveRankings,
+    resetRankings,
+    downloadRankings,
+  } = useRankingsManager(user, draftConfig, adpPlayers, draftPlan);
+
+  const finalRankingPlayers = useMemo(() => {
+    const draftedIds = draftPlan
+      .map((pick) => pick.draftedPlayer?.player_id)
+      .filter(Boolean);
+
+    if (savedRankings?.length) {
+      return savedRankings.filter(
+        (player) => !draftedIds.includes(player.player_id)
+      );
+    }
+
+    const fallback = draftPlan.some((pick) => pick.draftedPlayer)
+      ? availablePlayers
+      : adpPlayers;
+
+    return fallback.slice().sort((a, b) => a.rank - b.rank);
+  }, [savedRankings, draftPlan, availablePlayers, adpPlayers]);
 
   // 📊 Derived Pick Info
   const [userDraftSlot, setUserDraftSlot] = useState<number | null>(null);
@@ -140,10 +165,15 @@ export default function MockDraft() {
             rosterSettings={rosterSettings}
             assignModeIndex={assignModeIndex}
             onManualAssignPlayer={handleManualAssignPlayer}
-            rankingPlayers={rankingPlayers}
+            rankingPlayers={finalRankingPlayers}
             user={user}
             draftConfig={draftConfig}
             adpPlayers={adpPlayers}
+            setRankedPlayers={setRankedPlayers}
+            loadRankings={loadRankings}
+            saveRankings={saveRankings}
+            resetRankings={resetRankings}
+            downloadRankings={downloadRankings}
           />
         </div>
 

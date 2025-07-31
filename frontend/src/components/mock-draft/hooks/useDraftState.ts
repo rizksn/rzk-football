@@ -75,26 +75,6 @@ export function useDraftState(
       .sort((a, b) => a.rank - b.rank);
   }, [adpPlayers, draftPlan]);
 
-  const rankingPlayers = useMemo(() => {
-    const draftedIds = draftPlan
-      .map((pick) => pick.draftedPlayer?.player_id)
-      .filter(Boolean);
-
-    // 1. Use saved rankings if available
-    if (savedRankings?.length) {
-      return savedRankings.filter(
-        (player) => !draftedIds.includes(player.player_id)
-      );
-    }
-
-    // 2. Otherwise fallback to ADP, sorted by rank
-    const fallback = draftPlan.some((pick) => pick.draftedPlayer)
-      ? availablePlayers
-      : adpPlayers;
-
-    return fallback.slice().sort((a, b) => a.rank - b.rank);
-  }, [savedRankings, draftPlan, availablePlayers, adpPlayers]);
-
   const userRoster = useMemo(() => {
     if (userDraftSlot == null) return [];
     return draftPlan
@@ -110,7 +90,6 @@ export function useDraftState(
     loading,
     draftedPlayers,
     availablePlayers,
-    rankingPlayers,
     userRoster,
   };
 }

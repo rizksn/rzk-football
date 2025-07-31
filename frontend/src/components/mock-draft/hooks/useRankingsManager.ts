@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/utils/config";
 import { Player } from "@/types/core/player";
 import { DraftConfig } from "@/types/draft/config";
 import { User } from "firebase/auth";
+import type { DraftPick } from "@/components/mock-draft/MockDraft";
 
 export function useRankingsManager(
   user: User | null,
   draftConfig: DraftConfig,
-  adpPlayers: Player[]
+  adpPlayers: Player[],
+  draftPlan: DraftPick[]
 ) {
   const [rankedPlayers, setRankedPlayers] = useState<Player[]>(adpPlayers);
 
@@ -16,7 +18,7 @@ export function useRankingsManager(
     setRankedPlayers(adpPlayers);
   }, [adpPlayers]);
 
-  const loadRankings = async () => {
+  const loadRankings = useCallback(async () => {
     if (!user) return;
     try {
       const token = await user.getIdToken();
@@ -45,7 +47,7 @@ export function useRankingsManager(
       toast.error("❌ Failed to load rankings");
       console.error(err);
     }
-  };
+  }, [user, draftConfig.adpFormatKey, adpPlayers]); // 💡 only redefined if one of these changes
 
   const saveRankings = async () => {
     if (!user) return;
@@ -89,9 +91,17 @@ export function useRankingsManager(
     URL.revokeObjectURL(url);
   };
 
+  const rankingPlayers = useMemo(() => {
+    const draftedIds = draftPlan
+      .map((p) => p.draftedPlayer?.player_id)
+      .filter(Boolean);
+    return rankedPlayers.filter((p) => !draftedIds.includes(p.player_id));
+  }, [rankedPlayers, draftPlan]);
+
   return {
     rankedPlayers,
     setRankedPlayers,
+    rankingPlayers,
     loadRankings,
     saveRankings,
     resetRankings,
