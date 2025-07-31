@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
+import { toast } from "sonner";
 
 import { Player } from "@/types/core/player";
 import Queue from "./Queue";
@@ -113,7 +114,14 @@ const RightPanel = ({
                   ? "bg-cyan-600 text-white"
                   : "bg-slate-700 text-slate-300 hover:bg-slate-600"
               }`}
-              onClick={() => setActiveTab("rankings")}
+              onClick={() => {
+                if (activeTab === "rankings") {
+                  loadRankings();
+                  toast.success("✅ Saved rankings reloaded");
+                } else {
+                  setActiveTab("rankings");
+                }
+              }}
             >
               Rankings
             </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { toast } from "sonner"; // ✅ add this
+import { toast } from "sonner";
 import { Player } from "@/types/core/player";
 import { API_BASE_URL } from "@/utils/config";
 import { getSnakedTeamIndex, NUM_TEAMS } from "@/utils/constants";
@@ -122,7 +122,8 @@ export function useDraftState(
   };
 
   const resetRankings = () => {
-    setRankedPlayers([...adpPlayers]);
+    const sorted = [...adpPlayers].sort((a, b) => a.rank - b.rank);
+    setRankedPlayers(sorted);
     toast.success("✅ Rankings reset to ADP (not saved)");
   };
 
