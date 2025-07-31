@@ -48,7 +48,7 @@ export default function MockDraft() {
     setDraftPlan,
     scoredPlayers,
     adpPlayers,
-    rankedPlayers, // 👈 add this
+    rankedPlayers,
     setRankedPlayers,
     loadRankings,
     saveRankings,
@@ -63,7 +63,7 @@ export default function MockDraft() {
   const [userDraftSlot, setUserDraftSlot] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showKeeperModal, setShowKeeperModal] = useState(false);
-  const [queuedPlayers, setQueuedPlayers] = useState<Player[]>([]);
+  const [queueOrder, setQueueOrder] = useState<string[]>([]);
 
   const { currentPickIndex, currentPick, draftComplete, isUserTurn } =
     useCurrentPickState(draftPlan, draftStarted, userDraftSlot);
@@ -112,10 +112,10 @@ export default function MockDraft() {
       .map((pick) => pick.draftedPlayer!);
   }, [draftPlan, userDraftSlot]);
 
-  const queueOrder = useMemo(
-    () => queuedPlayers.map((p) => p.player_id),
-    [queuedPlayers]
-  );
+  const queuedPlayers = useMemo(() => {
+    const idSet = new Set(queueOrder);
+    return availablePlayers.filter((p) => idSet.has(p.player_id));
+  }, [availablePlayers, queueOrder]);
 
   const handleUserPick = (
     player: Player,
@@ -173,13 +173,14 @@ export default function MockDraft() {
   ]);
 
   const handleAddToQueue = (player: Player) => {
-    if (!queuedPlayers.some((p) => p.player_id === player.player_id)) {
-      setQueuedPlayers((prev) => [...prev, player]);
-    }
+    setQueueOrder((prev) => {
+      if (prev.includes(player.player_id)) return prev;
+      return [...prev, player.player_id];
+    });
   };
 
   const handleRemoveFromQueue = (playerId: string) => {
-    setQueuedPlayers((prev) => prev.filter((p) => p.player_id !== playerId));
+    setQueueOrder((prev) => prev.filter((id) => id !== playerId));
   };
 
   useEffect(() => {
@@ -192,19 +193,6 @@ export default function MockDraft() {
     }
   }, [isUserTurn, draftStarted, draftComplete]);
 
-  useEffect(() => {
-    if (!queuedPlayers.length) return;
-
-    const draftedIds = new Set(
-      draftPlan.map((p) => p.draftedPlayer?.player_id).filter(Boolean)
-    );
-
-    const filtered = queuedPlayers.filter((p) => !draftedIds.has(p.player_id));
-    if (filtered.length !== queuedPlayers.length) {
-      setQueuedPlayers(filtered);
-    }
-  }, [draftPlan, queuedPlayers]);
-
   const numRounds = rosterSettings.totalRounds;
   const draftBoardByRound: DraftPick[][] = [];
   for (let i = 0; i < numRounds; i++) {
@@ -215,9 +203,9 @@ export default function MockDraft() {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    setQueuedPlayers((prev) => {
-      const oldIndex = prev.findIndex((p) => p.player_id === active.id);
-      const newIndex = prev.findIndex((p) => p.player_id === over.id);
+    setQueueOrder((prev) => {
+      const oldIndex = prev.findIndex((id) => id === active.id);
+      const newIndex = prev.findIndex((id) => id === over.id);
       return arrayMove(prev, oldIndex, newIndex);
     });
   };
