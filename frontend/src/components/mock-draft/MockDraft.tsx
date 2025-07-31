@@ -55,9 +55,40 @@ export default function MockDraft() {
     resetRankings,
     downloadRankings,
     loading,
-    draftedPlayers,
-    availablePlayers,
   } = useDraftState(draftConfig, rosterSettings, user);
+
+  // 🧠 Draft lifecycle state
+  const [draftStarted, setDraftStarted] = useState(false);
+  const [assignModeIndex, setAssignModeIndex] = useState<number | null>(null);
+  const [userDraftSlot, setUserDraftSlot] = useState<number | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showKeeperModal, setShowKeeperModal] = useState(false);
+  const [queuedPlayers, setQueuedPlayers] = useState<Player[]>([]);
+
+  const { currentPickIndex, currentPick, draftComplete, isUserTurn } =
+    useCurrentPickState(draftPlan, draftStarted, userDraftSlot);
+
+  const { simulateCpuPick, handleUserPick: baseHandleUserPick } =
+    useDraftSimulation(
+      draftPlan,
+      setDraftPlan,
+      scoredPlayers,
+      draftConfig,
+      rosterSettings
+    );
+
+  const draftedPlayers = useMemo(() => {
+    return draftPlan
+      .map((pick) => pick.draftedPlayer)
+      .filter((player): player is Player => !!player);
+  }, [draftPlan]);
+
+  const availablePlayers = useMemo(() => {
+    const draftedIds = new Set(draftedPlayers.map((p) => p.player_id));
+    return adpPlayers
+      .filter((p) => !draftedIds.has(p.player_id))
+      .sort((a, b) => a.rank - b.rank); // 🔥 Sort by ADP
+  }, [adpPlayers, draftedPlayers]);
 
   const finalRankingPlayers = useMemo(() => {
     const draftedIds = draftPlan
@@ -74,35 +105,17 @@ export default function MockDraft() {
     return fallback.slice().sort((a, b) => a.rank - b.rank);
   }, [rankedPlayers, draftPlan, availablePlayers, adpPlayers]);
 
-  const [queuedPlayers, setQueuedPlayers] = useState<Player[]>([]);
-
-  // 🧠 Draft lifecycle state
-  const [draftStarted, setDraftStarted] = useState(false);
-  const [userDraftSlot, setUserDraftSlot] = useState<number | null>(null);
-  const [assignModeIndex, setAssignModeIndex] = useState<number | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showKeeperModal, setShowKeeperModal] = useState(false);
-
-  const { currentPickIndex, currentPick, draftComplete, isUserTurn } =
-    useCurrentPickState(draftPlan, draftStarted, userDraftSlot);
-
-  const {
-    simulateCpuPick,
-    handleUserPick: baseHandleUserPick, // 👈 renaming here
-  } = useDraftSimulation(
-    draftPlan,
-    setDraftPlan,
-    scoredPlayers,
-    draftConfig,
-    rosterSettings
-  );
-
   const userRoster = useMemo(() => {
     if (userDraftSlot == null) return [];
     return draftPlan
       .filter((pick) => pick.teamIndex === userDraftSlot && pick.draftedPlayer)
       .map((pick) => pick.draftedPlayer!);
   }, [draftPlan, userDraftSlot]);
+
+  const queueOrder = useMemo(
+    () => queuedPlayers.map((p) => p.player_id),
+    [queuedPlayers]
+  );
 
   const handleUserPick = (
     player: Player,
@@ -191,11 +204,6 @@ export default function MockDraft() {
       setQueuedPlayers(filtered);
     }
   }, [draftPlan, queuedPlayers]);
-
-  const queueOrder = useMemo(
-    () => queuedPlayers.map((p) => p.player_id),
-    [queuedPlayers]
-  );
 
   const numRounds = rosterSettings.totalRounds;
   const draftBoardByRound: DraftPick[][] = [];
