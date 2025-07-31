@@ -8,6 +8,7 @@ import { getSnakedTeamIndex, NUM_TEAMS } from "@/utils/constants";
 import type { DraftConfig, DraftRosterSettings } from "@/types/draft/config";
 import type { DraftPick } from "../MockDraft";
 import type { User } from "firebase/auth";
+import { fetchWithAuth } from "@/utils/fetchWithAuth";
 
 /**
  * Encapsulates draft plan, player data, fetch logic, and derived views.
@@ -71,15 +72,16 @@ export function useDraftState(
   const loadRankings = useCallback(async () => {
     if (!user) return;
     try {
-      const token = await user.getIdToken();
-      const res = await fetch(
-        `${API_BASE_URL}/api/rankings/load?format_key=${draftConfig.adpFormatKey}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+      const res = await fetchWithAuth(
+        `${API_BASE_URL}/api/rankings/load?format_key=${draftConfig.adpFormatKey}`
       );
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "Failed to load");
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data?.message || "Failed to load");
+      }
 
+      const data = await res.json();
       const savedIds: string[] = data.rankings || [];
       const uniqueIds = Array.from(new Set(savedIds));
       const savedPlayers = uniqueIds
@@ -102,11 +104,9 @@ export function useDraftState(
   const saveRankings = async () => {
     if (!user) return;
     try {
-      const token = await user.getIdToken();
-      await fetch(`${API_BASE_URL}/api/rankings/save`, {
+      const res = await fetchWithAuth(`${API_BASE_URL}/api/rankings/save`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -114,6 +114,9 @@ export function useDraftState(
           player_ids: rankedPlayers.map((p) => p.player_id),
         }),
       });
+
+      if (!res.ok) throw new Error("Failed to save rankings");
+
       toast.success("✅ Rankings saved!");
     } catch (err) {
       console.error(err);

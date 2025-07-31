@@ -1,5 +1,14 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User } from "firebase/auth";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  User,
+} from "firebase/auth";
+
+import { persistUser } from "./auth"; // adjust path as needed
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,7 +23,21 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
 
-// Auth helpers
-export const loginWithGoogle = () => signInWithPopup(auth, provider);
+// Updated Auth helpers
+
+export const loginWithGoogle = async () => {
+  try {
+    await signInWithPopup(auth, provider);
+
+    // Just call persistUser without fetching token here
+    await persistUser();
+  } catch (error) {
+    console.error("Login with Google failed:", error);
+    throw error;
+  }
+};
+
 export const logout = () => signOut(auth);
-export const listenToAuth = (callback: (user: User | null) => void) => onAuthStateChanged(auth, callback);
+
+export const listenToAuth = (callback: (user: User | null) => void) =>
+  onAuthStateChanged(auth, callback);

@@ -7,6 +7,7 @@ import { API_BASE_URL } from "@/utils/config";
 import type { DraftConfig } from "@/types/draft/config";
 import type { DraftPick } from "@/components/mock-draft/MockDraft";
 import type { User } from "firebase/auth";
+import { fetchWithAuth } from "@/utils/fetchWithAuth";
 
 type KeeperSetMeta = {
   id: string;
@@ -60,11 +61,7 @@ export default function KeeperModal({
       const token = await user.getIdToken();
       const url = `${API_BASE_URL}/api/keepers/load?user_id=${user.uid}`;
 
-      const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetchWithAuth(url);
 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to fetch keepers");
@@ -98,11 +95,10 @@ export default function KeeperModal({
         draft_plan: draftPlan,
       };
 
-      const res = await fetch(`${API_BASE_URL}/api/keepers/save`, {
+      const res = await fetchWithAuth(`${API_BASE_URL}/api/keepers/save`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -126,11 +122,8 @@ export default function KeeperModal({
     try {
       const token = await user.getIdToken();
 
-      const res = await fetch(
-        `${API_BASE_URL}/api/keepers/${selectedKeeperId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const res = await fetchWithAuth(
+        `${API_BASE_URL}/api/keepers/${selectedKeeperId}`
       );
 
       const data = await res.json();

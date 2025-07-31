@@ -1,19 +1,15 @@
 import { auth } from "@/utils/firebase";
+import { fetchWithAuth } from "@/utils/fetchWithAuth";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export const persistUser = async () => {
-  const user = auth.currentUser;
-  if (!user) return;
-
-  const token = await user.getIdToken();
-
   try {
-    const res = await fetch(`${BACKEND_URL}/api/auth/persist`, {
+    const res = await fetchWithAuth(`${BACKEND_URL}/api/auth/persist`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 

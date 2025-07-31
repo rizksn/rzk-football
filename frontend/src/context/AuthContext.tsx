@@ -1,12 +1,15 @@
 "use client";
 import { createContext, useContext } from "react";
 import { useAuth } from "@/utils/useAuth";
-import { loginWithGoogle, logout } from "@/utils/firebase"; 
+import { loginWithGoogle, logout } from "@/utils/firebase";
 
-const AuthContext = createContext<ReturnType<typeof useAuth> & {
-  loginWithGoogle: () => void;
-  logout: () => void;
-} | null>(null);
+const AuthContext = createContext<
+  | (ReturnType<typeof useAuth> & {
+      loginWithGoogle: () => void;
+      logout: () => void;
+    })
+  | null
+>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const auth = useAuth();
@@ -20,6 +23,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAuthContext = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuthContext must be used inside <AuthProvider>");
+  if (!context)
+    throw new Error("useAuthContext must be used inside <AuthProvider>");
   return context;
 };

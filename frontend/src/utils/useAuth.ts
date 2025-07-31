@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { auth, listenToAuth } from "./firebase";
 import type { User } from "firebase/auth";
-import { logout } from './firebase';
+import { logout } from "./firebase";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -15,7 +15,7 @@ export function useAuth() {
 
       if (firebaseUser) {
         try {
-          const token = await firebaseUser.getIdToken();
+          const token = await firebaseUser.getIdToken(true);
           console.log("🌍 BACKEND_URL:", BACKEND_URL);
 
           const res = await fetch(`${BACKEND_URL}/api/auth/persist`, {
@@ -26,10 +26,13 @@ export function useAuth() {
           });
 
           const json = await res.json();
-          console.log("🔥 Persist response:", json); 
+          console.log("🔥 Persist response:", json);
           setIsPaidUser(json?.is_premium === true);
         } catch (err) {
-          console.error("❌ Error persisting user / getting Stripe status:", err);
+          console.error(
+            "❌ Error persisting user / getting Stripe status:",
+            err
+          );
           setIsPaidUser(false);
         }
       } else {
