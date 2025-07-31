@@ -36,8 +36,13 @@ const LeftPanel = ({
       const matchesSearch = p.full_name
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
+
       const matchesPosition =
-        positionFilter === "All" || p.position === positionFilter;
+        positionFilter === "All" ||
+        (positionFilter === "FLEX"
+          ? ["WR", "RB", "TE"].includes(p.position)
+          : p.position === positionFilter);
+
       return matchesSearch && matchesPosition;
     });
   }, [players, searchTerm, positionFilter]);

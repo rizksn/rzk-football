@@ -111,7 +111,7 @@ export default function AdpSettingsForm({
               onClick={() => {
                 if (isLocked) {
                   toast.error(
-                    "🔒 Sign up to unlock all ADP formats and features!"
+                    "🔒 Sign up to unlock all league formats and features!"
                   );
                 }
               }}
@@ -144,7 +144,7 @@ export default function AdpSettingsForm({
       {/* Below the Confirm button, or at bottom of modal content */}
       {!isPaidUser && (
         <p className="mt-4 text-sm text-red-400 font-semibold">
-          Subscribe to unlock all draft settings and ADP formats.{" "}
+          Subscribe to unlock all league settings and premium features.{" "}
           <a
             href="/subscribe"
             className="no-underline text-blue-400 hover:text-blue-600"
