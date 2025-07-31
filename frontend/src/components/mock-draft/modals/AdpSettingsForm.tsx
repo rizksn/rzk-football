@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { buildAdpFormatKey } from '@/utils/adp';
-import ADP_OPTIONS from '@/data/valid_adp_combinations.json';
-import { DraftConfig } from '@/types/draft/config';
+import { toast } from "sonner";
+import { buildAdpFormatKey } from "@/utils/adp";
+import ADP_OPTIONS from "@/data/valid_adp_combinations.json";
+import { DraftConfig } from "@/types/draft/config";
 
 interface Props {
   draftConfig: DraftConfig;
@@ -19,35 +20,43 @@ export default function AdpSettingsForm({
   onConfirm,
   isLoggedIn,
 }: Props) {
-
   const isLocked = !isPaidUser || !isLoggedIn;
 
-  const getValidOptions = (field: keyof DraftConfig, current: DraftConfig): string[] => {
-    if (field === 'leagueFormat') {
+  const getValidOptions = (
+    field: keyof DraftConfig,
+    current: DraftConfig
+  ): string[] => {
+    if (field === "leagueFormat") {
       return Array.from(new Set(ADP_OPTIONS.map((o) => o.leagueFormat)));
     }
     return Array.from(
       new Set(
-        ADP_OPTIONS.filter((o) => o.leagueFormat === current.leagueFormat)
-          .map((o) => o[field as keyof typeof o])
+        ADP_OPTIONS.filter((o) => o.leagueFormat === current.leagueFormat).map(
+          (o) => o[field as keyof typeof o]
+        )
       )
     );
   };
 
   const handleAdpChange = (
-    field: 'leagueFormat' | 'qb_setting' | 'scoring' | 'platform',
+    field: "leagueFormat" | "qb_setting" | "scoring" | "platform",
     value: string
   ) => {
-    if (!isPaidUser) return; // 🚫 Block input programmatically
+    if (!isPaidUser) {
+      toast.error("🔒 Sign up to unlock all ADP formats and features!");
+      // Do nothing else, block change
+      return;
+    }
+    // Otherwise allow change:
     const updated = { ...draftConfig, [field]: value };
     let match = ADP_OPTIONS.find(
-      o =>
+      (o) =>
         o.leagueFormat === updated.leagueFormat &&
         o.qb_setting === updated.qb_setting &&
         o.scoring === updated.scoring &&
         o.platform === updated.platform
     );
-    if (!match) match = ADP_OPTIONS.find(o => o[field] === value);
+    if (!match) match = ADP_OPTIONS.find((o) => o[field] === value);
     if (match) {
       setDraftConfig({
         ...match,
@@ -57,30 +66,57 @@ export default function AdpSettingsForm({
     }
   };
 
-  const validFormats = getValidOptions('leagueFormat', draftConfig);
-  const validQbSettings = getValidOptions('qb_setting', draftConfig);
-  const validScoring = getValidOptions('scoring', draftConfig);
-  const validPlatforms = getValidOptions('platform', draftConfig);
+  const validFormats = getValidOptions("leagueFormat", draftConfig);
+  const validQbSettings = getValidOptions("qb_setting", draftConfig);
+  const validScoring = getValidOptions("scoring", draftConfig);
+  const validPlatforms = getValidOptions("platform", draftConfig);
 
   const fields = [
-    { label: 'Format', field: 'leagueFormat', value: draftConfig.leagueFormat, options: validFormats },
-    { label: 'QB Setting', field: 'qb_setting', value: draftConfig.qb_setting, options: validQbSettings },
-    { label: 'Scoring', field: 'scoring', value: draftConfig.scoring, options: validScoring },
-    { label: 'Platform', field: 'platform', value: draftConfig.platform, options: validPlatforms },
+    {
+      label: "Format",
+      field: "leagueFormat",
+      value: draftConfig.leagueFormat,
+      options: validFormats,
+    },
+    {
+      label: "QB Setting",
+      field: "qb_setting",
+      value: draftConfig.qb_setting,
+      options: validQbSettings,
+    },
+    {
+      label: "Scoring",
+      field: "scoring",
+      value: draftConfig.scoring,
+      options: validScoring,
+    },
+    {
+      label: "Platform",
+      field: "platform",
+      value: draftConfig.platform,
+      options: validPlatforms,
+    },
   ] as const;
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold mb-4 text-white">Select ADP Source</h2>
 
-      <div className={!isPaidUser ? 'pointer-events-none opacity-40' : ''}>
+      <div className={!isPaidUser ? "opacity-40" : ""}>
         {fields.map(({ label, field, value, options }) => (
           <label className="block text-sm text-white" key={field}>
             {label}
             <select
               className={`w-full mt-1 p-2 rounded bg-slate-800 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                isLocked ? 'opacity-70 cursor-not-allowed' : ''
+                isLocked ? "opacity-70 cursor-not-allowed" : ""
               }`}
+              onClick={() => {
+                if (isLocked) {
+                  toast.error(
+                    "🔒 Sign up to unlock all ADP formats and features!"
+                  );
+                }
+              }}
               onChange={(e) => {
                 if (!isLocked) {
                   handleAdpChange(field, e.target.value);
@@ -107,16 +143,17 @@ export default function AdpSettingsForm({
         </div>
       </div>
 
+      {/* Below the Confirm button, or at bottom of modal content */}
       {!isPaidUser && (
-        <div className="text-sm text-white/60 mt-4">
-          Subscribe to unlock draft settings.{' '}
-          <button
-            onClick={() => (window.location.href = '/subscribe')}
-            className="text-blue-400 underline"
+        <p className="mt-4 text-sm text-red-400 font-semibold">
+          Subscribe to unlock all draft settings and ADP formats.{" "}
+          <a
+            href="/subscribe"
+            className="no-underline text-blue-400 hover:text-blue-600"
           >
-            Upgrade now →
-          </button>
-        </div>
+            Upgrade now &rarr;
+          </a>
+        </p>
       )}
     </div>
   );
