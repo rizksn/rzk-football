@@ -51,7 +51,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
-      <body className="overflow-x-hidden w-full font-sans bg-base text-white">
+      <body className="w-full font-sans bg-base text-white">
         <AuthProvider>
           <ClientNavbarWrapper />
           {children}

@@ -58,24 +58,24 @@ const MockNavbar = ({
 
     if (res.ok) {
       alert("Membership canceled. Refreshing...");
-      window.location.reload(); // 👈 This will re-trigger auth fetch
+      window.location.reload();
     } else {
       alert("Failed to cancel membership.");
     }
   };
 
   return (
-    <div className="w-full h-12 bg-slate-850 flex items-center justify-between px-4 text-white text-xs relative">
-      {/* LEFT: Logo */}
-      <div className="flex items-center">
-        <Link href="/" className="font-bold text-lg">
-          RZK Football
-        </Link>
-      </div>
+    <div className="w-full bg-slate-850 text-white text-xs">
+      <div className="w-full flex justify-between items-center h-12 px-4">
+        {/* LEFT: Logo (hidden on mobile) */}
+        <div className="hidden sm:block">
+          <Link href="/" className="font-bold text-lg whitespace-nowrap">
+            RZK Football
+          </Link>
+        </div>
 
-      {/* CENTER: Buttons + Timer slightly to the right */}
-      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <div className="flex items-center">
+        {/* CENTER: Timer + Buttons */}
+        <div className="flex items-center gap-2 sm:justify-center">
           <TimerButtons
             timer={timer}
             setTimer={setTimer}
@@ -87,105 +87,101 @@ const MockNavbar = ({
             showPauseButton={showPauseButton}
             showPlayButton={showPlayButton}
           />
-
-          <div className="ml-4">
-            <TimerDisplay timer={timer} />
-          </div>
+          <TimerDisplay timer={timer} />
         </div>
-      </div>
 
-      {/* RIGHT: Settings + Avatar */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={onOpenKeeperModal}
-          className="text-white hover:text-accent transition"
-          title="Save or Load Keepers"
-        >
-          <Save className="w-5 h-5" />
-        </button>
-        <button
-          onClick={onOpenSettings}
-          title="Draft Settings"
-          className="rounded-full hover:bg-white/10 hover:rotate-12 transition-all duration-150 ease-out"
-        >
-          <Settings className="w-5 h-5 text-white" />
-        </button>
+        {/* RIGHT: Buttons (Save, Settings, Avatar) */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onOpenKeeperModal}
+            className="text-white hover:text-accent transition"
+            title="Save or Load Keepers"
+          >
+            <Save className="w-5 h-5" />
+          </button>
+          <button
+            onClick={onOpenSettings}
+            title="Draft Settings"
+            className="rounded-full hover:bg-white/10 hover:rotate-12 transition-all duration-150 ease-out"
+          >
+            <Settings className="w-5 h-5 text-white" />
+          </button>
 
-        <Menu as="div" className="relative">
-          <Menu.Button className="rounded-full overflow-hidden w-6 h-6">
-            {user?.photoURL ? (
-              <img
-                src={user.photoURL}
-                alt="avatar"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-white text-xs">
-                <User className="w-5 h-5 text-white" />
-              </div>
-            )}
-          </Menu.Button>
-
-          {/* Dropdown */}
-          <Menu.Items className="absolute right-0 mt-2 w-48 bg-slate-800 text-white rounded-md shadow-lg overflow-hidden border border-white/10 z-50">
-            {user ? (
-              <>
-                <div className="px-4 py-2 text-sm text-white/80 border-b border-white/10">
-                  {user.displayName || user.email}
+          <Menu as="div" className="relative">
+            <Menu.Button className="rounded-full overflow-hidden w-6 h-6">
+              {user?.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt="avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white text-xs">
+                  <User className="w-5 h-5 text-white" />
                 </div>
+              )}
+            </Menu.Button>
+
+            <Menu.Items className="absolute right-0 mt-2 w-48 bg-slate-800 text-white rounded-md shadow-lg overflow-hidden border border-white/10 z-50">
+              {user ? (
+                <>
+                  <div className="px-4 py-2 text-sm text-white/80 border-b border-white/10">
+                    {user.displayName || user.email}
+                  </div>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
+                          active ? "bg-slate-700" : ""
+                        }`}
+                      >
+                        <User className="w-4 h-4" /> Account
+                      </button>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        onClick={isPaidUser ? cancelMembership : subscribe}
+                        className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
+                          active ? "bg-slate-700" : ""
+                        }`}
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        {isPaidUser ? "Cancel Membership" : "Subscribe"}
+                      </button>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        onClick={logout}
+                        className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
+                          active ? "bg-slate-700" : ""
+                        }`}
+                      >
+                        <LogOut className="w-4 h-4" /> Logout
+                      </button>
+                    )}
+                  </Menu.Item>
+                </>
+              ) : (
                 <Menu.Item>
                   {({ active }) => (
                     <button
-                      className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
+                      onClick={loginWithGoogle}
+                      className={`w-full px-4 py-2 text-left ${
                         active ? "bg-slate-700" : ""
                       }`}
                     >
-                      <User className="w-4 h-4" /> Account
+                      Sign In
                     </button>
                   )}
                 </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      onClick={isPaidUser ? cancelMembership : subscribe}
-                      className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
-                        active ? "bg-slate-700" : ""
-                      }`}
-                    >
-                      <CreditCard className="w-4 h-4" />
-                      {isPaidUser ? "Cancel Membership" : "Subscribe"}
-                    </button>
-                  )}
-                </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      onClick={logout}
-                      className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
-                        active ? "bg-slate-700" : ""
-                      }`}
-                    >
-                      <LogOut className="w-4 h-4" /> Logout
-                    </button>
-                  )}
-                </Menu.Item>
-              </>
-            ) : (
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    onClick={loginWithGoogle}
-                    className={`w-full px-4 py-2 text-left ${
-                      active ? "bg-slate-700" : ""
-                    }`}
-                  >
-                    Sign In
-                  </button>
-                )}
-              </Menu.Item>
-            )}
-          </Menu.Items>
-        </Menu>
+              )}
+            </Menu.Items>
+          </Menu>
+        </div>
       </div>
     </div>
   );

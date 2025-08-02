@@ -211,8 +211,8 @@ export default function MockDraft() {
   };
 
   return (
-    <div className="w-full max-w-[1600px] min-w-[1400px] mx-auto h-full">
-      <div className="flex flex-col h-screen overflow-hidden">
+    <div className="w-full sm:min-w-[1400px] max-w-[1600px] mx-auto h-full">
+      <div className="flex flex-col h-screen overflow-visible">
         <MockNavbar
           draftStarted={draftStarted}
           onStartDraft={() => handleStartDraft()}
@@ -227,17 +227,19 @@ export default function MockDraft() {
           showPlayButton={showPlayButton}
         />
 
-        <div className="flex-1 overflow-y-auto relative z-0">
-          <DraftBoard
-            draftStarted={draftStarted}
-            draftGrid={draftBoardByRound}
-            claimedTeamIndex={userDraftSlot}
-            onClaimTeam={setUserDraftSlot}
-            numTeams={NUM_TEAMS}
-            numRounds={numRounds}
-            assignModeIndex={assignModeIndex}
-            setAssignModeIndex={setAssignModeIndex}
-          />
+        <div className="flex-1 overflow-x-auto overflow-y-auto relative z-0">
+          <div className="min-w-[1400px]">
+            <DraftBoard
+              draftStarted={draftStarted}
+              draftGrid={draftBoardByRound}
+              claimedTeamIndex={userDraftSlot}
+              onClaimTeam={setUserDraftSlot}
+              numTeams={NUM_TEAMS}
+              numRounds={numRounds}
+              assignModeIndex={assignModeIndex}
+              setAssignModeIndex={setAssignModeIndex}
+            />
+          </div>
         </div>
 
         <div className="h-[55vh] min-h-[300px] overflow-visible relative z-10">
