@@ -100,6 +100,49 @@ export default function DisplayPanel({ player, wide = false }: Props) {
     rush_fum: "Fum",
   };
 
+  const RECEIVING_ORDER = [
+    "rec_targets",
+    "rec_yds",
+    "rec_td",
+    "rec_20_plus",
+    "rec_40_plus",
+    "rec_yac_per_rec",
+    "rec_first",
+    "rec_first_percent",
+    "rec_long",
+    "rec_fum",
+  ];
+
+  const RUSHING_ORDER = [
+    "rush_att",
+    "rush_yds",
+    "rush_td",
+    "rush_20_plus",
+    "rush_40_plus",
+    "rush_first",
+    "rush_first_percent",
+    "rush_long",
+    "rush_fum",
+  ];
+
+  const PASSING_ORDER = [
+    "pass_att",
+    "pass_cmp",
+    "pass_cmp_percent",
+    "pass_yds",
+    "pass_td",
+    "pass_int",
+    "pass_20_plus",
+    "pass_40_plus",
+    "pass_first",
+    "pass_first_percent",
+    "pass_rate",
+    "pass_long",
+    "pass_sck",
+    "pass_scky",
+    "pass_yds_att",
+  ];
+
   const formatStatLabel = (key: string) =>
     STAT_LABELS[key] || key.replaceAll("_", " ").toUpperCase();
 
@@ -118,25 +161,26 @@ export default function DisplayPanel({ player, wide = false }: Props) {
         </p>
       );
 
-    const entries = Object.entries(statData);
-    const filtered = entries.filter(([key]) =>
+    const order =
       category === "receiving"
-        ? key.startsWith("rec_")
+        ? RECEIVING_ORDER
         : category === "rushing"
-        ? key.startsWith("rush_")
-        : key.startsWith("pass_")
-    );
+        ? RUSHING_ORDER
+        : PASSING_ORDER;
 
     return (
-      <div className="grid grid-cols-5 gap-x-3 gap-y-[2px] text-[11px] leading-tight text-white pr-1 pt-2">
-        {filtered.map(([key, value]) => (
-          <div key={key} className="whitespace-nowrap">
-            <span className="text-[#40ff33] font-mono">
-              {formatStatLabel(key)}:
-            </span>{" "}
-            <span className="font-semibold text-white">{value}</span>
-          </div>
-        ))}
+      <div className="grid grid-cols-5 gap-x-3 gap-y-[6px] text-[11px] leading-tight text-white pr-1 pt-2">
+        {order.map((key) => {
+          if (statData[key] == null) return null; // skip if stat doesn't exist
+          return (
+            <div key={key} className="whitespace-nowrap">
+              <span className="text-[#40ff33] font-mono">
+                {formatStatLabel(key)}:
+              </span>{" "}
+              <span className="font-semibold text-white">{statData[key]}</span>
+            </div>
+          );
+        })}
       </div>
     );
   };

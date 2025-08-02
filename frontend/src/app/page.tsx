@@ -1,5 +1,4 @@
-import Link from "next/link";
-import Image from "next/image";
+import HeroCarousel from "@/components/homepage/HeroCarousel";
 
 const anubisFeatures = [
   {
@@ -31,43 +30,11 @@ const anubisFeatures = [
 export default function HomePage() {
   return (
     <main>
-      {/* Hero Section */}
-      <section className="relative bg-[#080029] text-white py-20 px-6 sm:px-12 lg:px-20">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
-          <div className="flex-1">
-            <p className="text-sm uppercase tracking-widest text-blue-500 mb-4">
-              Built for serious fantasy football minds
-            </p>
-            <h1 className="text-4xl sm:text-5xl font-bold leading-tight tracking-tight">
-              AI-Powered Fantasy Football Draft Simulator
-            </h1>
-            <p className="mt-6 text-lg text-gray-300 max-w-xl">
-              Simulate redraft, dynasty, or best ball drafts with real ADP and
-              smart CPU logic. RZK Football helps you practice like the pros —
-              powered by data, optimized by AI.
-            </p>
-            <Link
-              href="/mockdraft"
-              className="mt-8 inline-block rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-lg transition hover:bg-blue-500"
-            >
-              Enter Mock Draft Room
-            </Link>
-          </div>
+      <HeroCarousel />
 
-          <div className="flex-1">
-            <Image
-              src="/mock-preview.png"
-              alt="Fantasy draft simulator preview"
-              width={640}
-              height={360}
-              className="rounded-xl border border-gray-700 shadow-lg"
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </section>
+      {/* Other stuff like Testimonials, Suggestion Box, Pricing, etc can go here */}
 
-      {/* Platform Overview Section */}
+      {/* 🔽 Mission + Anubis Draft Engine moved to bottom */}
       <section className="bg-[#090032] text-white py-24 px-6 sm:px-12 lg:px-20 border-t border-gray-800">
         <div className="max-w-6xl mx-auto space-y-20">
           {/* Mission */}
@@ -86,7 +53,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Anubis Draft Engine (Fixed) */}
+          {/* The Anubis Draft Engine */}
           <div>
             <h2 className="text-4xl font-bold text-white mb-12">
               The Anubis Draft Engine
@@ -105,9 +72,6 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-
-          {/* The rest of your sections remain unchanged below */}
-          {/* Real-Time Fantasy Data, Customization, AI Assistant, Supported Formats, Membership Tiers, Community Build */}
         </div>
       </section>
     </main>
