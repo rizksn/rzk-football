@@ -212,7 +212,11 @@ const RightPanel = ({
 
       {/* Roster */}
       {showOnly !== "queue" && (
-        <div className="w-1/2 pl-4 pr-2 flex flex-col h-full min-h-0">
+        <div
+          className={`${
+            showOnly === "roster" ? "w-full" : "w-1/2"
+          } pl-4 pr-2 flex flex-col h-full min-h-0`}
+        >
           <h2 className="text-sm font-semibold text-[#fcf8f8] mt-2 mb-2">
             ROSTER
           </h2>
