@@ -75,7 +75,7 @@ const MockNavbar = ({
         </div>
 
         {/* CENTER: Timer + Buttons */}
-        <div className="flex items-center gap-2 sm:justify-center">
+        <div className="flex items-center gap-2">
           <TimerButtons
             timer={timer}
             setTimer={setTimer}

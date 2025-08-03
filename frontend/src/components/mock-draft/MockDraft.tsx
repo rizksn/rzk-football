@@ -211,7 +211,7 @@ export default function MockDraft() {
   };
 
   return (
-    <div className="w-full sm:min-w-[1400px] max-w-[1600px] mx-auto h-full">
+    <div className="w-full max-w-[1600px] mx-auto h-full">
       <div className="flex flex-col h-screen overflow-visible">
         <MockNavbar
           draftStarted={draftStarted}
@@ -242,7 +242,7 @@ export default function MockDraft() {
           </div>
         </div>
 
-        <div className="h-[55vh] min-h-[300px] overflow-visible relative z-10">
+        <div className="h-[55vh] min-h-[300px] sm:min-w-[1400px] overflow-visible relative z-10">
           <LowerPanel
             players={availablePlayers}
             draftedPlayers={draftedPlayers}

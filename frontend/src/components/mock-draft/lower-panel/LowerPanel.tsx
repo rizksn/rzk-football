@@ -4,10 +4,12 @@ import type { User } from "firebase/auth";
 import { useState } from "react";
 import LeftPanel from "./LeftPanel";
 import RightPanel from "./RightPanel";
-import { Player } from "../../../types/core/player";
 import DisplayPanels from "../display-panels/DisplayPanels";
+import { Player } from "@/types/core/player";
 import { DraftConfig, DraftRosterSettings } from "@/types/draft/config";
 import { DragEndEvent } from "@dnd-kit/core";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 
 type LowerPanelProps = {
   players: Player[];
@@ -72,41 +74,92 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   };
 
   return (
-    <div className="w-full min-w-[960px] max-w-[1600px] mx-auto h-[55vh] flex flex-col px-[14px] mb-[40px]">
-      {/* ✅ Fixed DisplayPanels height */}
+    <div className="w-full sm:min-w-[960px] max-w-[1600px] mx-auto h-[55vh] flex flex-col">
+      {/* Header player display */}
       <div className="h-[120px] shrink-0">
         <DisplayPanels leftPlayer={leftPlayer} rightPlayer={rightPlayer} />
       </div>
 
-      {/* ✅ Fill the remaining height below DisplayPanels */}
-      <div
-        className="h-[calc(55vh-136px)] w-full relative"
-        style={{ perspective: "1200px" }}
-      >
-        <div
-          className="flex gap-0 h-full bg-transparent relative z-10"
-          style={{
-            transform: "rotateX(2deg)",
-            transformOrigin: "top center",
-            willChange: "transform",
-          }}
-        >
-          {/* Left */}
-          <div className="w-1/2 flex flex-col overflow-y-auto">
+      {/* Main content layout */}
+      <div className="h-[calc(55vh-136px)] w-full relative">
+        {/* 👉 Mobile (below 640px): Swiper */}
+        <div className="block sm:hidden h-full w-screen overflow-hidden">
+          <Swiper slidesPerView={1} spaceBetween={8} className="w-full h-full">
+            <SwiperSlide>
+              <div className="w-screen overflow-hidden px-2">
+                <LeftPanel
+                  players={players}
+                  onAddToQueue={onAddToQueue}
+                  onDraftClick={handleUserDraft}
+                  isUserTurn={isUserTurn}
+                  onDisplayLeft={setLeftPlayer}
+                  onDisplayRight={setRightPlayer}
+                  assignModeIndex={assignModeIndex}
+                  onManualAssignPlayer={onManualAssignPlayer}
+                />
+              </div>
+            </SwiperSlide>
+            <SwiperSlide>
+              <div className="w-full h-full overflow-hidden px-2">
+                <RightPanel
+                  showOnly="queue"
+                  queuedPlayers={queuedPlayers}
+                  rankingPlayers={rankingPlayers}
+                  userRoster={userRoster}
+                  rosterSettings={rosterSettings}
+                  onRemoveFromQueue={onRemoveFromQueue}
+                  setRankedPlayers={setRankedPlayers}
+                  loadRankings={loadRankings}
+                  saveRankings={saveRankings}
+                  resetRankings={resetRankings}
+                  downloadRankings={downloadRankings}
+                  queueOrder={queueOrder}
+                  setQueueOrder={setQueueOrder}
+                  handleQueueDragEnd={handleQueueDragEnd}
+                  isPaidUser={isPaidUser}
+                />
+              </div>
+            </SwiperSlide>
+
+            <SwiperSlide>
+              <div className="w-screen overflow-hidden px-2">
+                <RightPanel
+                  showOnly="roster"
+                  queuedPlayers={queuedPlayers}
+                  rankingPlayers={rankingPlayers}
+                  userRoster={userRoster}
+                  rosterSettings={rosterSettings}
+                  onRemoveFromQueue={onRemoveFromQueue}
+                  setRankedPlayers={setRankedPlayers}
+                  loadRankings={loadRankings}
+                  saveRankings={saveRankings}
+                  resetRankings={resetRankings}
+                  downloadRankings={downloadRankings}
+                  queueOrder={queueOrder}
+                  setQueueOrder={setQueueOrder}
+                  handleQueueDragEnd={handleQueueDragEnd}
+                  isPaidUser={isPaidUser}
+                />
+              </div>
+            </SwiperSlide>
+          </Swiper>
+        </div>
+
+        {/* 👉 Desktop (640px and up): Flex layout */}
+        <div className="hidden sm:flex h-full">
+          <div className="w-1/2 overflow-y-auto">
             <LeftPanel
               players={players}
               onAddToQueue={onAddToQueue}
               onDraftClick={handleUserDraft}
               isUserTurn={isUserTurn}
-              onDisplayLeft={(player) => setLeftPlayer(player)}
-              onDisplayRight={(player) => setRightPlayer(player)}
+              onDisplayLeft={setLeftPlayer}
+              onDisplayRight={setRightPlayer}
               assignModeIndex={assignModeIndex}
               onManualAssignPlayer={onManualAssignPlayer}
             />
           </div>
-
-          {/* Right */}
-          <div className="w-1/2 flex flex-col overflow-y-auto">
+          <div className="w-1/2 overflow-y-auto">
             <RightPanel
               queuedPlayers={queuedPlayers}
               rankingPlayers={rankingPlayers}
