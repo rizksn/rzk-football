@@ -242,35 +242,37 @@ export default function MockDraft() {
           </div>
         </div>
 
-        <div className="h-[55vh] min-h-[300px] sm:min-w-[1400px] overflow-visible relative z-10">
-          <LowerPanel
-            players={availablePlayers}
-            draftedPlayers={draftedPlayers}
-            isUserTurn={isUserTurn}
-            onDraftPlayer={(player) =>
-              handleUserPick(player, currentPick, setIsTicking, setTimer)
-            }
-            userRoster={userRoster}
-            rosterSettings={rosterSettings}
-            assignModeIndex={assignModeIndex}
-            onManualAssignPlayer={handleManualAssignPlayer}
-            rankingPlayers={finalRankingPlayers}
-            user={user}
-            draftConfig={draftConfig}
-            adpPlayers={adpPlayers}
-            setRankedPlayers={setRankedPlayers}
-            loadRankings={loadRankings}
-            saveRankings={saveRankings}
-            resetRankings={resetRankings}
-            downloadRankings={downloadRankings}
-            queuedPlayers={queuedPlayers}
-            onAddToQueue={handleAddToQueue}
-            onRemoveFromQueue={handleRemoveFromQueue}
-            queueOrder={queueOrder}
-            setQueueOrder={setQueueOrder}
-            handleQueueDragEnd={handleQueueDragEnd}
-            isPaidUser={isPaidUser}
-          />
+        <div className="h-[55vh] min-h-[300px] overflow-x-auto relative z-10">
+          <div className="min-w-[1400px]">
+            <LowerPanel
+              players={availablePlayers}
+              draftedPlayers={draftedPlayers}
+              isUserTurn={isUserTurn}
+              onDraftPlayer={(player) =>
+                handleUserPick(player, currentPick, setIsTicking, setTimer)
+              }
+              userRoster={userRoster}
+              rosterSettings={rosterSettings}
+              assignModeIndex={assignModeIndex}
+              onManualAssignPlayer={handleManualAssignPlayer}
+              rankingPlayers={finalRankingPlayers}
+              user={user}
+              draftConfig={draftConfig}
+              adpPlayers={adpPlayers}
+              setRankedPlayers={setRankedPlayers}
+              loadRankings={loadRankings}
+              saveRankings={saveRankings}
+              resetRankings={resetRankings}
+              downloadRankings={downloadRankings}
+              queuedPlayers={queuedPlayers}
+              onAddToQueue={handleAddToQueue}
+              onRemoveFromQueue={handleRemoveFromQueue}
+              queueOrder={queueOrder}
+              setQueueOrder={setQueueOrder}
+              handleQueueDragEnd={handleQueueDragEnd}
+              isPaidUser={isPaidUser}
+            />
+          </div>
         </div>
 
         {draftComplete && (
