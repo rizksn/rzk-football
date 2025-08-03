@@ -1,25 +1,45 @@
-'use client';
-
-import { Player } from '@/types/core/player';
-import RosterPlayer from './RosterPlayer';
+import { useMemo } from "react";
+import { Player } from "@/types/core/player";
+import RosterPlayer from "./RosterPlayer";
+import { DraftRosterSettings } from "@/types/draft/config";
 
 type RosterProps = {
   userRoster: Player[];
+  rosterSettings: DraftRosterSettings;
 };
 
-const defaultSlots = [
-  'QB', 'RB', 'RB', 'WR', 'WR', 'TE', 'FLX', 'FLX',
-  'K', 'DEF', 'BN', 'BN', 'BN', 'BN', 'BN',
-];
-
-const Roster = ({ userRoster }: RosterProps) => {
+const Roster = ({ userRoster, rosterSettings }: RosterProps) => {
   const filledPlayers = [...userRoster];
+
+  const slots: string[] = useMemo(() => {
+    const baseSlots: string[] = [];
+
+    // Positional slots (e.g. QB: 1, RB: 2, FLX: 2, etc)
+    for (const [position, { count }] of Object.entries(
+      rosterSettings.positions
+    )) {
+      for (let i = 0; i < count; i++) {
+        baseSlots.push(position);
+      }
+    }
+
+    // Add bench slots
+    for (let i = 0; i < rosterSettings.benchCount; i++) {
+      baseSlots.push("BN");
+    }
+
+    return baseSlots;
+  }, [rosterSettings]);
 
   return (
     <ul className="text-white space-y-1">
-      {defaultSlots.map((slot, index) => {
-        const matchIndex = filledPlayers.findIndex(p =>
-          slot === 'FLX' ? ['RB', 'WR', 'TE'].includes(p.position) : p.position === slot
+      {slots.map((slot, index) => {
+        const matchIndex = filledPlayers.findIndex((p) =>
+          slot === "FLX"
+            ? ["RB", "WR", "TE"].includes(p.position)
+            : slot === "SF"
+            ? ["QB", "RB", "WR", "TE"].includes(p.position)
+            : p.position === slot
         );
 
         let player: Player | null = null;

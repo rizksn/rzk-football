@@ -21,6 +21,10 @@ interface DraftSettingsModalProps {
   isLoggedIn: boolean;
   rosterSettings: DraftRosterSettings;
   setRosterSettings: (settings: DraftRosterSettings) => void;
+  updateConfigWithTotalRounds: (
+    config: DraftConfig,
+    settings: DraftRosterSettings
+  ) => void;
 }
 
 export default function DraftSettingsModal({
@@ -33,6 +37,7 @@ export default function DraftSettingsModal({
   isLoggedIn,
   rosterSettings,
   setRosterSettings,
+  updateConfigWithTotalRounds,
 }: DraftSettingsModalProps) {
   const [activeTab, setActiveTab] = useState<"adp" | "roster">("adp");
   const isSuperflex = draftConfig.qb_setting === "superflex";
@@ -112,6 +117,8 @@ export default function DraftSettingsModal({
               <RosterSettingsForm
                 rosterSettings={rosterSettings}
                 setRosterSettings={setRosterSettings}
+                draftConfig={draftConfig}
+                updateConfigWithTotalRounds={updateConfigWithTotalRounds}
                 isPaidUser={isPaidUser}
                 onConfirm={handleConfirm}
               />

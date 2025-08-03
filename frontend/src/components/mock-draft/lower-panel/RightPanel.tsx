@@ -225,7 +225,7 @@ const RightPanel = ({
             ROSTER
           </h2>
           <div className="flex-1 min-h-0 overflow-y-auto">
-            <Roster userRoster={userRoster} />
+            <Roster userRoster={userRoster} rosterSettings={rosterSettings} />
           </div>
         </div>
       )}

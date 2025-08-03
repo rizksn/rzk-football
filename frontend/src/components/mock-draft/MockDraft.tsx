@@ -291,6 +291,7 @@ export default function MockDraft() {
           rosterSettings={rosterSettings}
           setRosterSettings={setRosterSettings}
           onConfirm={updateConfigWithTotalRounds}
+          updateConfigWithTotalRounds={updateConfigWithTotalRounds}
           isPaidUser={isPaidUser}
           isLoggedIn={isLoggedIn}
         />
