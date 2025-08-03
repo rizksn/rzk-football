@@ -243,7 +243,7 @@ export default function MockDraft() {
         </div>
 
         <div className="h-[55vh] min-h-[300px] overflow-x-auto relative z-10">
-          <div className="min-w-[1400px]">
+          <div className="sm:min-w-[1400px]">
             <LowerPanel
               players={availablePlayers}
               draftedPlayers={draftedPlayers}
