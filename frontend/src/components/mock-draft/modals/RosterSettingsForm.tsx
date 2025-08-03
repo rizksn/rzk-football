@@ -16,19 +16,22 @@ interface Props {
   rosterSettings: DraftRosterSettings;
   setRosterSettings: (settings: DraftRosterSettings) => void;
   draftConfig: DraftConfig;
-  updateConfigWithTotalRounds: (
-    config: DraftConfig,
-    settings: DraftRosterSettings
-  ) => void;
   isPaidUser: boolean;
   onConfirm: () => void;
+}
+
+function recalculateTotalRounds(settings: DraftRosterSettings): number {
+  const startingSpots = Object.values(settings.positions).reduce(
+    (sum, pos) => sum + (pos?.count || 0),
+    0
+  );
+  return startingSpots + settings.benchCount;
 }
 
 export default function RosterSettingsForm({
   rosterSettings,
   setRosterSettings,
   draftConfig,
-  updateConfigWithTotalRounds,
   isPaidUser,
   onConfirm,
 }: Props) {
@@ -69,7 +72,8 @@ export default function RosterSettingsForm({
                         [position]: { ...config, count },
                       },
                     };
-                    updateConfigWithTotalRounds(draftConfig, updated);
+                    updated.totalRounds = recalculateTotalRounds(updated);
+                    setRosterSettings(updated);
                   }}
                   className="w-16 px-2 py-1 bg-slate-800 text-white rounded border border-slate-600 disabled:opacity-50"
                 />
@@ -90,7 +94,8 @@ export default function RosterSettingsForm({
                     ...rosterSettings,
                     benchCount: parseInt(e.target.value),
                   };
-                  updateConfigWithTotalRounds(draftConfig, updated);
+                  updated.totalRounds = recalculateTotalRounds(updated);
+                  setRosterSettings(updated);
                 }}
                 className="w-16 px-2 py-1 bg-slate-800 text-white rounded border border-slate-600"
               />
@@ -102,7 +107,7 @@ export default function RosterSettingsForm({
               onClick={onConfirm}
               className="bg-blue-600 hover:bg-green-600 text-white px-4 py-2 rounded shadow-md hover:shadow-lg transition"
             >
-              Confirm
+              Update
             </button>
           </div>
         </div>

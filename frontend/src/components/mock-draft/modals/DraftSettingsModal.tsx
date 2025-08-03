@@ -42,6 +42,9 @@ export default function DraftSettingsModal({
   const [activeTab, setActiveTab] = useState<"adp" | "roster">("adp");
   const isSuperflex = draftConfig.qb_setting === "superflex";
 
+  const [localRosterSettings, setLocalRosterSettings] =
+    useState<DraftRosterSettings>(JSON.parse(JSON.stringify(rosterSettings)));
+
   useEffect(() => {
     const updated = { ...rosterSettings };
     updated.positions.QB = { ...updated.positions.QB, count: 1, locked: true };
@@ -53,16 +56,46 @@ export default function DraftSettingsModal({
       0
     );
     updated.totalRounds = totalStartingSpots + updated.benchCount;
-    setRosterSettings(updated);
-  }, [rosterSettings.benchCount, draftConfig.qb_setting]);
+    setLocalRosterSettings(updated);
+  }, [draftConfig.qb_setting]);
 
-  const handleConfirm = () => {
+  const handleConfirmAdpSettings = () => {
     if (!isPaidUser) {
       toast.error("🔒 Sign up to unlock all ADP formats and features!");
       return;
     }
-    onConfirm(draftConfig, rosterSettings);
+    onConfirm(draftConfig, rosterSettings); // ADP changes flow through here
     onClose();
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      setLocalRosterSettings(JSON.parse(JSON.stringify(rosterSettings)));
+    }
+  }, [isOpen]);
+
+  const handleConfirmRosterSettings = async () => {
+    try {
+      const res = await fetch("/api/save-roster-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          config: draftConfig,
+          roster: localRosterSettings,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to save roster settings");
+
+      console.log("✅ Roster settings saved");
+
+      setRosterSettings(localRosterSettings);
+      toast.success("✅ Roster settings updated!");
+      onConfirm(draftConfig, localRosterSettings);
+      onClose();
+    } catch (err) {
+      console.error("❌ Error saving roster settings", err);
+    }
   };
 
   return (
@@ -109,18 +142,17 @@ export default function DraftSettingsModal({
                 setDraftConfig={setDraftConfig}
                 isPaidUser={isPaidUser}
                 isLoggedIn={isLoggedIn}
-                onConfirm={handleConfirm}
+                onConfirm={handleConfirmAdpSettings}
               />
             )}
 
             {activeTab === "roster" && (
               <RosterSettingsForm
-                rosterSettings={rosterSettings}
-                setRosterSettings={setRosterSettings}
+                rosterSettings={localRosterSettings}
+                setRosterSettings={setLocalRosterSettings}
                 draftConfig={draftConfig}
-                updateConfigWithTotalRounds={updateConfigWithTotalRounds}
                 isPaidUser={isPaidUser}
-                onConfirm={handleConfirm}
+                onConfirm={handleConfirmRosterSettings}
               />
             )}
           </div>
