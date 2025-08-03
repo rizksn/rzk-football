@@ -65,7 +65,11 @@ const RightPanel = ({
 
       {/* Player Queue & Rankings */}
       {showOnly !== "roster" && (
-        <div className="w-1/2 border-r border-slate-700 px-3 flex flex-col h-full min-h-0">
+        <div
+          className={`${
+            showOnly === "queue" ? "w-full" : "w-1/2"
+          } border-r border-slate-700 px-3 flex flex-col h-full min-h-0`}
+        >
           <div className="flex items-center justify-between mb-2">
             {/* Left Side (Queue tab only) */}
             <div className="flex items-center gap-2">

@@ -100,7 +100,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               </div>
             </SwiperSlide>
             <SwiperSlide>
-              <div className="w-full h-full overflow-hidden px-2">
+              <div className="flex flex-col h-full w-full px-4">
                 <RightPanel
                   showOnly="queue"
                   queuedPlayers={queuedPlayers}
