@@ -42,6 +42,10 @@ export default function DraftSettingsModal({
   const [activeTab, setActiveTab] = useState<"adp" | "roster">("adp");
   const isSuperflex = draftConfig.qb_setting === "superflex";
 
+  const [localDraftConfig, setLocalDraftConfig] = useState<DraftConfig>(
+    JSON.parse(JSON.stringify(draftConfig))
+  );
+
   const [localRosterSettings, setLocalRosterSettings] =
     useState<DraftRosterSettings>(JSON.parse(JSON.stringify(rosterSettings)));
 
@@ -64,12 +68,13 @@ export default function DraftSettingsModal({
       toast.error("🔒 Sign up to unlock all ADP formats and features!");
       return;
     }
-    onConfirm(draftConfig, rosterSettings); // ADP changes flow through here
+    onConfirm(localDraftConfig, rosterSettings);
     onClose();
   };
 
   useEffect(() => {
     if (isOpen) {
+      setLocalDraftConfig(JSON.parse(JSON.stringify(draftConfig)));
       setLocalRosterSettings(JSON.parse(JSON.stringify(rosterSettings)));
     }
   }, [isOpen]);
@@ -101,7 +106,7 @@ export default function DraftSettingsModal({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            config: draftConfig,
+            config: localDraftConfig,
             roster: cleanedRoster,
           }),
         }
@@ -113,7 +118,7 @@ export default function DraftSettingsModal({
 
       setRosterSettings(cleanedRoster);
       toast.success("✅ Roster settings updated!");
-      onConfirm(draftConfig, cleanedRoster);
+      onConfirm(localDraftConfig, cleanedRoster);
       onClose();
     } catch (err) {
       console.error("❌ Error saving roster settings", err);
@@ -160,8 +165,8 @@ export default function DraftSettingsModal({
           <div className="p-6 overflow-y-auto max-h-[500px]">
             {activeTab === "adp" && (
               <AdpSettingsForm
-                draftConfig={draftConfig}
-                setDraftConfig={setDraftConfig}
+                draftConfig={localDraftConfig}
+                setDraftConfig={setLocalDraftConfig}
                 isPaidUser={isPaidUser}
                 isLoggedIn={isLoggedIn}
                 onConfirm={handleConfirmAdpSettings}
@@ -172,8 +177,8 @@ export default function DraftSettingsModal({
               <RosterSettingsForm
                 rosterSettings={localRosterSettings}
                 setRosterSettings={setLocalRosterSettings}
-                draftConfig={draftConfig}
-                setDraftConfig={setDraftConfig}
+                draftConfig={localDraftConfig}
+                setDraftConfig={setLocalDraftConfig}
                 isPaidUser={isPaidUser}
                 onConfirm={handleConfirmRosterSettings}
               />
