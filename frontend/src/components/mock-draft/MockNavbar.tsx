@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { MockNavbarProps } from "@/types/ui/components";
-import { Menu } from "@headlessui/react";
 import { useAuth } from "@/utils/useAuth";
-import { loginWithGoogle } from "@/utils/firebase";
-import { User, LogOut, CreditCard, Settings, Save } from "lucide-react";
+import { User, Settings, Save } from "lucide-react";
 import TimerButtons from "./timer/TimerButtons";
 import TimerDisplay from "./timer/TimerDisplay";
+import UserMenu from "@/components/shared/UserMenu";
 
 const MockNavbar = ({
   draftStarted,
@@ -107,80 +106,7 @@ const MockNavbar = ({
             <Settings className="w-5 h-5 text-white" />
           </button>
 
-          <Menu as="div" className="relative">
-            <Menu.Button className="rounded-full overflow-hidden w-6 h-6">
-              {user?.photoURL ? (
-                <img
-                  src={user.photoURL}
-                  alt="avatar"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white text-xs">
-                  <User className="w-5 h-5 text-white" />
-                </div>
-              )}
-            </Menu.Button>
-
-            <Menu.Items className="absolute right-0 mt-2 w-48 bg-slate-800 text-white rounded-md shadow-lg overflow-hidden border border-white/10 z-50">
-              {user ? (
-                <>
-                  <div className="px-4 py-2 text-sm text-white/80 border-b border-white/10">
-                    {user.displayName || user.email}
-                  </div>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
-                          active ? "bg-slate-700" : ""
-                        }`}
-                      >
-                        <User className="w-4 h-4" /> Account
-                      </button>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        onClick={isPaidUser ? cancelMembership : subscribe}
-                        className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
-                          active ? "bg-slate-700" : ""
-                        }`}
-                      >
-                        <CreditCard className="w-4 h-4" />
-                        {isPaidUser ? "Cancel Membership" : "Subscribe"}
-                      </button>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        onClick={logout}
-                        className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
-                          active ? "bg-slate-700" : ""
-                        }`}
-                      >
-                        <LogOut className="w-4 h-4" /> Logout
-                      </button>
-                    )}
-                  </Menu.Item>
-                </>
-              ) : (
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      onClick={loginWithGoogle}
-                      className={`w-full px-4 py-2 text-left ${
-                        active ? "bg-slate-700" : ""
-                      }`}
-                    >
-                      Sign In
-                    </button>
-                  )}
-                </Menu.Item>
-              )}
-            </Menu.Items>
-          </Menu>
+          <UserMenu />
         </div>
       </div>
     </div>
