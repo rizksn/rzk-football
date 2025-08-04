@@ -21,6 +21,7 @@ export default function AdpSettingsForm({
   isLoggedIn,
 }: Props) {
   const isLocked = !isPaidUser || !isLoggedIn;
+  const { useAI, num_teams } = draftConfig;
 
   const getValidOptions = (
     field: keyof DraftConfig,
@@ -61,7 +62,8 @@ export default function AdpSettingsForm({
       setDraftConfig({
         ...match,
         adpFormatKey: buildAdpFormatKey(match),
-        useAI: draftConfig.useAI,
+        useAI,
+        num_teams,
       });
     }
   };
