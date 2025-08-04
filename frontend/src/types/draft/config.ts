@@ -5,16 +5,10 @@ export interface DraftConfig {
   scoring: string;
   platform: string;
   useAI: boolean;
+  num_teams: number;
 }
 
-export type RosterPosition =
-  | 'QB'
-  | 'RB'
-  | 'WR'
-  | 'TE'
-  | 'FLX'
-  | 'SF'
-  | 'K';
+export type RosterPosition = "QB" | "RB" | "WR" | "TE" | "FLX" | "SF" | "K";
 
 export type RosterSlotConfig = {
   count: number;

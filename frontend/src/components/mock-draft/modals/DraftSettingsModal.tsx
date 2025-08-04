@@ -75,23 +75,45 @@ export default function DraftSettingsModal({
   }, [isOpen]);
 
   const handleConfirmRosterSettings = async () => {
+    const sanitizeRosterForApi = (
+      settings: DraftRosterSettings
+    ): DraftRosterSettings => {
+      return {
+        ...settings,
+        positions: Object.fromEntries(
+          Object.entries(settings.positions).map(([pos, val]) => [
+            pos,
+            {
+              count: val.count ?? 0,
+              locked: val.locked ?? false,
+            },
+          ])
+        ),
+      };
+    };
+
     try {
-      const res = await fetch("/api/save-roster-settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          config: draftConfig,
-          roster: localRosterSettings,
-        }),
-      });
+      const cleanedRoster = sanitizeRosterForApi(localRosterSettings);
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/league-settings/save`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            config: draftConfig,
+            roster: cleanedRoster,
+          }),
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to save roster settings");
 
       console.log("✅ Roster settings saved");
 
-      setRosterSettings(localRosterSettings);
+      setRosterSettings(cleanedRoster);
       toast.success("✅ Roster settings updated!");
-      onConfirm(draftConfig, localRosterSettings);
+      onConfirm(draftConfig, cleanedRoster);
       onClose();
     } catch (err) {
       console.error("❌ Error saving roster settings", err);
@@ -151,6 +173,7 @@ export default function DraftSettingsModal({
                 rosterSettings={localRosterSettings}
                 setRosterSettings={setLocalRosterSettings}
                 draftConfig={draftConfig}
+                setDraftConfig={setDraftConfig}
                 isPaidUser={isPaidUser}
                 onConfirm={handleConfirmRosterSettings}
               />

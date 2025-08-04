@@ -9,6 +9,7 @@ import type { DraftConfig, DraftRosterSettings } from "@/types/draft/config";
 import type { DraftPick } from "../MockDraft";
 import type { User } from "firebase/auth";
 import { fetchWithAuth } from "@/utils/fetchWithAuth";
+import { initializeDraftPlan } from "@/utils/initializeDraftPlan";
 
 /**
  * Encapsulates draft plan, player data, fetch logic, and derived views.
@@ -43,17 +44,12 @@ export function useDraftState(
         setScoredPlayers(json.scored);
         setRankedPlayers(json.adp);
 
-        const totalPicks = rosterSettings.totalRounds * NUM_TEAMS;
-        const newDraftPlan: DraftPick[] = Array.from(
-          { length: totalPicks },
-          (_, i) => {
-            const round = Math.floor(i / NUM_TEAMS);
-            const pickInRound = i % NUM_TEAMS;
-            const teamIndex = getSnakedTeamIndex(round, pickInRound);
-            return { pickIndex: i, round, pickInRound, teamIndex };
-          }
+        const numTeams = draftConfig.num_teams;
+        const totalPicks = rosterSettings.totalRounds * numTeams;
+        const newDraftPlan = initializeDraftPlan(
+          numTeams,
+          rosterSettings.totalRounds
         );
-
         setDraftPlan(newDraftPlan);
       } catch (err) {
         console.error("❌ Failed to fetch draft data:", err);
@@ -63,7 +59,11 @@ export function useDraftState(
     }
 
     fetchInitialData();
-  }, [draftConfig.adpFormatKey, rosterSettings.totalRounds]);
+  }, [
+    draftConfig.adpFormatKey,
+    draftConfig.num_teams,
+    rosterSettings.totalRounds,
+  ]);
 
   useEffect(() => {
     const sortedByAdp = [...adpPlayers].sort((a, b) => a.rank - b.rank);

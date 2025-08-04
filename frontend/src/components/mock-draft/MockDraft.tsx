@@ -9,7 +9,6 @@ import LowerPanel from "@/components/mock-draft/lower-panel/LowerPanel";
 import DraftSettingsModal from "@/components/mock-draft/modals/DraftSettingsModal";
 import KeeperModal from "@/components/mock-draft/modals/KeeperModal";
 
-import { NUM_TEAMS } from "@/utils/constants";
 import { useDraftConfig } from "@/components/mock-draft/hooks/useDraftConfig";
 import { useDraftState } from "@/components/mock-draft/hooks/useDraftState";
 import { useDraftSimulation } from "@/components/mock-draft/hooks/useDraftSimulation";
@@ -64,6 +63,8 @@ export default function MockDraft() {
   const [showSettings, setShowSettings] = useState(false);
   const [showKeeperModal, setShowKeeperModal] = useState(false);
   const [queueOrder, setQueueOrder] = useState<string[]>([]);
+
+  const numTeams = draftConfig.num_teams;
 
   const { currentPickIndex, currentPick, draftComplete, isUserTurn } =
     useCurrentPickState(draftPlan, draftStarted, userDraftSlot);
@@ -196,7 +197,7 @@ export default function MockDraft() {
   const numRounds = rosterSettings.totalRounds;
   const draftBoardByRound: DraftPick[][] = [];
   for (let i = 0; i < numRounds; i++) {
-    draftBoardByRound.push(draftPlan.slice(i * NUM_TEAMS, (i + 1) * NUM_TEAMS));
+    draftBoardByRound.push(draftPlan.slice(i * numTeams, (i + 1) * numTeams));
   }
 
   const handleQueueDragEnd = (event: DragEndEvent) => {
@@ -234,7 +235,7 @@ export default function MockDraft() {
               draftGrid={draftBoardByRound}
               claimedTeamIndex={userDraftSlot}
               onClaimTeam={setUserDraftSlot}
-              numTeams={NUM_TEAMS}
+              numTeams={numTeams}
               numRounds={numRounds}
               assignModeIndex={assignModeIndex}
               setAssignModeIndex={setAssignModeIndex}
@@ -302,7 +303,7 @@ export default function MockDraft() {
         onClose={() => setShowKeeperModal(false)}
         draftPlan={draftPlan}
         draftConfig={draftConfig}
-        numTeams={NUM_TEAMS}
+        numTeams={numTeams}
         user={user}
         isPaidUser={isPaidUser}
         onLoadKeeperSet={({ draftPlan, adpFormatKey }) => {

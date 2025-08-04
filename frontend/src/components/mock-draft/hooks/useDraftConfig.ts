@@ -13,6 +13,7 @@ export function useDraftConfig() {
     scoring: "1-ppr",
     platform: "sleeper",
     useAI: false,
+    num_teams: 12,
   });
 
   const [rosterSettings, setRosterSettings] = useState<DraftRosterSettings>(
