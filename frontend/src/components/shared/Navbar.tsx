@@ -17,15 +17,15 @@ export default function Navbar() {
         isMockDraft ? "bg-black" : "bg-[#f3f0ff]"
       } text-${isMockDraft ? "white" : "black"}`}
     >
-      <div className="relative px-6 py-4 flex items-center justify-between min-h-[3rem]">
-        {/* Logo (left) */}
-        <Link href="/" className="font-bold text-lg z-10">
+      <div className="px-4 py-4 flex flex-wrap items-center justify-between gap-y-4 min-h-[3rem]">
+        {/* Logo (left) — hidden on mobile */}
+        <Link href="/" className="font-bold text-lg z-10 hidden sm:block">
           RZK Football
         </Link>
 
         {/* Centered buttons */}
         {pathname === "/" && (
-          <div className="absolute left-1/2 -translate-x-1/2 flex gap-4 items-center">
+          <div className="flex gap-4 items-center mx-auto">
             <Link
               href="/mockdraft"
               className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow-md hover:shadow-lg hover:brightness-110 transition-all duration-200 active:scale-95"
