@@ -5,6 +5,7 @@ import { useState } from "react";
 import LeftPanel from "./LeftPanel";
 import RightPanel from "./RightPanel";
 import DisplayPanels from "../display-panels/DisplayPanels";
+import type { DraftPick } from "@/components/mock-draft/MockDraft";
 import { Player } from "@/types/core/player";
 import { DraftConfig, DraftRosterSettings } from "@/types/draft/config";
 import { DragEndEvent } from "@dnd-kit/core";
@@ -26,7 +27,7 @@ type LowerPanelProps = {
   adpPlayers: Player[];
   setRankedPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   loadRankings: () => Promise<void>;
-  saveRankings: () => Promise<void>;
+  onSaveRankings: () => Promise<void>;
   resetRankings: () => void;
   downloadRankings: () => void;
   queuedPlayers: Player[];
@@ -36,6 +37,13 @@ type LowerPanelProps = {
   handleQueueDragEnd: (event: DragEndEvent) => void;
   isPaidUser: boolean;
   setQueueOrder: React.Dispatch<React.SetStateAction<string[]>>;
+  keeperState: {
+    mode: "standard" | "keeper";
+    keeperSetId: string | null;
+  };
+  draftStarted: boolean;
+  draftPlan: DraftPick[];
+  userDraftSlot: number | null;
 };
 
 const LowerPanel: React.FC<LowerPanelProps> = ({
@@ -53,7 +61,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   adpPlayers,
   setRankedPlayers,
   loadRankings,
-  saveRankings,
+  onSaveRankings,
   resetRankings,
   downloadRankings,
   queuedPlayers,
@@ -63,6 +71,10 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   handleQueueDragEnd,
   isPaidUser,
   setQueueOrder,
+  keeperState,
+  draftStarted,
+  draftPlan,
+  userDraftSlot,
 }) => {
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
   const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
@@ -111,13 +123,17 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
                   onRemoveFromQueue={onRemoveFromQueue}
                   setRankedPlayers={setRankedPlayers}
                   loadRankings={loadRankings}
-                  saveRankings={saveRankings}
+                  onSaveRankings={onSaveRankings}
                   resetRankings={resetRankings}
                   downloadRankings={downloadRankings}
                   queueOrder={queueOrder}
                   setQueueOrder={setQueueOrder}
                   handleQueueDragEnd={handleQueueDragEnd}
                   isPaidUser={isPaidUser}
+                  keeperState={keeperState}
+                  draftStarted={draftStarted}
+                  draftPlan={draftPlan}
+                  userDraftSlot={userDraftSlot}
                 />
               </div>
             </SwiperSlide>
@@ -133,13 +149,17 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
                   onRemoveFromQueue={onRemoveFromQueue}
                   setRankedPlayers={setRankedPlayers}
                   loadRankings={loadRankings}
-                  saveRankings={saveRankings}
+                  onSaveRankings={onSaveRankings}
                   resetRankings={resetRankings}
                   downloadRankings={downloadRankings}
                   queueOrder={queueOrder}
                   setQueueOrder={setQueueOrder}
                   handleQueueDragEnd={handleQueueDragEnd}
                   isPaidUser={isPaidUser}
+                  keeperState={keeperState}
+                  draftStarted={draftStarted}
+                  draftPlan={draftPlan}
+                  userDraftSlot={userDraftSlot}
                 />
               </div>
             </SwiperSlide>
@@ -169,13 +189,17 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               onRemoveFromQueue={onRemoveFromQueue}
               setRankedPlayers={setRankedPlayers}
               loadRankings={loadRankings}
-              saveRankings={saveRankings}
+              onSaveRankings={onSaveRankings}
               resetRankings={resetRankings}
               downloadRankings={downloadRankings}
               queueOrder={queueOrder}
               setQueueOrder={setQueueOrder}
               handleQueueDragEnd={handleQueueDragEnd}
               isPaidUser={isPaidUser}
+              keeperState={keeperState}
+              draftStarted={draftStarted}
+              draftPlan={draftPlan}
+              userDraftSlot={userDraftSlot}
             />
           </div>
         </div>

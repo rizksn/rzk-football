@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Player } from "@/types/core/player";
 import { API_BASE_URL } from "@/utils/config";
-import { getSnakedTeamIndex, NUM_TEAMS } from "@/utils/constants";
 import type { DraftConfig, DraftRosterSettings } from "@/types/draft/config";
 import type { DraftPick } from "../MockDraft";
 import type { User } from "firebase/auth";
@@ -19,7 +18,11 @@ export function useDraftState(
   draftConfig: DraftConfig,
   rosterSettings: DraftRosterSettings,
   user: User | null,
-  isPaidUser: boolean
+  isPaidUser: boolean,
+  keeperState: {
+    mode: "standard" | "keeper";
+    keeperSetId: string | null;
+  }
 ) {
   const [draftPlan, setDraftPlan] = useState<DraftPick[]>([]);
   const [scoredPlayers, setScoredPlayers] = useState<Player[]>([]);
@@ -81,18 +84,42 @@ export function useDraftState(
     }
 
     try {
-      const res = await fetchWithAuth(
-        `${API_BASE_URL}/api/rankings/load?format_key=${draftConfig.adpFormatKey}`
-      );
+      let savedRankings: string[] = [];
 
-      if (!res.ok) {
+      if (keeperState.mode === "keeper" && keeperState.keeperSetId) {
+        const res = await fetchWithAuth(
+          `${API_BASE_URL}/api/rankings/load/keeper/${keeperState.keeperSetId}`
+        );
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data?.message || "Failed to load keeper rankings");
+        }
+
         const data = await res.json();
-        throw new Error(data?.message || "Failed to load");
+
+        // data.rankings = [{ player_id, rank }]
+        const sorted = data.rankings
+          .slice()
+          .sort((a: any, b: any) => a.rank - b.rank)
+          .map((r: any) => r.player_id);
+
+        savedRankings = sorted;
+      } else {
+        const res = await fetchWithAuth(
+          `${API_BASE_URL}/api/rankings/load?format_key=${draftConfig.adpFormatKey}`
+        );
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data?.message || "Failed to load");
+        }
+
+        const data = await res.json();
+        savedRankings = data.rankings || [];
       }
 
-      const data = await res.json();
-      const savedIds: string[] = data.rankings || [];
-      const uniqueIds = Array.from(new Set(savedIds));
+      const uniqueIds = Array.from(new Set(savedRankings));
       const savedPlayers = uniqueIds
         .map((id) => adpPlayers.find((p) => p.player_id === id))
         .filter(Boolean) as Player[];
@@ -108,7 +135,14 @@ export function useDraftState(
       toast.error("❌ Failed to load rankings");
       console.error(err);
     }
-  }, [user, isPaidUser, draftConfig.adpFormatKey, adpPlayers]);
+  }, [
+    user,
+    isPaidUser,
+    draftConfig.adpFormatKey,
+    adpPlayers,
+    keeperState.mode,
+    keeperState.keeperSetId,
+  ]);
 
   const saveRankings = async () => {
     if (!user) return;
@@ -136,6 +170,34 @@ export function useDraftState(
     } catch (err) {
       console.error(err);
       toast.error("❌ Failed to save rankings");
+    }
+  };
+
+  const saveKeeperRankings = async (keeperSetId: string) => {
+    if (!user) return;
+    if (!isPaidUser) {
+      toast.error("🔒 Premium required to save keeper rankings.");
+      return;
+    }
+
+    try {
+      const payload = {
+        adp_format_key: draftConfig.adpFormatKey, // always required by model
+        keeper_set_id: keeperSetId,
+        player_ids: rankedPlayers.map((p) => p.player_id),
+      };
+
+      const res = await fetchWithAuth(`${API_BASE_URL}/api/rankings/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Failed to save keeper rankings");
+      toast.success("✅ Keeper rankings saved!");
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Failed to save keeper rankings");
     }
   };
 
@@ -195,6 +257,7 @@ export function useDraftState(
     rankingPlayers,
     loadRankings,
     saveRankings,
+    saveKeeperRankings,
     resetRankings,
     downloadRankings,
   };

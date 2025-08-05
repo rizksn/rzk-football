@@ -18,6 +18,7 @@ import { useCurrentPickState } from "@/components/mock-draft/hooks/useCurrentPic
 
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
+import { toast } from "sonner";
 
 export interface DraftPick {
   pickIndex: number;
@@ -31,6 +32,22 @@ export default function MockDraft() {
   // 🔐 Auth
   const { user, isPaidUser } = useAuthContext();
   const isLoggedIn = !!user;
+
+  // 🧠 Draft lifecycle state
+  const [draftStarted, setDraftStarted] = useState(false);
+  const [assignModeIndex, setAssignModeIndex] = useState<number | null>(null);
+  const [userDraftSlot, setUserDraftSlot] = useState<number | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showKeeperModal, setShowKeeperModal] = useState(false);
+  const [queueOrder, setQueueOrder] = useState<string[]>([]);
+
+  const [keeperState, setKeeperState] = useState<{
+    mode: "standard" | "keeper";
+    keeperSetId: string | null;
+  }>({
+    mode: "standard",
+    keeperSetId: null,
+  });
 
   // ⚙️ Draft Config + Settings
   const {
@@ -51,23 +68,19 @@ export default function MockDraft() {
     setRankedPlayers,
     loadRankings,
     saveRankings,
+    saveKeeperRankings,
     resetRankings,
     downloadRankings,
     loading,
-  } = useDraftState(draftConfig, rosterSettings, user, isPaidUser);
-
-  // 🧠 Draft lifecycle state
-  const [draftStarted, setDraftStarted] = useState(false);
-  const [assignModeIndex, setAssignModeIndex] = useState<number | null>(null);
-  const [userDraftSlot, setUserDraftSlot] = useState<number | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showKeeperModal, setShowKeeperModal] = useState(false);
-  const [queueOrder, setQueueOrder] = useState<string[]>([]);
+  } = useDraftState(draftConfig, rosterSettings, user, isPaidUser, keeperState);
 
   const numTeams = draftConfig.num_teams;
 
-  const { currentPickIndex, currentPick, draftComplete, isUserTurn } =
-    useCurrentPickState(draftPlan, draftStarted, userDraftSlot);
+  const { currentPick, draftComplete, isUserTurn } = useCurrentPickState(
+    draftPlan,
+    draftStarted,
+    userDraftSlot
+  );
 
   const { simulateCpuPick, handleUserPick: baseHandleUserPick } =
     useDraftSimulation(
@@ -194,6 +207,23 @@ export default function MockDraft() {
     }
   }, [isUserTurn, draftStarted, draftComplete]);
 
+  useEffect(() => {
+    if (
+      isPaidUser &&
+      user &&
+      keeperState.mode === "keeper" &&
+      keeperState.keeperSetId
+    ) {
+      loadRankings();
+    }
+  }, [
+    keeperState.mode,
+    keeperState.keeperSetId,
+    user,
+    isPaidUser,
+    loadRankings,
+  ]);
+
   const numRounds = rosterSettings.totalRounds;
   const draftBoardByRound: DraftPick[][] = [];
   for (let i = 0; i < numRounds; i++) {
@@ -209,6 +239,20 @@ export default function MockDraft() {
       const newIndex = prev.findIndex((id) => id === over.id);
       return arrayMove(prev, oldIndex, newIndex);
     });
+  };
+
+  const handleSaveRankings = async () => {
+    if (keeperState.mode === "keeper") {
+      if (!keeperState.keeperSetId) {
+        toast.error(
+          "❌ No keeper set selected. Please save or load a keeper set first."
+        );
+        return;
+      }
+      await saveKeeperRankings(keeperState.keeperSetId);
+    } else {
+      await saveRankings();
+    }
   };
 
   return (
@@ -262,7 +306,7 @@ export default function MockDraft() {
               adpPlayers={adpPlayers}
               setRankedPlayers={setRankedPlayers}
               loadRankings={loadRankings}
-              saveRankings={saveRankings}
+              onSaveRankings={handleSaveRankings}
               resetRankings={resetRankings}
               downloadRankings={downloadRankings}
               queuedPlayers={queuedPlayers}
@@ -272,6 +316,10 @@ export default function MockDraft() {
               setQueueOrder={setQueueOrder}
               handleQueueDragEnd={handleQueueDragEnd}
               isPaidUser={isPaidUser}
+              keeperState={keeperState}
+              draftStarted={draftStarted}
+              draftPlan={draftPlan}
+              userDraftSlot={userDraftSlot}
             />
           </div>
         </div>
@@ -306,9 +354,19 @@ export default function MockDraft() {
         numTeams={numTeams}
         user={user}
         isPaidUser={isPaidUser}
-        onLoadKeeperSet={({ draftPlan, adpFormatKey }) => {
+        onLoadKeeperSet={({ draftPlan, adpFormatKey, keeperSetId }) => {
           setDraftPlan(draftPlan);
           setDraftConfig((prev) => ({ ...prev, adpFormatKey }));
+          setKeeperState({
+            mode: "keeper",
+            keeperSetId,
+          });
+        }}
+        onSaveKeeperSet={(keeperSetId) => {
+          setKeeperState({
+            mode: "keeper",
+            keeperSetId,
+          });
         }}
       />
     </div>

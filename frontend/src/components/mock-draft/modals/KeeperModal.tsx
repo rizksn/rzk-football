@@ -28,7 +28,10 @@ type KeeperModalProps = {
   onLoadKeeperSet: (params: {
     draftPlan: DraftPick[];
     adpFormatKey: string;
+    keeperSetId: string;
+    onSaveKeeperSet?: (keeperSetId: string) => void;
   }) => void;
+  onSaveKeeperSet?: (keeperSetId: string) => void;
 };
 
 export default function KeeperModal({
@@ -40,6 +43,7 @@ export default function KeeperModal({
   user,
   isPaidUser,
   onLoadKeeperSet,
+  onSaveKeeperSet,
 }: KeeperModalProps) {
   const [tab, setTab] = useState<"save" | "load">("save");
   const [keeperName, setKeeperName] = useState("");
@@ -115,6 +119,10 @@ export default function KeeperModal({
       if (!res.ok) throw new Error(data?.message || "Failed to save");
 
       toast.success("✅ Keepers saved!");
+      if (onSaveKeeperSet) {
+        onSaveKeeperSet(data.id);
+        onSaveKeeperSet(data.id);
+      }
       onClose();
     } catch (err) {
       toast.error("❌ Failed to save keepers");
@@ -149,6 +157,7 @@ export default function KeeperModal({
       onLoadKeeperSet({
         draftPlan: data.draft_plan,
         adpFormatKey: data.format_key,
+        keeperSetId: data.id,
       });
 
       toast.success(`✅ Loaded keeper set: ${data.name}`);

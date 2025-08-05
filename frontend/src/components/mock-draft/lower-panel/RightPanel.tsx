@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import { DragEndEvent } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
 import { toast } from "sonner";
 
 import { Player } from "@/types/core/player";
@@ -12,6 +11,7 @@ import Rankings from "./Rankings";
 
 import { Save, Download, FolderOutput, RotateCcw, SquareX } from "lucide-react";
 import type { DraftRosterSettings } from "@/types/draft/config";
+import type { DraftPick } from "@/components/mock-draft/MockDraft";
 
 type RightPanelProps = {
   queuedPlayers: Player[];
@@ -23,12 +23,19 @@ type RightPanelProps = {
   rankingPlayers: Player[];
   setRankedPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   loadRankings: () => Promise<void>;
-  saveRankings: () => Promise<void>;
+  onSaveRankings: () => Promise<void>;
   resetRankings: () => void;
   downloadRankings: () => void;
   isPaidUser: boolean;
   setQueueOrder: React.Dispatch<React.SetStateAction<string[]>>;
   showOnly?: "queue" | "roster";
+  keeperState: {
+    mode: "standard" | "keeper";
+    keeperSetId: string | null;
+  };
+  draftStarted: boolean;
+  draftPlan: DraftPick[];
+  userDraftSlot: number | null;
 };
 
 const RightPanel = ({
@@ -41,24 +48,44 @@ const RightPanel = ({
   rankingPlayers,
   setRankedPlayers,
   loadRankings,
-  saveRankings,
+  onSaveRankings,
   resetRankings,
   downloadRankings,
   isPaidUser,
   setQueueOrder,
   showOnly,
+  keeperState,
+  draftStarted,
+  draftPlan,
+  userDraftSlot,
 }: RightPanelProps) => {
   const [activeTab, setActiveTab] = useState<"queue" | "rankings">("queue");
   const [saving, setSaving] = useState(false);
 
   const hasLoaded = useRef(false);
 
-  useEffect(() => {
-    if (activeTab === "rankings" && !hasLoaded.current) {
-      loadRankings();
-      hasLoaded.current = true;
-    }
-  }, [activeTab, loadRankings]);
+  const disableSave = useMemo(() => {
+    if (saving) return true;
+    if (draftStarted) return true;
+    if (!isPaidUser) return true;
+
+    const manualAssignmentsExist =
+      keeperState.mode === "standard" &&
+      draftPlan.some(
+        (pick) => pick.draftedPlayer && pick.teamIndex === userDraftSlot
+      );
+
+    if (manualAssignmentsExist) return true;
+
+    return false;
+  }, [
+    saving,
+    draftStarted,
+    isPaidUser,
+    keeperState.mode,
+    rankingPlayers,
+    userRoster,
+  ]);
 
   return (
     <div className="flex h-full w-full bg-[rgba(28,29,46,0.58)] min-h-0">
@@ -128,16 +155,18 @@ const RightPanel = ({
               {activeTab === "rankings" && (
                 <>
                   <button
+                    title={
+                      disableSave
+                        ? draftStarted
+                          ? "Draft started – rankings are locked"
+                          : "Manual assignments detected – save or load a keeper set first"
+                        : "Save your current rankings"
+                    }
                     onClick={async () => {
-                      if (!isPaidUser) {
-                        toast.error("🔒 Upgrade to premium to save rankings!");
-                        return;
-                      }
-                      if (saving) return;
-
+                      if (disableSave) return;
                       setSaving(true);
                       try {
-                        await saveRankings();
+                        await onSaveRankings();
                         toast.success("✅ Rankings saved!");
                       } catch (err) {
                         console.error(err);
@@ -146,9 +175,9 @@ const RightPanel = ({
                         setSaving(false);
                       }
                     }}
-                    disabled={saving}
+                    disabled={disableSave}
                     className={`bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded ${
-                      saving ? "opacity-70 cursor-not-allowed" : ""
+                      disableSave ? "opacity-70 cursor-not-allowed" : ""
                     }`}
                   >
                     <Save size={16} />
