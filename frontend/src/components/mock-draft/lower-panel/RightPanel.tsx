@@ -49,6 +49,7 @@ const RightPanel = ({
   showOnly,
 }: RightPanelProps) => {
   const [activeTab, setActiveTab] = useState<"queue" | "rankings">("queue");
+  const [saving, setSaving] = useState(false);
 
   const hasLoaded = useRef(false);
 
@@ -127,14 +128,28 @@ const RightPanel = ({
               {activeTab === "rankings" && (
                 <>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       if (!isPaidUser) {
                         toast.error("🔒 Upgrade to premium to save rankings!");
                         return;
                       }
-                      saveRankings();
+                      if (saving) return;
+
+                      setSaving(true);
+                      try {
+                        await saveRankings();
+                        toast.success("✅ Rankings saved!");
+                      } catch (err) {
+                        console.error(err);
+                        toast.error("❌ Failed to save rankings");
+                      } finally {
+                        setSaving(false);
+                      }
                     }}
-                    className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
+                    disabled={saving}
+                    className={`bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded ${
+                      saving ? "opacity-70 cursor-not-allowed" : ""
+                    }`}
                   >
                     <Save size={16} />
                   </button>
