@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Player } from "@/types/core/player";
 import { useAuthContext } from "@/context/AuthContext";
 import MockNavbar from "@/components/mock-draft/MockNavbar";
@@ -207,14 +207,20 @@ export default function MockDraft() {
     }
   }, [isUserTurn, draftStarted, draftComplete]);
 
+  const lastLoadedKeeperId = useRef<string | null>(null);
+
   useEffect(() => {
-    if (
+    const shouldLoad =
       isPaidUser &&
       user &&
       keeperState.mode === "keeper" &&
-      keeperState.keeperSetId
-    ) {
-      loadRankings();
+      keeperState.keeperSetId &&
+      keeperState.keeperSetId !== lastLoadedKeeperId.current;
+
+    if (shouldLoad) {
+      loadRankings().then(() => {
+        lastLoadedKeeperId.current = keeperState.keeperSetId;
+      });
     }
   }, [
     keeperState.mode,
@@ -355,6 +361,7 @@ export default function MockDraft() {
         user={user}
         isPaidUser={isPaidUser}
         onLoadKeeperSet={({ draftPlan, adpFormatKey, keeperSetId }) => {
+          setRankedPlayers([]);
           setDraftPlan(draftPlan);
           setDraftConfig((prev) => ({ ...prev, adpFormatKey }));
           setKeeperState({

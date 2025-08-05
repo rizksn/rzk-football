@@ -45,7 +45,8 @@ export function useDraftState(
 
         setAdpPlayers(json.adp);
         setScoredPlayers(json.scored);
-        setRankedPlayers(json.adp);
+        const sortedByAdp = [...json.adp].sort((a, b) => a.rank - b.rank);
+        setRankedPlayers(sortedByAdp);
 
         const numTeams = draftConfig.num_teams;
         const totalPicks = rosterSettings.totalRounds * numTeams;
@@ -67,11 +68,6 @@ export function useDraftState(
     draftConfig.num_teams,
     rosterSettings.totalRounds,
   ]);
-
-  useEffect(() => {
-    const sortedByAdp = [...adpPlayers].sort((a, b) => a.rank - b.rank);
-    setRankedPlayers(sortedByAdp);
-  }, [adpPlayers]);
 
   const loadRankings = useCallback(async () => {
     if (!user) return;
