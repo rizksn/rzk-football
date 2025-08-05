@@ -63,9 +63,13 @@ export default function KeeperModal({
       setLoading(true);
 
       const token = await user.getIdToken();
-      const url = `${API_BASE_URL}/api/keepers/load?user_id=${user.uid}`;
+      const url = `${API_BASE_URL}/api/keepers/load`;
 
-      const res = await fetchWithAuth(url);
+      const res = await fetchWithAuth(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to fetch keepers");
@@ -131,7 +135,12 @@ export default function KeeperModal({
       const token = await user.getIdToken();
 
       const res = await fetchWithAuth(
-        `${API_BASE_URL}/api/keepers/${selectedKeeperId}`
+        `${API_BASE_URL}/api/keepers/${selectedKeeperId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       const data = await res.json();
