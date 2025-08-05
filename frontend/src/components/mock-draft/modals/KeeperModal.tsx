@@ -193,6 +193,10 @@ export default function KeeperModal({
               }`}
               onClick={() => {
                 setTab("load");
+                if (!isPaidUser) {
+                  notifyPremiumRequired();
+                  return;
+                }
                 if (user) fetchKeeperSets();
               }}
             >

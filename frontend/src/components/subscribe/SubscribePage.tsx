@@ -13,7 +13,7 @@ export default function SubscribePage() {
   // 🔁 Redirect if user is already paid
   useEffect(() => {
     if (isPaidUser) {
-      router.push("/draft");
+      router.push("/mockdraft");
     }
   }, [isPaidUser, router]);
 
@@ -50,6 +50,13 @@ export default function SubscribePage() {
       );
 
       const data = await res.json();
+
+      if (res.status === 400 && data?.message === "User already subscribed") {
+        alert("You’re already subscribed! Redirecting to draft...");
+        router.push("/draft");
+        return;
+      }
+
       if (data?.url) {
         window.location.href = data.url;
       } else {
