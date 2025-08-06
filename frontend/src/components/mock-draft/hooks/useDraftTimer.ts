@@ -9,7 +9,8 @@ export function useDraftTimer(
   isUserTurn: boolean,
   availablePlayers: Player[],
   handleUserPick: (player: Player) => void,
-  timerDisabled: boolean
+  timerDisabled: boolean,
+  isPaused: boolean
 ) {
   const [timer, setTimer] = useState(120);
   const [isTicking, setIsTicking] = useState(false);
@@ -17,12 +18,18 @@ export function useDraftTimer(
 
   // 🎬 Start ticking ONLY if: user turn, draft is active, and timer isn't disabled
   useEffect(() => {
-    if (!draftStarted || draftComplete || !isUserTurn || timerDisabled) {
+    if (
+      !draftStarted ||
+      draftComplete ||
+      isPaused ||
+      !isUserTurn ||
+      timerDisabled
+    ) {
       setIsTicking(false);
       return;
     }
     setIsTicking(true);
-  }, [draftStarted, draftComplete, isUserTurn, timerDisabled]);
+  }, [draftStarted, draftComplete, isPaused, isUserTurn, timerDisabled]);
 
   // ⏱ Tick down
   useEffect(() => {
@@ -47,7 +54,8 @@ export function useDraftTimer(
       draftStarted &&
       isUserTurn &&
       !draftComplete &&
-      !timerDisabled
+      !timerDisabled &&
+      !isPaused
     ) {
       const fallbackPlayer = availablePlayers[0];
       if (fallbackPlayer) {

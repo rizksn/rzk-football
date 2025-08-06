@@ -41,6 +41,8 @@ export default function MockDraft() {
   const [showKeeperModal, setShowKeeperModal] = useState(false);
   const [queueOrder, setQueueOrder] = useState<string[]>([]);
   const [timerDisabled, setTimerDisabled] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [draftHistory, setDraftHistory] = useState<DraftPick[][]>([]);
 
   const [keeperState, setKeeperState] = useState<{
     mode: "standard" | "keeper";
@@ -74,6 +76,11 @@ export default function MockDraft() {
     downloadRankings,
     loading,
   } = useDraftState(draftConfig, rosterSettings, user, isPaidUser, keeperState);
+
+  const setDraftPlanWithHistory = (newPlan: DraftPick[]) => {
+    setDraftHistory((prev) => [...prev, draftPlan]);
+    setDraftPlan(newPlan);
+  };
 
   const numTeams = draftConfig.num_teams;
 
@@ -150,7 +157,8 @@ export default function MockDraft() {
     isUserTurn,
     availablePlayers,
     (player: Player) => baseHandleUserPick(player, currentPick),
-    timerDisabled
+    timerDisabled,
+    isPaused
   );
 
   const { handleManualAssignPlayer, handleStartDraft } = useDraftUserActions(
@@ -164,7 +172,8 @@ export default function MockDraft() {
 
   // 🧠 Ensure CPU picks continue automatically
   useEffect(() => {
-    if (!draftStarted || userDraftSlot == null || draftComplete) return;
+    if (!draftStarted || userDraftSlot == null || draftComplete || isPaused)
+      return;
     if (currentPick?.teamIndex !== userDraftSlot) {
       const timeout = setTimeout(() => {
         simulateCpuPick(currentPick);
@@ -175,6 +184,7 @@ export default function MockDraft() {
     draftStarted,
     userDraftSlot,
     draftComplete,
+    isPaused,
     currentPick?.teamIndex,
     simulateCpuPick,
     currentPick,
@@ -258,8 +268,8 @@ export default function MockDraft() {
           timerDisabled={timerDisabled}
           setTimerDisabled={setTimerDisabled}
           onOpenKeeperModal={() => setShowKeeperModal(true)}
-          onPause={pause}
-          onResume={resume}
+          onPause={() => setIsPaused(true)}
+          onResume={() => setIsPaused(false)}
           showPauseButton={showPauseButton}
           showPlayButton={showPlayButton}
         />
