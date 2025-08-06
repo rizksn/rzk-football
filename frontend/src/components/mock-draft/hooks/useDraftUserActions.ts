@@ -13,7 +13,6 @@ export function useDraftUserActions(
   assignModeIndex: number | null,
   setAssignModeIndex: (index: number | null) => void,
   setDraftStarted: (v: boolean) => void,
-  setIsTicking: (v: boolean) => void,
   userDraftSlot: number | null
 ) {
   const handleManualAssignPlayer = (player: Player) => {
@@ -32,7 +31,6 @@ export function useDraftUserActions(
 
   const handleStartDraft = () => {
     setDraftStarted(true);
-    setIsTicking(true);
   };
 
   return {

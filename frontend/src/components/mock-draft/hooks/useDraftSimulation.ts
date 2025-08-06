@@ -62,9 +62,7 @@ export function useDraftSimulation(
 
   const handleUserPick = async (
     player: Player,
-    currentPick: DraftPick | undefined,
-    setIsTicking: (v: boolean) => void,
-    setTimer: (v: number) => void
+    currentPick: DraftPick | undefined
   ) => {
     if (!currentPick) return;
 
@@ -97,8 +95,7 @@ export function useDraftSimulation(
       }
 
       updateDraftPlanFromBackend(data.draftPlan);
-      setIsTicking(false);
-      setTimer(120);
+      // ⛔️ remove setIsTicking/setTimer here
     } catch (err) {
       console.error("❌ Failed to process user pick:", err);
     }

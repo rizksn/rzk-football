@@ -13,19 +13,18 @@ export function useDraftTimer(
 ) {
   const [timer, setTimer] = useState(120);
   const [isTicking, setIsTicking] = useState(false);
-  const [wasManuallyPaused, setWasManuallyPaused] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 🎬 Start ticking unless user paused manually
+  // 🎬 Start ticking ONLY if: user turn, draft is active, and timer isn't disabled
   useEffect(() => {
-    if (!draftStarted || draftComplete || timerDisabled) return;
-
-    if (!wasManuallyPaused) {
-      setIsTicking(true);
+    if (!draftStarted || draftComplete || !isUserTurn || timerDisabled) {
+      setIsTicking(false);
+      return;
     }
-  }, [draftStarted, draftComplete, wasManuallyPaused, timerDisabled]);
+    setIsTicking(true);
+  }, [draftStarted, draftComplete, isUserTurn, timerDisabled]);
 
-  // ⏱ Tick every second
+  // ⏱ Tick down
   useEffect(() => {
     if (!isTicking) {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -33,7 +32,7 @@ export function useDraftTimer(
     }
 
     intervalRef.current = setInterval(() => {
-      setTimer((prev) => prev - 1);
+      setTimer((prev) => Math.max(prev - 1, 0));
     }, 1000);
 
     return () => {
@@ -41,48 +40,47 @@ export function useDraftTimer(
     };
   }, [isTicking]);
 
-  // 🧠 Auto-pick if user time runs out
+  // 🧠 Auto-pick at 0
   useEffect(() => {
-    if (!draftStarted || !isUserTurn || draftComplete || timerDisabled) return;
-
-    if (timer === 0) {
+    if (
+      timer === 0 &&
+      draftStarted &&
+      isUserTurn &&
+      !draftComplete &&
+      !timerDisabled
+    ) {
       const fallbackPlayer = availablePlayers[0];
       if (fallbackPlayer) {
         handleUserPick(fallbackPlayer);
       }
-
       setTimer(120);
       setIsTicking(false);
     }
   }, [
     timer,
     draftStarted,
-    isUserTurn,
     draftComplete,
-    availablePlayers,
+    isUserTurn,
     timerDisabled,
+    availablePlayers,
+    handleUserPick,
   ]);
 
-  // 🧷 Controls
-  const pause = () => {
-    setIsTicking(false);
-    setWasManuallyPaused(true);
-  };
-
-  const resume = () => {
-    setIsTicking(true);
-    setWasManuallyPaused(false);
-  };
+  const pause = () => setIsTicking(false);
+  const resume = () => setIsTicking(true);
 
   const showPauseButton = draftStarted && isTicking && !draftComplete;
   const showPlayButton =
-    draftStarted && !isTicking && wasManuallyPaused && !draftComplete;
+    draftStarted &&
+    !isTicking &&
+    isUserTurn &&
+    !timerDisabled &&
+    !draftComplete;
 
   return {
     timer,
     setTimer,
     isTicking,
-    setIsTicking,
     pause,
     resume,
     showPauseButton,

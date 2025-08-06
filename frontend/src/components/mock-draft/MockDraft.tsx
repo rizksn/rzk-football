@@ -132,20 +132,14 @@ export default function MockDraft() {
     return availablePlayers.filter((p) => idSet.has(p.player_id));
   }, [availablePlayers, queueOrder]);
 
-  const handleUserPick = (
-    player: Player,
-    pick: DraftPick,
-    setIsTicking: (val: boolean) => void,
-    setTimer: (val: number) => void
-  ) => {
-    baseHandleUserPick(player, pick, setIsTicking, setTimer);
+  const handleUserPick = (player: Player, pick: DraftPick) => {
+    baseHandleUserPick(player, pick);
   };
 
   const {
     timer,
     setTimer,
     isTicking,
-    setIsTicking,
     pause,
     resume,
     showPauseButton,
@@ -155,8 +149,7 @@ export default function MockDraft() {
     draftComplete,
     isUserTurn,
     availablePlayers,
-    (player: Player) =>
-      handleUserPick(player, currentPick, setIsTicking, setTimer),
+    (player: Player) => baseHandleUserPick(player, currentPick),
     timerDisabled
   );
 
@@ -166,7 +159,6 @@ export default function MockDraft() {
     assignModeIndex,
     setAssignModeIndex,
     setDraftStarted,
-    setIsTicking,
     userDraftSlot
   );
 
@@ -198,18 +190,6 @@ export default function MockDraft() {
   const handleRemoveFromQueue = (playerId: string) => {
     setQueueOrder((prev) => prev.filter((id) => id !== playerId));
   };
-
-  useEffect(() => {
-    if (!draftStarted || draftComplete) return;
-
-    if (isUserTurn) {
-      if (!timerDisabled) {
-        setIsTicking(true);
-      }
-    } else {
-      setIsTicking(false);
-    }
-  }, [isUserTurn, draftStarted, draftComplete, timerDisabled]);
 
   const lastLoadedKeeperId = useRef<string | null>(null);
 
@@ -305,9 +285,7 @@ export default function MockDraft() {
               players={availablePlayers}
               draftedPlayers={draftedPlayers}
               isUserTurn={isUserTurn}
-              onDraftPlayer={(player) =>
-                handleUserPick(player, currentPick, setIsTicking, setTimer)
-              }
+              onDraftPlayer={(player) => handleUserPick(player, currentPick)}
               userRoster={userRoster}
               rosterSettings={rosterSettings}
               assignModeIndex={assignModeIndex}
