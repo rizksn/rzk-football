@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { MockNavbarProps } from "@/types/ui/components";
 import { useAuth } from "@/utils/useAuth";
-import { User, Settings, Save } from "lucide-react";
+import { User, Settings, Save, Undo, RotateCcw, SquareX } from "lucide-react";
 import TimerButtons from "./timer/TimerButtons";
 import TimerDisplay from "./timer/TimerDisplay";
 import UserMenu from "@/components/shared/UserMenu";
@@ -73,8 +73,9 @@ const MockNavbar = ({
           </Link>
         </div>
 
-        {/* CENTER: Timer + Buttons */}
-        <div className="flex items-center gap-2">
+        {/* CENTER: Timer + Buttons + Icons */}
+        <div className="flex items-center gap-3">
+          {/* Timer controls */}
           <TimerButtons
             timer={timer}
             setTimer={setTimer}
@@ -87,6 +88,30 @@ const MockNavbar = ({
             showPlayButton={showPlayButton}
           />
           <TimerDisplay timer={timer} />
+
+          {/* Middle icons */}
+          <button
+            onClick={() => console.log("Disable timer")}
+            className="text-white hover:text-sky-400 transition"
+            title="Disable timer"
+          >
+            <SquareX className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => console.log("Undo pick")}
+            className="text-white hover:text-red-400 transition"
+            title="Undo last pick"
+          >
+            <Undo className="w-5 h-5" />
+          </button>
+
+          <button
+            onClick={() => console.log("Restart draft")}
+            className="text-white hover:text-yellow-400 transition"
+            title="Restart draft"
+          >
+            <RotateCcw className="w-5 h-5" />
+          </button>
         </div>
 
         {/* RIGHT: Buttons (Save, Settings, Avatar) */}

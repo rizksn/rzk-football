@@ -12,6 +12,14 @@ interface Props {
 
 type PlayerStats = Record<string, string | number>;
 
+function chunk<T>(arr: T[], size: number): T[][] {
+  const res: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    res.push(arr.slice(i, i + size));
+  }
+  return res;
+}
+
 export default function DisplayPanel({ player, wide = false }: Props) {
   const [year, setYear] = useState<"2024" | "2023">("2024");
   const [category, setCategory] = useState<"passing" | "receiving" | "rushing">(
@@ -169,18 +177,27 @@ export default function DisplayPanel({ player, wide = false }: Props) {
         : PASSING_ORDER;
 
     return (
-      <div className="grid grid-cols-5 gap-x-3 gap-y-[6px] text-[11px] leading-tight text-white pr-1 pt-2">
-        {order.map((key) => {
-          if (statData[key] == null) return null; // skip if stat doesn't exist
-          return (
-            <div key={key} className="whitespace-nowrap">
-              <span className="text-[#40ff33] font-mono">
-                {formatStatLabel(key)}:
-              </span>{" "}
-              <span className="font-semibold text-white">{statData[key]}</span>
-            </div>
-          );
-        })}
+      <div className="px-4 space-y-1">
+        {chunk(
+          order.filter((key) => statData[key] != null),
+          5
+        ).map((row, idx) => (
+          <div
+            key={idx}
+            className="grid grid-cols-5 text-[11px] leading-tight text-white pl-10 bg-[#0486a367] rounded-md py-0.5"
+          >
+            {row.map((key) => (
+              <div key={key} className="whitespace-nowrap">
+                <span className="text-[#40ff33] font-mono">
+                  {formatStatLabel(key)}:
+                </span>{" "}
+                <span className="font-semibold text-white">
+                  {statData[key]}
+                </span>
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     );
   };
@@ -207,11 +224,11 @@ export default function DisplayPanel({ player, wide = false }: Props) {
             <div
               className={`relative w-[120px] h-full flex flex-col items-center justify-center px-1 ${
                 player ? `bg-team-${player.team}` : "bg-transparent"
-              }`}
+              } rounded-md`}
             >
               {/* Match only the left side corners */}
               {player && (
-                <div className="absolute inset-0 bg-black bg-opacity-20 pointer-events-none rounded-l-md" />
+                <div className="absolute inset-0 bg-black bg-opacity-20 pointer-events-none rounded-md" />
               )}
               <span className="absolute top-1 left-1 text-[10px] font-bold uppercase">
                 {player.position}
@@ -235,38 +252,46 @@ export default function DisplayPanel({ player, wide = false }: Props) {
             <div
               className={`flex-1 h-full ${
                 player ? "bg-[#0b1e21]" : "bg-transparent"
-              } px-3 py-1.5 overflow-y-auto`}
+              } px-2 overflow-y-auto`}
             >
               {/* Moved Controls Here */}
               {player && (
-                <div className="w-full flex justify-center mb-2">
-                  <div className="flex gap-6 text-[10px]">
+                <div className="w-full flex justify-center mb-4">
+                  <div className="flex items-center gap-10 text-[11px] font-medium uppercase">
                     {/* Year Selector */}
-                    <div className="flex bg-white/10 rounded px-2">
+                    <div className="flex bg-[#0b0b0b] rounded-sm overflow-hidden">
                       {["2024", "2023"].map((y) => (
                         <button
                           key={y}
-                          className={`px-1.5 py-0.5 font-semibold rounded ${
-                            year === y ? "text-[#2ba0ba]" : "text-white/60"
-                          }`}
                           onClick={() => setYear(y as "2024" | "2023")}
+                          className={`relative px-3 h-[24px] text-[11px] tracking-wide font-semibold uppercase transition-all duration-200
+    ${year === y ? "text-cyan-300" : "text-white/40 hover:text-white"}
+  `}
                         >
                           {y}
+                          {year === y && (
+                            <span className="absolute bottom-0 left-0 w-full h-[2px] bg-cyan-300 rounded-full" />
+                          )}
                         </button>
                       ))}
                     </div>
 
                     {/* Category Selector */}
-                    <div className="flex bg-white/10 rounded px-2">
+                    <div className="flex bg-[#0b0b0b] rounded-sm overflow-hidden">
                       {["passing", "receiving", "rushing"].map((cat) => (
                         <button
                           key={cat}
-                          className={`px-1.5 py-0.5 capitalize font-semibold rounded ${
-                            category === cat ? "text-cyan-300" : "text-white/60"
-                          }`}
                           onClick={() => setCategory(cat as typeof category)}
+                          className={`relative px-3 h-[24px] tracking-wide text-[10px] font-semibold uppercase transition-all duration-200 ${
+                            category === cat
+                              ? "text-cyan-300"
+                              : "text-white/50 hover:text-white"
+                          }`}
                         >
                           {cat}
+                          {category === cat && (
+                            <span className="absolute bottom-0 left-0 w-full h-[2px] bg-cyan-300 rounded-full" />
+                          )}
                         </button>
                       ))}
                     </div>
