@@ -7,6 +7,7 @@ import { User, Settings, Save, Undo, RotateCcw, SquareX } from "lucide-react";
 import TimerButtons from "./timer/TimerButtons";
 import TimerDisplay from "./timer/TimerDisplay";
 import UserMenu from "@/components/shared/UserMenu";
+import { toast } from "sonner";
 
 const MockNavbar = ({
   draftStarted,
@@ -20,6 +21,8 @@ const MockNavbar = ({
   onResume,
   showPauseButton,
   showPlayButton,
+  timerDisabled,
+  setTimerDisabled,
 }: MockNavbarProps) => {
   const { user, isLoggedIn, isPaidUser, logout } = useAuth();
 
@@ -91,12 +94,33 @@ const MockNavbar = ({
 
           {/* Middle icons */}
           <button
-            onClick={() => console.log("Disable timer")}
-            className="text-white hover:text-sky-400 transition"
+            onClick={() => {
+              if (draftStarted) {
+                toast.error(
+                  "❌ You can't disable the timer after the draft starts."
+                );
+                return;
+              }
+
+              setTimerDisabled((prev) => {
+                const next = !prev;
+                toast.success(
+                  `✅ Timer ${next ? "disabled" : "enabled again"}.`
+                );
+                return next;
+              });
+            }}
+            disabled={draftStarted}
+            className={`transition ${
+              draftStarted
+                ? "opacity-30 cursor-not-allowed"
+                : "text-white hover:text-sky-400"
+            }`}
             title="Disable timer"
           >
             <SquareX className="w-5 h-5" />
           </button>
+
           <button
             onClick={() => console.log("Undo pick")}
             className="text-white hover:text-red-400 transition"

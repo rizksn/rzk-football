@@ -8,7 +8,8 @@ export function useDraftTimer(
   draftComplete: boolean,
   isUserTurn: boolean,
   availablePlayers: Player[],
-  handleUserPick: (player: Player) => void
+  handleUserPick: (player: Player) => void,
+  timerDisabled: boolean
 ) {
   const [timer, setTimer] = useState(120);
   const [isTicking, setIsTicking] = useState(false);
@@ -17,12 +18,12 @@ export function useDraftTimer(
 
   // 🎬 Start ticking unless user paused manually
   useEffect(() => {
-    if (!draftStarted || draftComplete) return;
+    if (!draftStarted || draftComplete || timerDisabled) return;
 
     if (!wasManuallyPaused) {
       setIsTicking(true);
     }
-  }, [draftStarted, draftComplete, wasManuallyPaused]);
+  }, [draftStarted, draftComplete, wasManuallyPaused, timerDisabled]);
 
   // ⏱ Tick every second
   useEffect(() => {
@@ -42,7 +43,7 @@ export function useDraftTimer(
 
   // 🧠 Auto-pick if user time runs out
   useEffect(() => {
-    if (!draftStarted || !isUserTurn || draftComplete) return;
+    if (!draftStarted || !isUserTurn || draftComplete || timerDisabled) return;
 
     if (timer === 0) {
       const fallbackPlayer = availablePlayers[0];
@@ -53,7 +54,14 @@ export function useDraftTimer(
       setTimer(120);
       setIsTicking(false);
     }
-  }, [timer, draftStarted, isUserTurn, draftComplete, availablePlayers]);
+  }, [
+    timer,
+    draftStarted,
+    isUserTurn,
+    draftComplete,
+    availablePlayers,
+    timerDisabled,
+  ]);
 
   // 🧷 Controls
   const pause = () => {

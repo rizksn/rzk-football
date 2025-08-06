@@ -10,4 +10,6 @@ export type MockNavbarProps = {
   onResume: () => void;
   showPauseButton: boolean;
   showPlayButton: boolean;
+  timerDisabled: boolean;
+  setTimerDisabled: React.Dispatch<React.SetStateAction<boolean>>;
 };

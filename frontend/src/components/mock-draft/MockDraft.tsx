@@ -40,6 +40,7 @@ export default function MockDraft() {
   const [showSettings, setShowSettings] = useState(false);
   const [showKeeperModal, setShowKeeperModal] = useState(false);
   const [queueOrder, setQueueOrder] = useState<string[]>([]);
+  const [timerDisabled, setTimerDisabled] = useState(false);
 
   const [keeperState, setKeeperState] = useState<{
     mode: "standard" | "keeper";
@@ -155,7 +156,8 @@ export default function MockDraft() {
     isUserTurn,
     availablePlayers,
     (player: Player) =>
-      handleUserPick(player, currentPick, setIsTicking, setTimer)
+      handleUserPick(player, currentPick, setIsTicking, setTimer),
+    timerDisabled
   );
 
   const { handleManualAssignPlayer, handleStartDraft } = useDraftUserActions(
@@ -201,11 +203,13 @@ export default function MockDraft() {
     if (!draftStarted || draftComplete) return;
 
     if (isUserTurn) {
-      setIsTicking(true);
+      if (!timerDisabled) {
+        setIsTicking(true);
+      }
     } else {
       setIsTicking(false);
     }
-  }, [isUserTurn, draftStarted, draftComplete]);
+  }, [isUserTurn, draftStarted, draftComplete, timerDisabled]);
 
   const lastLoadedKeeperId = useRef<string | null>(null);
 
@@ -271,6 +275,8 @@ export default function MockDraft() {
           timer={timer}
           setTimer={setTimer}
           isTicking={isTicking}
+          timerDisabled={timerDisabled}
+          setTimerDisabled={setTimerDisabled}
           onOpenKeeperModal={() => setShowKeeperModal(true)}
           onPause={pause}
           onResume={resume}
