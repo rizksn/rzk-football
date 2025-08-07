@@ -172,30 +172,26 @@ const MockNavbar = ({
               });
             }}
             disabled={draftStarted}
-            className={`transition ${
-              draftStarted
-                ? "opacity-30 cursor-not-allowed"
-                : "text-white hover:text-sky-400"
-            }`}
             title="Disable timer"
+            className="p-2 bg-[#60a5faae] hover:bg-[#60a5fa] rounded text-white shadow-[0_0_10px_rgba(59,130,246,0.6)] hover:shadow-[0_0_14px_rgba(59,130,246,0.8)] transition-all duration-200 transform hover:scale-110 hover:-translate-y-[1px] disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <SquareX className="w-5 h-5" />
+            <SquareX className="w-3 h-3" />
           </button>
 
           <button
             onClick={onUndoPick}
-            className="text-white hover:text-red-400 transition"
             title="Undo last pick"
+            className="p-2 bg-[#60a5faae] hover:bg-[#60a5fa] rounded text-white shadow-[0_0_10px_rgba(96,165,250,0.6)] hover:shadow-[0_0_14px_rgba(96,165,250,0.8)] transition-all duration-200 transform hover:scale-110 hover:-translate-y-[1px]"
           >
-            <Undo className="w-5 h-5" />
+            <Undo className="w-3 h-3" />
           </button>
 
           <button
             onClick={onRestartDraft}
-            className="text-white hover:text-yellow-400 transition"
             title="Restart draft"
+            className="p-2 bg-[#60a5faae] hover:bg-[#60a5fa] rounded text-white shadow-[0_0_10px_rgba(37,99,235,0.6)] hover:shadow-[0_0_14px_rgba(37,99,235,0.8)] transition-all duration-200 transform hover:scale-110 hover:-translate-y-[1px]"
           >
-            <RotateCcw className="w-5 h-5" />
+            <RotateCcw className="w-3 h-3" />
           </button>
         </div>
 
