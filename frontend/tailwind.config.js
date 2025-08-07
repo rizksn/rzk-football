@@ -77,12 +77,13 @@ module.exports = {
       },
       keyframes: {
         pulseBorder: {
-          "0%, 100%": { boxShadow: "0 0 0 0 rgba(34,211,238,0.7)" }, // cyan-400
-          "50%": { boxShadow: "0 0 0 2px rgba(34,211,238,1)" },
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(34,211,238,0.4)" },
+          "50%": { boxShadow: "0 0 0px 1px rgba(34,211,238,0.8)" },
         },
       },
+
       animation: {
-        "pulse-border": "pulseBorder 1.5s ease-in-out infinite",
+        "pulse-border": "pulseBorder 3.5s ease-in-out infinite",
       },
       animationDelay: {
         100: "100ms",

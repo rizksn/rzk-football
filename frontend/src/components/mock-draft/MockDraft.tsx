@@ -45,6 +45,7 @@ export default function MockDraft() {
   const [isPaused, setIsPaused] = useState(false);
   const [draftHistory, setDraftHistory] = useState<DraftPick[][]>([]);
   const [initialTimerDuration, setInitialTimerDuration] = useState(120);
+  const handleExitAssignMode = () => setAssignModeIndex(null);
 
   const [keeperState, setKeeperState] = useState<{
     mode: "standard" | "keeper";
@@ -366,6 +367,7 @@ export default function MockDraft() {
               rosterSettings={rosterSettings}
               assignModeIndex={assignModeIndex}
               onManualAssignPlayer={handleManualAssignPlayer}
+              onExitAssignMode={handleExitAssignMode}
               rankingPlayers={finalRankingPlayers}
               user={user}
               draftConfig={draftConfig}

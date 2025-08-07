@@ -22,6 +22,7 @@ type LowerPanelProps = {
   rosterSettings: DraftRosterSettings;
   assignModeIndex?: number | null;
   onManualAssignPlayer?: (player: Player) => void;
+  onExitAssignMode: () => void;
   user: User | null;
   draftConfig: DraftConfig;
   adpPlayers: Player[];
@@ -56,6 +57,8 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   rosterSettings,
   assignModeIndex,
   onManualAssignPlayer,
+  onExitAssignMode,
+
   user,
   draftConfig,
   adpPlayers,
@@ -108,6 +111,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
                   onDisplayRight={setRightPlayer}
                   assignModeIndex={assignModeIndex}
                   onManualAssignPlayer={onManualAssignPlayer}
+                  onExitAssignMode={onExitAssignMode}
                 />
               </div>
             </SwiperSlide>
@@ -178,6 +182,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               onDisplayRight={setRightPlayer}
               assignModeIndex={assignModeIndex}
               onManualAssignPlayer={onManualAssignPlayer}
+              onExitAssignMode={onExitAssignMode}
             />
           </div>
           <div className="w-1/2 overflow-y-auto">

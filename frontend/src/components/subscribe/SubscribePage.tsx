@@ -85,9 +85,10 @@ export default function SubscribePage() {
             Recurring monthly membership. Cancel anytime.
           </p>
           <ul className="text-left list-disc pl-6 text-white/70 space-y-1">
-            <li>Draft format customization (1QB, Superflex, etc)</li>
+            <li>Draft format customization (1QB, Superflex, redraft, etc)</li>
             <li>Platform-specific ADP (Sleeper, FFPC, Yahoo...)</li>
             <li>AI-powered draft simulations</li>
+            <li>Save custom rankings and keeper leagues</li>
             <li>More features coming this season</li>
           </ul>
 
