@@ -133,28 +133,28 @@ export default function DraftSettingsModal({
     >
       <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
 
-      <Dialog.Panel className="relative w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-lg shadow-2xl overflow-hidden">
-        <Dialog.Title className="text-xl font-bold text-white border-b border-slate-700 px-6 py-4">
-          {activeTab === "adp" ? "Select ADP Source" : "Roster Settings"}
+      <Dialog.Panel className="relative w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-lg shadow-2xl p-6">
+        <Dialog.Title className="text-xl font-bold text-white mb-6">
+          {activeTab === "adp" ? "League Format Settings" : "Roster Settings"}
         </Dialog.Title>
 
-        <div className="grid grid-cols-[120px_1fr] min-h-[420px]">
+        <div className="grid grid-cols-[120px_1fr] min-h-[300px]">
           <div className="flex flex-col border-r border-slate-700 bg-slate-900">
             <button
-              className={`px-4 py-3 text-left text-sm font-semibold text-white hover:bg-slate-800 transition ${
+              className={`px-4 py-3 text-left text-sm font-semibold text-white ${
                 activeTab === "adp"
                   ? "bg-slate-800 border-l-4 border-blue-500"
-                  : ""
+                  : "hover:bg-slate-800"
               }`}
               onClick={() => setActiveTab("adp")}
             >
-              ADP
+              League
             </button>
             <button
-              className={`px-4 py-3 text-left text-sm font-semibold text-white hover:bg-slate-800 transition ${
+              className={`px-4 py-3 text-left text-sm font-semibold text-white ${
                 activeTab === "roster"
                   ? "bg-slate-800 border-l-4 border-blue-500"
-                  : ""
+                  : "hover:bg-slate-800"
               }`}
               onClick={() => setActiveTab("roster")}
             >
