@@ -44,6 +44,7 @@ export default function MockDraft() {
   const [timerDisabled, setTimerDisabled] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [draftHistory, setDraftHistory] = useState<DraftPick[][]>([]);
+  const [initialTimerDuration, setInitialTimerDuration] = useState(120);
 
   const [keeperState, setKeeperState] = useState<{
     mode: "standard" | "keeper";
@@ -142,6 +143,7 @@ export default function MockDraft() {
 
   const handleUserPick = (player: Player, pick: DraftPick) => {
     baseHandleUserPick(player, pick);
+    setTimer(initialTimerDuration);
   };
 
   const {
@@ -159,7 +161,8 @@ export default function MockDraft() {
     availablePlayers,
     (player: Player) => baseHandleUserPick(player, currentPick),
     timerDisabled,
-    isPaused
+    isPaused,
+    initialTimerDuration
   );
 
   const { handleManualAssignPlayer, handleStartDraft } = useDraftUserActions(

@@ -8,6 +8,7 @@ import TimerButtons from "./timer/TimerButtons";
 import TimerDisplay from "./timer/TimerDisplay";
 import UserMenu from "@/components/shared/UserMenu";
 import { toast } from "sonner";
+import { useState, useRef, useEffect } from "react";
 
 const MockNavbar = ({
   draftStarted,
@@ -27,6 +28,8 @@ const MockNavbar = ({
   onRestartDraft,
 }: MockNavbarProps) => {
   const { user, isLoggedIn, isPaidUser, logout } = useAuth();
+  const [showTimerEdit, setShowTimerEdit] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const subscribe = async () => {
     const token = await user?.getIdToken();
@@ -68,6 +71,23 @@ const MockNavbar = ({
     }
   };
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        showTimerEdit &&
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setShowTimerEdit(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showTimerEdit]);
+
   return (
     <div className="w-full bg-slate-850 text-white text-xs">
       <div className="w-full flex justify-between items-center h-12 px-4">
@@ -92,7 +112,46 @@ const MockNavbar = ({
             showPauseButton={showPauseButton}
             showPlayButton={showPlayButton}
           />
-          <TimerDisplay timer={timer} />
+          <div
+            className="relative"
+            onClick={() => {
+              if (!draftStarted) setShowTimerEdit(true);
+            }}
+          >
+            {!showTimerEdit ? (
+              <TimerDisplay timer={timer} />
+            ) : (
+              <div
+                ref={containerRef}
+                className="flex items-center gap-2 bg-slate-700 px-3 py-2 rounded shadow"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <input
+                  type="number"
+                  min={0}
+                  max={59}
+                  className="w-12 px-2 py-1 rounded bg-slate-900 text-white text-right"
+                  value={Math.floor(timer / 60)}
+                  onChange={(e) => {
+                    const minutes = parseInt(e.target.value) || 0;
+                    setTimer(minutes * 60 + (timer % 60));
+                  }}
+                />
+                <span className="text-white">:</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={59}
+                  className="w-12 px-2 py-1 rounded bg-slate-900 text-white text-right"
+                  value={timer % 60}
+                  onChange={(e) => {
+                    const seconds = parseInt(e.target.value) || 0;
+                    setTimer(Math.floor(timer / 60) * 60 + seconds);
+                  }}
+                />
+              </div>
+            )}
+          </div>
 
           {/* Middle icons */}
           <button

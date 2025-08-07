@@ -10,9 +10,10 @@ export function useDraftTimer(
   availablePlayers: Player[],
   handleUserPick: (player: Player) => void,
   timerDisabled: boolean,
-  isPaused: boolean
+  isPaused: boolean,
+  initialTimerDuration: number
 ) {
-  const [timer, setTimer] = useState(120);
+  const [timer, setTimer] = useState(initialTimerDuration);
   const [isTicking, setIsTicking] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -61,8 +62,6 @@ export function useDraftTimer(
       if (fallbackPlayer) {
         handleUserPick(fallbackPlayer);
       }
-      setTimer(120);
-      setIsTicking(false);
     }
   }, [
     timer,
