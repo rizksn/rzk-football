@@ -111,18 +111,38 @@ export default function UserMenu() {
             </Menu.Item>
           </>
         ) : (
-          <Menu.Item>
-            {({ active }) => (
-              <button
-                onClick={loginWithGoogle}
-                className={`w-full px-4 py-2 text-left ${
-                  active ? "bg-slate-700" : ""
-                }`}
-              >
-                Sign In
-              </button>
-            )}
-          </Menu.Item>
+          <>
+            <Menu.Item>
+              {({ active }) => (
+                <button
+                  onClick={loginWithGoogle}
+                  className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
+                    active ? "bg-slate-700" : ""
+                  }`}
+                >
+                  <User className="w-4 h-4" />
+                  Sign In
+                </button>
+              )}
+            </Menu.Item>
+
+            <Menu.Item>
+              {({ active }) => (
+                <button
+                  onClick={async () => {
+                    await loginWithGoogle();
+                    window.location.href = "/subscribe";
+                  }}
+                  className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
+                    active ? "bg-slate-700" : ""
+                  }`}
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Subscribe
+                </button>
+              )}
+            </Menu.Item>
+          </>
         )}
       </Menu.Items>
     </Menu>
