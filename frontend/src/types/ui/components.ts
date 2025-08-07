@@ -12,4 +12,6 @@ export type MockNavbarProps = {
   showPlayButton: boolean;
   timerDisabled: boolean;
   setTimerDisabled: React.Dispatch<React.SetStateAction<boolean>>;
+  onUndoPick: () => void;
+  onRestartDraft: () => void;
 };

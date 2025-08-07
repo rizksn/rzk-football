@@ -23,6 +23,8 @@ const MockNavbar = ({
   showPlayButton,
   timerDisabled,
   setTimerDisabled,
+  onUndoPick,
+  onRestartDraft,
 }: MockNavbarProps) => {
   const { user, isLoggedIn, isPaidUser, logout } = useAuth();
 
@@ -122,7 +124,7 @@ const MockNavbar = ({
           </button>
 
           <button
-            onClick={() => console.log("Undo pick")}
+            onClick={onUndoPick}
             className="text-white hover:text-red-400 transition"
             title="Undo last pick"
           >
@@ -130,7 +132,7 @@ const MockNavbar = ({
           </button>
 
           <button
-            onClick={() => console.log("Restart draft")}
+            onClick={onRestartDraft}
             className="text-white hover:text-yellow-400 transition"
             title="Restart draft"
           >

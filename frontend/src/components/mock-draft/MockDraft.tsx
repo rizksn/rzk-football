@@ -15,6 +15,7 @@ import { useDraftSimulation } from "@/components/mock-draft/hooks/useDraftSimula
 import { useDraftTimer } from "@/components/mock-draft/hooks/useDraftTimer";
 import { useDraftUserActions } from "@/components/mock-draft/hooks/useDraftUserActions";
 import { useCurrentPickState } from "@/components/mock-draft/hooks/useCurrentPickState";
+import { initializeDraftPlan } from "@/utils/initializeDraftPlan";
 
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -93,7 +94,7 @@ export default function MockDraft() {
   const { simulateCpuPick, handleUserPick: baseHandleUserPick } =
     useDraftSimulation(
       draftPlan,
-      setDraftPlan,
+      setDraftPlanWithHistory,
       scoredPlayers,
       draftConfig,
       rosterSettings
@@ -255,6 +256,66 @@ export default function MockDraft() {
     }
   };
 
+  const handleUndoPick = () => {
+    if (!userDraftSlot) {
+      toast.error("❌ You must claim a team before undoing picks.");
+      return;
+    }
+
+    // Find the last pick made by the user
+    const lastUserPickIndex = [...draftPlan]
+      .reverse()
+      .findIndex(
+        (pick) => pick.teamIndex === userDraftSlot && pick.draftedPlayer
+      );
+
+    if (lastUserPickIndex === -1) {
+      toast.error("❌ No user picks to undo.");
+      return;
+    }
+
+    // Convert reversed index to actual index in draftPlan
+    const indexFromStart = draftPlan.length - 1 - lastUserPickIndex;
+
+    // Clear all picks from that index onward (including user pick and CPU picks after it)
+    const newPlan = draftPlan.map((pick, i) =>
+      i >= indexFromStart ? { ...pick, draftedPlayer: undefined } : pick
+    );
+
+    // Save current plan to history in case we want full rollback support later
+    setDraftHistory((prev) => [...prev, draftPlan]);
+
+    setDraftPlan(newPlan);
+    setTimer(120); // reset timer
+    setIsPaused(false); // resume draft if paused
+
+    const undonePick = draftPlan[indexFromStart];
+    toast.success(
+      `✅ Undo pick at ${undonePick.round + 1}.${undonePick.pickInRound + 1}.`
+    );
+  };
+
+  const handleRestartDraft = () => {
+    if (!draftConfig || !rosterSettings) return;
+
+    const freshPlan = initializeDraftPlan(
+      draftConfig.num_teams,
+      rosterSettings.totalRounds
+    );
+
+    setDraftPlan(freshPlan);
+    setDraftHistory([]);
+    setQueueOrder([]);
+    setUserDraftSlot(null);
+    setAssignModeIndex(null);
+    setRankedPlayers([]);
+    setDraftStarted(false);
+    setIsPaused(false);
+    setTimer(120);
+
+    toast.success("🔄 Draft restarted.");
+  };
+
   return (
     <div className="w-full max-w-[1600px] mx-auto h-full">
       <div className="flex flex-col h-screen overflow-visible">
@@ -272,6 +333,8 @@ export default function MockDraft() {
           onResume={() => setIsPaused(false)}
           showPauseButton={showPauseButton}
           showPlayButton={showPlayButton}
+          onUndoPick={handleUndoPick}
+          onRestartDraft={handleRestartDraft}
         />
 
         <div className="flex-1 overflow-x-auto overflow-y-auto relative z-0">
