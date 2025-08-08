@@ -2,37 +2,71 @@
 
 import { Menu } from "@headlessui/react";
 import { User, LogOut, CreditCard } from "lucide-react";
-import { useAuth } from "@/utils/useAuth";
 import { loginWithGoogle } from "@/utils/firebase";
 import { useRouter } from "next/navigation";
+import { useAuthContext } from "@/context/AuthContext";
+import { fetchWithAuth } from "@/utils/fetchWithAuth";
+
+function formatDate(iso: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d.getTime())
+    ? ""
+    : d.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+}
 
 export default function UserMenu() {
   const router = useRouter();
-  const { user, isPaidUser, logout } = useAuth();
+  const { user, isPaidUser, cancelScheduled, subscriptionEndsOn, logout } =
+    useAuthContext();
 
   const subscribe = async () => {
     try {
-      const token = await user?.getIdToken();
-      if (!token) return;
-
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/checkout`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { method: "POST" }
       );
 
-      const { url } = await res.json();
-      if (url) window.location.assign(url);
-    } catch (e) {
-      console.error("Checkout failed:", e);
+      const data = await res.json();
+
+      if (res.ok && data?.url) {
+        // Start Stripe checkout
+        window.location.assign(data.url);
+        return;
+      }
+
+      if (res.status === 400 && data?.message === "User already subscribed") {
+        // Already premium — just send them to the draft
+        router.push("/mockdraft");
+        return;
+      }
+
+      console.error("Checkout failed:", data);
+    } catch (err) {
+      console.error("Checkout failed:", err);
     }
   };
 
-  const goToCancelConfirm = () => {
-    router.push("/confirm-cancel");
-  };
+  const goToCancelConfirm = () => router.push("/confirm-cancel");
+
+  // Decide label/behavior
+  const showExpireNote = isPaidUser && cancelScheduled;
+  const buttonDisabled = showExpireNote;
+
+  let buttonLabel = "Subscribe";
+  let onClick: (() => void) | undefined = subscribe;
+
+  if (isPaidUser && !cancelScheduled) {
+    buttonLabel = "Cancel Membership";
+    onClick = goToCancelConfirm;
+  } else if (showExpireNote) {
+    buttonLabel = `Premium (ends ${formatDate(subscriptionEndsOn)})`;
+    onClick = undefined; // disabled
+  }
 
   return (
     <Menu as="div" className="relative">
@@ -53,7 +87,7 @@ export default function UserMenu() {
         )}
       </Menu.Button>
 
-      <Menu.Items className="absolute right-0 mt-2 w-48 bg-slate-800 text-white rounded-md shadow-lg overflow-hidden border border-white/10 z-50">
+      <Menu.Items className="absolute right-0 mt-2 w-56 bg-slate-800 text-white rounded-md shadow-lg overflow-hidden border border-white/10 z-50">
         {user ? (
           <>
             <div className="px-4 py-2 text-sm text-white/80 border-b border-white/10">
@@ -64,13 +98,16 @@ export default function UserMenu() {
               {({ active }) => (
                 <button
                   type="button"
-                  onClick={isPaidUser ? goToCancelConfirm : subscribe}
+                  onClick={onClick}
+                  disabled={buttonDisabled}
                   className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
-                    active ? "bg-slate-700" : ""
-                  }`}
+                    active && !buttonDisabled ? "bg-slate-700" : ""
+                  } ${buttonDisabled ? "opacity-60 cursor-not-allowed" : ""}`}
                 >
                   <CreditCard className="w-4 h-4" />
-                  {isPaidUser ? "Cancel Membership" : "Subscribe"}
+                  {showExpireNote
+                    ? `Premium | ${formatDate(subscriptionEndsOn)}`
+                    : buttonLabel}
                 </button>
               )}
             </Menu.Item>

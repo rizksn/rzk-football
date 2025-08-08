@@ -5,14 +5,24 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthContext } from "@/context/AuthContext";
 import { fetchWithAuth } from "@/utils/fetchWithAuth";
-import { auth } from "@/utils/firebase";
+
+function formatDate(iso?: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso); // backend returns ISO yyyy-mm-dd
+  return isNaN(d.getTime())
+    ? ""
+    : d.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+}
 
 export default function ConfirmCancelPage() {
   const router = useRouter();
-  const { isPaidUser } = useAuthContext();
+  const { isPaidUser, setCancelInfo } = useAuthContext();
   const [loading, setLoading] = useState(false);
 
-  // Only kick them out if we *know* they're not premium
   useEffect(() => {
     if (isPaidUser === false) router.replace("/subscribe");
   }, [isPaidUser, router]);
@@ -20,40 +30,22 @@ export default function ConfirmCancelPage() {
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      // Call your Next.js proxy route (/api/stripe/cancel)
-      // which forwards to FastAPI. If you didn't add the proxy,
-      // switch this to the full backend URL with token header.
       const res = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/cancel`,
         { method: "POST" }
       );
       const data = await res.json();
-
       if (!res.ok)
         throw new Error(data?.detail || data?.message || "Cancel failed");
 
-      // Force refresh Firebase token so any custom claims/state update quickly
-      await auth.currentUser?.getIdToken(true);
-      await auth.currentUser?.reload();
+      // Instantly reflect new state in the header (cancelScheduled + end date)
+      setCancelInfo(data?.current_period_end ?? null);
 
-      let end = "";
-      if (data?.current_period_end) {
-        const raw = data.current_period_end;
-        const ms =
-          typeof raw === "number" && raw < 10_000_000_000 ? raw * 1000 : raw; // handles seconds or ms/ISO
-        const d = new Date(ms);
-        if (!isNaN(d.getTime())) {
-          end = ` (ends ${d.toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })})`;
-        }
-      }
+      const endText = data?.current_period_end
+        ? ` (ends ${formatDate(data.current_period_end)})`
+        : "";
+      toast.success(`Subscription scheduled to cancel${endText}`);
 
-      toast.success(`Subscription scheduled to cancel${end}`);
-
-      // Send them to the friendly confirmation screen
       router.replace("/cancel");
     } catch (err: any) {
       console.error("Cancel error:", err);
