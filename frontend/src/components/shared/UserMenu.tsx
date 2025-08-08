@@ -4,53 +4,42 @@ import { Menu } from "@headlessui/react";
 import { User, LogOut, CreditCard } from "lucide-react";
 import { useAuth } from "@/utils/useAuth";
 import { loginWithGoogle } from "@/utils/firebase";
+import { useRouter } from "next/navigation";
 
 export default function UserMenu() {
+  const router = useRouter();
   const { user, isPaidUser, logout } = useAuth();
 
   const subscribe = async () => {
-    const token = await user?.getIdToken();
-    if (!token) return;
+    try {
+      const token = await user?.getIdToken();
+      if (!token) return;
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/checkout`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/checkout`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-    const { url } = await res.json();
-    if (url) window.location.href = url;
+      const { url } = await res.json();
+      if (url) window.location.assign(url);
+    } catch (e) {
+      console.error("Checkout failed:", e);
+    }
   };
 
-  const cancelMembership = async () => {
-    const token = await user?.getIdToken();
-    if (!token) return;
-
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/cancel`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (res.ok) {
-      alert("Membership canceled. Refreshing...");
-      window.location.reload();
-    } else {
-      alert("Failed to cancel membership.");
-    }
+  const goToCancelConfirm = () => {
+    router.push("/confirm-cancel");
   };
 
   return (
     <Menu as="div" className="relative">
-      <Menu.Button className="rounded-full overflow-hidden w-6 h-6">
+      <Menu.Button
+        type="button"
+        className="rounded-full overflow-hidden w-6 h-6"
+      >
         {user?.photoURL ? (
           <img
             src={user.photoURL}
@@ -74,19 +63,8 @@ export default function UserMenu() {
             <Menu.Item>
               {({ active }) => (
                 <button
-                  className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
-                    active ? "bg-slate-700" : ""
-                  }`}
-                >
-                  <User className="w-4 h-4" /> Account
-                </button>
-              )}
-            </Menu.Item>
-
-            <Menu.Item>
-              {({ active }) => (
-                <button
-                  onClick={isPaidUser ? cancelMembership : subscribe}
+                  type="button"
+                  onClick={isPaidUser ? goToCancelConfirm : subscribe}
                   className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
                     active ? "bg-slate-700" : ""
                   }`}
@@ -100,6 +78,7 @@ export default function UserMenu() {
             <Menu.Item>
               {({ active }) => (
                 <button
+                  type="button"
                   onClick={logout}
                   className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
                     active ? "bg-slate-700" : ""
@@ -115,6 +94,7 @@ export default function UserMenu() {
             <Menu.Item>
               {({ active }) => (
                 <button
+                  type="button"
                   onClick={loginWithGoogle}
                   className={`w-full px-4 py-2 text-left flex items-center gap-2 ${
                     active ? "bg-slate-700" : ""
@@ -129,6 +109,7 @@ export default function UserMenu() {
             <Menu.Item>
               {({ active }) => (
                 <button
+                  type="button"
                   onClick={async () => {
                     await loginWithGoogle();
                     window.location.href = "/subscribe";

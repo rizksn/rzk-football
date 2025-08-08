@@ -97,8 +97,6 @@ export default function KeeperModal({
     setSaving(true);
 
     try {
-      const token = await user.getIdToken();
-
       const payload = {
         user_id: user.uid,
         name: keeperName.trim(),
@@ -140,15 +138,8 @@ export default function KeeperModal({
     }
 
     try {
-      const token = await user.getIdToken();
-
       const res = await fetchWithAuth(
-        `${API_BASE_URL}/api/keepers/${selectedKeeperId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        `${API_BASE_URL}/api/keepers/${selectedKeeperId}`
       );
 
       const data = await res.json();
