@@ -34,9 +34,20 @@ export function useDraftState(
     async function fetchInitialData() {
       try {
         setLoading(true);
-        const res = await fetch(
-          `${API_BASE_URL}/api/draft-players?format=${draftConfig.adpFormatKey}`
-        );
+
+        const isDefaultFormat =
+          draftConfig.adpFormatKey === "dynasty_1qb_1_ppr_sleeper";
+
+        const url = `${API_BASE_URL}/api/draft-players?format=${draftConfig.adpFormatKey}`;
+        const res = isDefaultFormat
+          ? await fetch(url) // free format → no token
+          : await fetchWithAuth(url); // premium format → token
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData?.detail || "Failed to fetch draft players");
+        }
+
         const json = await res.json();
 
         if (!Array.isArray(json.adp) || !Array.isArray(json.scored)) {
@@ -57,6 +68,7 @@ export function useDraftState(
         setDraftPlan(newDraftPlan);
       } catch (err) {
         console.error("❌ Failed to fetch draft data:", err);
+        toast.error("Failed to load draft data");
       } finally {
         setLoading(false);
       }
