@@ -143,8 +143,11 @@ const LeftPanel = ({
                     index % 2 === 0
                       ? "bg-[rgba(28,29,46,0.23)]"
                       : "bg-[rgba(28,29,46,0.05)]",
-                    assignModeIndex !== null &&
-                      "border border-cyan-400 animate-pulse-border cursor-copy"
+                    assignModeIndex !== null && [
+                      "border border-cyan-400 animate-pulse-border",
+                      "cursor-crosshair",
+                      "hover:bg-[rgba(0,255,170,0.15)] hover:shadow-[0_0_8px_rgba(0,255,170,0.6)]",
+                    ]
                   )}
                   style={{
                     animationDelay:
@@ -170,7 +173,7 @@ const LeftPanel = ({
                   <td className="px-2 py-1.5 text-slate-300">{p.full_name}</td>
                   <td className="px-2 py-1.5 text-slate-300">{p.position}</td>
                   <td className="px-2 py-1.5 text-slate-300">{p.team}</td>
-                  <td className="px-1 py-1">
+                  <td className="px-0 py-1">
                     <button
                       onClick={() => onDisplayLeft(p)}
                       title="Left"
@@ -179,7 +182,7 @@ const LeftPanel = ({
                       <ChevronsLeft size={14} />
                     </button>
                   </td>
-                  <td className="px-1 py-1">
+                  <td className="px-0 py-1">
                     <button
                       onClick={() => onDisplayRight(p)}
                       title="Right"
@@ -188,7 +191,7 @@ const LeftPanel = ({
                       <ChevronsRight size={14} />
                     </button>
                   </td>
-                  <td className="px-2 py-1 text-right">
+                  <td className="px-3 py-1 text-right">
                     <button
                       onClick={() => onAddToQueue(p)}
                       aria-label={`Add ${p.full_name} to queue`}
