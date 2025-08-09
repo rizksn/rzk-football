@@ -1,7 +1,7 @@
 "use client";
 
 import { Player } from "@/types/core/player";
-import { useMemo } from "react";
+import { useMemo, type Dispatch, type SetStateAction } from "react";
 import {
   DndContext,
   closestCenter,
@@ -19,14 +19,15 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import { toast } from "sonner";
-import type { Dispatch, SetStateAction } from "react";
 
 function SortablePlayerRow({
   player,
   disabled,
+  lockMessage,
 }: {
   player: Player;
   disabled: boolean;
+  lockMessage?: string | null;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: player.player_id });
@@ -37,8 +38,8 @@ function SortablePlayerRow({
   };
 
   const handleClick = () => {
-    if (disabled) {
-      toast.error("Rankings are locked.");
+    if (disabled && lockMessage) {
+      toast.error(lockMessage);
     }
   };
 
@@ -68,21 +69,31 @@ export default function Rankings({
   setRankedPlayers,
   isPaidUser,
   canEditRankings,
+  draftStarted, // NEW
+  hasManualAssignments, // NEW
 }: {
   rankedPlayers: Player[];
   setRankedPlayers: Dispatch<SetStateAction<Player[]>>;
   isPaidUser: boolean;
   canEditRankings: boolean;
+  draftStarted: boolean; // NEW
+  hasManualAssignments: boolean; // NEW
 }) {
   const sensors = useSensors(useSensor(PointerSensor));
 
+  // one source of truth for why it's locked
+  const lockMessage = useMemo(() => {
+    if (!isPaidUser) return "🔒 Upgrade to premium to reorder rankings!";
+    if (canEditRankings) return null;
+    if (draftStarted) return "Rankings are locked. Draft in session.";
+    if (hasManualAssignments)
+      return "Rankings are locked. Please remove manually assigned players or save/load a keeper set.";
+    return "Rankings are locked.";
+  }, [isPaidUser, canEditRankings, draftStarted, hasManualAssignments]);
+
   const handleDragEnd = (event: DragEndEvent) => {
-    if (!isPaidUser) {
-      toast.error("🔒 Upgrade to premium to reorder rankings!");
-      return;
-    }
-    if (!canEditRankings) {
-      toast.error("Rankings are locked.");
+    if (lockMessage) {
+      toast.error(lockMessage);
       return;
     }
 
@@ -99,7 +110,7 @@ export default function Rankings({
     [rankedPlayers]
   );
 
-  const disabled = !isPaidUser || !canEditRankings;
+  const disabled = !!lockMessage;
 
   return (
     <div className="overflow-y-auto h-full">
@@ -117,6 +128,7 @@ export default function Rankings({
               key={player.player_id}
               player={player}
               disabled={disabled}
+              lockMessage={lockMessage}
             />
           ))}
         </SortableContext>

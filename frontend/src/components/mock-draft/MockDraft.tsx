@@ -79,6 +79,7 @@ export default function MockDraft() {
     downloadRankings,
     loading,
     canEditRankings,
+    hasManualAssignments,
   } = useDraftState(
     draftConfig,
     rosterSettings,
@@ -398,6 +399,7 @@ export default function MockDraft() {
               draftPlan={draftPlan}
               userDraftSlot={userDraftSlot}
               canEditRankings={canEditRankings}
+              hasManualAssignments={hasManualAssignments}
             />
           </div>
         </div>
