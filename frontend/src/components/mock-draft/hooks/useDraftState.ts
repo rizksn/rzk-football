@@ -103,14 +103,8 @@ export function useDraftState(
   ]);
 
   const setRankedPlayers = (update: SetStateAction<Player[]>) => {
-    if (!canEditRankings) {
-      toast.error(
-        draftStarted
-          ? "⏱️ Draft started — rankings are locked."
-          : "Manual keepers detected. Save them as a Keeper Set or clear them to edit rankings."
-      );
-      return;
-    }
+    // 🔕 no toast here; UI layer handles messaging
+    if (!canEditRankings) return;
 
     if (typeof update === "function") {
       _setRankedPlayers((prev) => (update as (p: Player[]) => Player[])(prev));
@@ -190,43 +184,23 @@ export function useDraftState(
   ]);
 
   const saveRankings = async () => {
-    if (!user) return;
-
-    if (!isPaidUser) {
-      toast.error("🔒 Premium required to save rankings. Please upgrade.");
-      return;
-    }
-
+    if (!user) throw new Error("not_signed_in");
+    if (!isPaidUser) throw new Error("premium_required");
     if (!canSaveStandard) {
-      if (derivedMode === "keeper") {
-        toast.error("You’re in Keeper mode. Use ‘Save Keeper Rankings’.");
-      } else {
-        toast.error(
-          "Rankings are locked. Save manual keepers as a Keeper Set or clear them."
-        );
-      }
-      return;
+      if (derivedMode === "keeper") throw new Error("keeper_mode");
+      throw new Error("locked");
     }
 
-    try {
-      const res = await fetchWithAuth(`${API_BASE_URL}/api/rankings/save`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          adp_format_key: draftConfig.adpFormatKey,
-          player_ids: rankedPlayers.map((p) => p.player_id),
-        }),
-      });
+    const res = await fetchWithAuth(`${API_BASE_URL}/api/rankings/save`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        adp_format_key: draftConfig.adpFormatKey,
+        player_ids: rankedPlayers.map((p) => p.player_id),
+      }),
+    });
 
-      if (!res.ok) throw new Error("Failed to save rankings");
-
-      toast.success("✅ Rankings saved!");
-    } catch (err) {
-      console.error(err);
-      toast.error("❌ Failed to save rankings");
-    }
+    if (!res.ok) throw new Error("save_failed");
   };
 
   const saveKeeperRankings = async (keeperSetId: string) => {

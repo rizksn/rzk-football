@@ -76,6 +76,25 @@ const RightPanel = ({
     return false;
   }, [saving, draftStarted, isPaidUser, canEditRankings]);
 
+  // simple per-button cooldown (no re-renders)
+  const useClickCooldown = (ms = 1200) => {
+    const ref = useRef(0);
+    return () => {
+      const now = Date.now();
+      if (now - ref.current < ms) return false;
+      ref.current = now;
+      return true;
+    };
+  };
+
+  // one guard per action you want to throttle
+  const canSaveClick = useClickCooldown(1500);
+  const canLoadClick = useClickCooldown(1200);
+  const canResetClick = useClickCooldown(1000);
+  const canDownloadClick = useClickCooldown(1500);
+  const canMigrateClick = useClickCooldown(1500);
+  const canClearQueueClick = useClickCooldown(1000);
+
   return (
     <div className="flex h-full w-full bg-[rgba(28,29,46,0.58)] min-h-0">
       <div className="absolute inset-0 z-0 bg-[radial-gradient(rgba(0,255,255,0.08)_1px,transparent_1px)] bg-[size:20px_20px] opacity-40 pointer-events-none" />
@@ -104,6 +123,7 @@ const RightPanel = ({
               {activeTab === "queue" && (
                 <button
                   onClick={() => {
+                    if (!canClearQueueClick()) return;
                     if (queueOrder.length === 0) {
                       toast.info("Queue is already empty");
                       return;
@@ -122,6 +142,7 @@ const RightPanel = ({
               {activeTab === "queue" && (
                 <button
                   onClick={() => {
+                    if (!canMigrateClick()) return;
                     if (!isPaidUser) {
                       toast.error(
                         "🔒 Upgrade to premium to migrate rankings to queue!"
@@ -153,13 +174,31 @@ const RightPanel = ({
                     }
                     onClick={async () => {
                       if (disableSave) return;
+                      if (!canSaveClick()) return;
                       setSaving(true);
                       try {
                         await onSaveRankings();
                         toast.success("✅ Rankings saved!");
-                      } catch (err) {
-                        console.error(err);
-                        toast.error("❌ Failed to save rankings");
+                      } catch (err: any) {
+                        switch (err.message) {
+                          case "premium_required":
+                            toast.error(
+                              "🔒 Premium required to save rankings. Please upgrade."
+                            );
+                            break;
+                          case "keeper_mode":
+                            toast.error(
+                              "You’re in Keeper mode. Use ‘Save Keeper Rankings’."
+                            );
+                            break;
+                          case "locked":
+                            toast.error(
+                              "Rankings are locked. Save manual keepers or clear them."
+                            );
+                            break;
+                          default:
+                            toast.error("❌ Failed to save rankings");
+                        }
                       } finally {
                         setSaving(false);
                       }
@@ -174,6 +213,7 @@ const RightPanel = ({
 
                   <button
                     onClick={() => {
+                      if (!canResetClick()) return;
                       if (!isPaidUser) {
                         toast.error("🔒 Upgrade to premium to reset rankings!");
                         return;
@@ -187,6 +227,7 @@ const RightPanel = ({
 
                   <button
                     onClick={() => {
+                      if (!canDownloadClick()) return;
                       if (!isPaidUser) {
                         toast.error(
                           "🔒 Upgrade to premium to download rankings!"
@@ -208,7 +249,7 @@ const RightPanel = ({
                     ? "bg-cyan-600 text-white"
                     : "bg-slate-700 text-slate-300 hover:bg-slate-600"
                 }`}
-                onClick={() => {
+                onClick={async () => {
                   if (activeTab === "rankings") {
                     if (!isPaidUser) {
                       toast.error(
@@ -216,8 +257,8 @@ const RightPanel = ({
                       );
                       return;
                     }
-                    loadRankings();
-                    toast.success("✅ Saved rankings reloaded");
+                    if (!canLoadClick()) return;
+                    await loadRankings();
                   } else {
                     setActiveTab("rankings");
                   }

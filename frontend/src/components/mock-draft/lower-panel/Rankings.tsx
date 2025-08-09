@@ -1,7 +1,7 @@
 "use client";
 
 import { Player } from "@/types/core/player";
-import { useMemo, type Dispatch, type SetStateAction } from "react";
+import { useMemo, useRef, type Dispatch, type SetStateAction } from "react";
 import {
   DndContext,
   closestCenter,
@@ -23,11 +23,9 @@ import { toast } from "sonner";
 function SortablePlayerRow({
   player,
   disabled,
-  lockMessage,
 }: {
   player: Player;
   disabled: boolean;
-  lockMessage?: string | null;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: player.player_id });
@@ -37,12 +35,6 @@ function SortablePlayerRow({
     transition,
   };
 
-  const handleClick = () => {
-    if (disabled && lockMessage) {
-      toast.error(lockMessage);
-    }
-  };
-
   return (
     <div
       ref={setNodeRef}
@@ -50,7 +42,6 @@ function SortablePlayerRow({
       className={`flex items-center px-3 py-2 border-b border-slate-700 hover:bg-slate-800 ${
         disabled ? "cursor-not-allowed opacity-50" : "cursor-grab"
       }`}
-      onClick={handleClick}
       {...(!disabled ? { ...attributes, ...listeners } : {})}
     >
       <div className="mr-2">
@@ -69,15 +60,15 @@ export default function Rankings({
   setRankedPlayers,
   isPaidUser,
   canEditRankings,
-  draftStarted, // NEW
-  hasManualAssignments, // NEW
+  draftStarted,
+  hasManualAssignments,
 }: {
   rankedPlayers: Player[];
   setRankedPlayers: Dispatch<SetStateAction<Player[]>>;
   isPaidUser: boolean;
   canEditRankings: boolean;
-  draftStarted: boolean; // NEW
-  hasManualAssignments: boolean; // NEW
+  draftStarted: boolean;
+  hasManualAssignments: boolean;
 }) {
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -87,13 +78,29 @@ export default function Rankings({
     if (canEditRankings) return null;
     if (draftStarted) return "Rankings are locked. Draft in session.";
     if (hasManualAssignments)
-      return "Rankings are locked. Please remove manually assigned players or save/load a keeper set.";
+      return "Manual assignments detected – save or load a keeper set first";
     return "Rankings are locked.";
   }, [isPaidUser, canEditRankings, draftStarted, hasManualAssignments]);
 
+  // toast-once guard so repeated clicks don't spam
+  const lastToastRef = useRef(0);
+  const handleContainerClick = () => {
+    if (!lockMessage) return; // unlocked → do nothing
+    const now = Date.now();
+    if (now - lastToastRef.current > 1200) {
+      toast.error(lockMessage);
+      lastToastRef.current = now;
+    }
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     if (lockMessage) {
-      toast.error(lockMessage);
+      // safety: if a drag ever begins while locked
+      const now = Date.now();
+      if (now - lastToastRef.current > 1200) {
+        toast.error(lockMessage);
+        lastToastRef.current = now;
+      }
       return;
     }
 
@@ -113,7 +120,7 @@ export default function Rankings({
   const disabled = !!lockMessage;
 
   return (
-    <div className="overflow-y-auto h-full">
+    <div className="overflow-y-auto h-full" onClick={handleContainerClick}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -128,7 +135,6 @@ export default function Rankings({
               key={player.player_id}
               player={player}
               disabled={disabled}
-              lockMessage={lockMessage}
             />
           ))}
         </SortableContext>
