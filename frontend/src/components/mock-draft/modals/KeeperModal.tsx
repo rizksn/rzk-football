@@ -119,7 +119,6 @@ export default function KeeperModal({
       toast.success("✅ Keepers saved!");
       if (onSaveKeeperSet) {
         onSaveKeeperSet(data.id);
-        onSaveKeeperSet(data.id);
       }
       onClose();
     } catch (err) {

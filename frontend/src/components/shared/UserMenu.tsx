@@ -32,6 +32,7 @@ export default function UserMenu() {
       );
 
       const data = await res.json();
+      console.log("checkout resp", res.status, data);
 
       if (res.ok && data?.url) {
         // Start Stripe checkout

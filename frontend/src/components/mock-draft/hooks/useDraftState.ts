@@ -31,50 +31,45 @@ export function useDraftState(
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const ctrl = new AbortController();
     async function fetchInitialData() {
       try {
         setLoading(true);
-
         const isDefaultFormat =
           draftConfig.adpFormatKey === "dynasty_1qb_1_ppr_sleeper";
-
         const url = `${API_BASE_URL}/api/draft-players?format=${draftConfig.adpFormatKey}`;
         const res = isDefaultFormat
-          ? await fetch(url) // free format → no token
-          : await fetchWithAuth(url); // premium format → token
+          ? await fetch(url, { cache: "no-store", signal: ctrl.signal })
+          : await fetchWithAuth(url, {
+              cache: "no-store",
+              signal: ctrl.signal,
+            });
 
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
           throw new Error(errData?.detail || "Failed to fetch draft players");
         }
-
         const json = await res.json();
-
         if (!Array.isArray(json.adp) || !Array.isArray(json.scored)) {
           throw new Error("Expected adp and scored arrays from backend");
         }
-
         setAdpPlayers(json.adp);
         setScoredPlayers(json.scored);
-        const sortedByAdp = [...json.adp].sort((a, b) => a.rank - b.rank);
-        setRankedPlayers(sortedByAdp);
-
-        const numTeams = draftConfig.num_teams;
-        const totalPicks = rosterSettings.totalRounds * numTeams;
-        const newDraftPlan = initializeDraftPlan(
-          numTeams,
-          rosterSettings.totalRounds
+        setRankedPlayers([...json.adp].sort((a, b) => a.rank - b.rank));
+        setDraftPlan(
+          initializeDraftPlan(draftConfig.num_teams, rosterSettings.totalRounds)
         );
-        setDraftPlan(newDraftPlan);
       } catch (err) {
-        console.error("❌ Failed to fetch draft data:", err);
-        toast.error("Failed to load draft data");
+        if ((err as any).name !== "AbortError") {
+          console.error("❌ Failed to fetch draft data:", err);
+          toast.error("Failed to load draft data");
+        }
       } finally {
         setLoading(false);
       }
     }
-
     fetchInitialData();
+    return () => ctrl.abort();
   }, [
     draftConfig.adpFormatKey,
     draftConfig.num_teams,
@@ -98,13 +93,11 @@ export function useDraftState(
         const res = await fetchWithAuth(
           `${API_BASE_URL}/api/rankings/load/keeper/${keeperState.keeperSetId}`
         );
-
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data?.message || "Failed to load keeper rankings");
-        }
-
         const data = await res.json();
+        if (!res.ok)
+          throw new Error(data?.message || "Failed to load keeper rankings");
+        if (!Array.isArray(data.rankings))
+          throw new Error("Invalid rankings format");
 
         // data.rankings = [{ player_id, rank }]
         const sorted = data.rankings
@@ -117,13 +110,11 @@ export function useDraftState(
         const res = await fetchWithAuth(
           `${API_BASE_URL}/api/rankings/load?format_key=${draftConfig.adpFormatKey}`
         );
-
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data?.message || "Failed to load");
-        }
-
         const data = await res.json();
+        if (!res.ok) throw new Error(data?.message || "Failed to load");
+        if (!Array.isArray(data.rankings))
+          throw new Error("Invalid rankings format");
+
         savedRankings = data.rankings || [];
       }
 
@@ -215,9 +206,10 @@ export function useDraftState(
     toast.success("✅ Rankings reset to ADP (not saved)");
   };
 
+  const esc = (s: string) => `"${String(s).replace(/"/g, '""')}"`;
   const downloadRankings = () => {
     const csv = rankedPlayers
-      .map((p, i) => `${i + 1},${p.full_name},${p.position},${p.team}`)
+      .map((p, i) => `${i + 1},${esc(p.full_name)},${p.position},${p.team}`)
       .join("\n");
     const blob = new Blob([`Rank,Name,Position,Team\n${csv}`], {
       type: "text/csv",
@@ -230,27 +222,50 @@ export function useDraftState(
     URL.revokeObjectURL(url);
   };
 
-  const rankingPlayers = useMemo(() => {
-    const draftedIds = draftPlan
-      .map((p) => p.draftedPlayer?.player_id)
-      .filter(Boolean);
-    return rankedPlayers.filter((p) => !draftedIds.includes(p.player_id));
-  }, [rankedPlayers, draftPlan]);
+  useEffect(() => {
+    if (!user || !isPaidUser) return;
+    if (adpPlayers.length === 0) return;
+    void loadRankings();
+  }, [
+    user,
+    isPaidUser,
+    adpPlayers.length,
+    keeperState.mode,
+    keeperState.keeperSetId,
+    draftConfig.adpFormatKey,
+    loadRankings,
+  ]);
 
-  const draftedPlayers = useMemo(
-    () => draftPlan.filter((p) => p.draftedPlayer).map((p) => p.draftedPlayer!),
+  const draftedIdsSet = useMemo(
+    () =>
+      new Set(
+        draftPlan
+          .map((p) => p.draftedPlayer?.player_id)
+          .filter(Boolean) as string[]
+      ),
     [draftPlan]
   );
 
-  const availablePlayers = useMemo(() => {
-    const draftedIds = draftPlan
-      .map((pick) => pick.draftedPlayer?.player_id)
-      .filter(Boolean);
+  const rankingPlayers = useMemo(
+    () => rankedPlayers.filter((p) => !draftedIdsSet.has(p.player_id)),
+    [rankedPlayers, draftedIdsSet]
+  );
 
-    return adpPlayers
-      .filter((p) => !draftedIds.includes(p.player_id))
-      .sort((a, b) => a.rank - b.rank);
-  }, [adpPlayers, draftPlan]);
+  const draftedPlayers = useMemo(
+    () =>
+      draftPlan
+        .filter((p) => p.draftedPlayer)
+        .map((p) => p.draftedPlayer!) as Player[],
+    [draftPlan]
+  );
+
+  const availablePlayers = useMemo(
+    () =>
+      adpPlayers
+        .filter((p) => !draftedIdsSet.has(p.player_id))
+        .sort((a, b) => a.rank - b.rank),
+    [adpPlayers, draftedIdsSet]
+  );
 
   return {
     draftPlan,

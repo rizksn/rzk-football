@@ -52,7 +52,6 @@ export function useAuth() {
     return () => unsubscribe();
   }, [refreshAuth]);
 
-  // Optimistic UI update after /api/stripe/cancel
   const setCancelInfo = (endISO: string | null) => {
     setCancelScheduled(true);
     setSubscriptionEndsOn(endISO);

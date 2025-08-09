@@ -50,6 +50,7 @@ export default function SubscribePage() {
       );
 
       const data = await res.json();
+      console.log("checkout resp", res.status, data);
 
       if (res.status === 400 && data?.message === "User already subscribed") {
         alert("You’re already subscribed! Redirecting to draft...");
