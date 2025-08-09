@@ -36,6 +36,7 @@ type RightPanelProps = {
   draftStarted: boolean;
   draftPlan: DraftPick[];
   userDraftSlot: number | null;
+  canEditRankings: boolean;
 };
 
 const RightPanel = ({
@@ -58,6 +59,7 @@ const RightPanel = ({
   draftStarted,
   draftPlan,
   userDraftSlot,
+  canEditRankings,
 }: RightPanelProps) => {
   const [activeTab, setActiveTab] = useState<"queue" | "rankings">("queue");
   const [saving, setSaving] = useState(false);
@@ -68,24 +70,9 @@ const RightPanel = ({
     if (saving) return true;
     if (draftStarted) return true;
     if (!isPaidUser) return true;
-
-    const manualAssignmentsExist =
-      keeperState.mode === "standard" &&
-      draftPlan.some(
-        (pick) => pick.draftedPlayer && pick.teamIndex === userDraftSlot
-      );
-
-    if (manualAssignmentsExist) return true;
-
+    if (!canEditRankings) return true;
     return false;
-  }, [
-    saving,
-    draftStarted,
-    isPaidUser,
-    keeperState.mode,
-    rankingPlayers,
-    userRoster,
-  ]);
+  }, [saving, draftStarted, isPaidUser, canEditRankings]);
 
   return (
     <div className="flex h-full w-full bg-[rgba(28,29,46,0.58)] min-h-0">
@@ -252,6 +239,7 @@ const RightPanel = ({
                 rankedPlayers={rankingPlayers}
                 setRankedPlayers={setRankedPlayers}
                 isPaidUser={isPaidUser}
+                canEditRankings={canEditRankings}
               />
             )}
           </div>

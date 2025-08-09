@@ -20,6 +20,7 @@ type KeeperSetMeta = {
 type KeeperModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  draftStarted: boolean;
   draftPlan: DraftPick[];
   draftConfig: DraftConfig;
   numTeams: number;
@@ -37,6 +38,7 @@ type KeeperModalProps = {
 export default function KeeperModal({
   isOpen,
   onClose,
+  draftStarted,
   draftPlan,
   draftConfig,
   numTeams,
@@ -88,6 +90,10 @@ export default function KeeperModal({
   };
 
   const handleSaveKeepers = async () => {
+    if (draftStarted) {
+      toast.error("⏱️ Draft started — keeper actions are locked.");
+      return;
+    }
     if (!user || !keeperName.trim()) return;
     if (!isPaidUser) {
       notifyPremiumRequired();
@@ -130,6 +136,10 @@ export default function KeeperModal({
   };
 
   const handleLoadSelectedKeeper = async () => {
+    if (draftStarted) {
+      toast.error("⏱️ Draft started — keeper actions are locked.");
+      return;
+    }
     if (!selectedKeeperId || !user) return;
     if (!isPaidUser) {
       notifyPremiumRequired();

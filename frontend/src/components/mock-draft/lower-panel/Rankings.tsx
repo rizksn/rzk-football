@@ -1,5 +1,7 @@
+"use client";
+
 import { Player } from "@/types/core/player";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   DndContext,
   closestCenter,
@@ -16,7 +18,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
-import { toast } from "sonner"; // <--- import toast here
+import { toast } from "sonner";
+import type { Dispatch, SetStateAction } from "react";
 
 function SortablePlayerRow({
   player,
@@ -35,7 +38,7 @@ function SortablePlayerRow({
 
   const handleClick = () => {
     if (disabled) {
-      toast.error("🔒 Upgrade to premium to customize rankings!");
+      toast.error("Rankings are locked.");
     }
   };
 
@@ -64,10 +67,12 @@ export default function Rankings({
   rankedPlayers,
   setRankedPlayers,
   isPaidUser,
+  canEditRankings,
 }: {
   rankedPlayers: Player[];
-  setRankedPlayers: (players: Player[]) => void;
+  setRankedPlayers: Dispatch<SetStateAction<Player[]>>;
   isPaidUser: boolean;
+  canEditRankings: boolean;
 }) {
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -76,6 +81,11 @@ export default function Rankings({
       toast.error("🔒 Upgrade to premium to reorder rankings!");
       return;
     }
+    if (!canEditRankings) {
+      toast.error("Rankings are locked.");
+      return;
+    }
+
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -88,6 +98,8 @@ export default function Rankings({
     () => rankedPlayers.map((p) => p.player_id),
     [rankedPlayers]
   );
+
+  const disabled = !isPaidUser || !canEditRankings;
 
   return (
     <div className="overflow-y-auto h-full">
@@ -104,7 +116,7 @@ export default function Rankings({
             <SortablePlayerRow
               key={player.player_id}
               player={player}
-              disabled={!isPaidUser}
+              disabled={disabled}
             />
           ))}
         </SortableContext>

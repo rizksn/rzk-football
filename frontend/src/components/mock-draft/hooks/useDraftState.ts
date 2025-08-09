@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  SetStateAction,
+} from "react";
 import { toast } from "sonner";
 import { Player } from "@/types/core/player";
 import { API_BASE_URL } from "@/utils/config";
@@ -22,13 +28,33 @@ export function useDraftState(
   keeperState: {
     mode: "standard" | "keeper";
     keeperSetId: string | null;
-  }
+  },
+  draftStarted: boolean // ⬅️ added: source of truth for locking after start
 ) {
   const [draftPlan, setDraftPlan] = useState<DraftPick[]>([]);
   const [scoredPlayers, setScoredPlayers] = useState<Player[]>([]);
   const [adpPlayers, setAdpPlayers] = useState<Player[]>([]);
-  const [rankedPlayers, setRankedPlayers] = useState<Player[]>([]);
+  const [rankedPlayers, _setRankedPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Derived: do we have any manual assignments on the board?
+  const hasManualAssignments = useMemo(
+    () => draftPlan.some((p) => !!p.draftedPlayer),
+    [draftPlan]
+  );
+
+  // Derived effective mode for ranking behavior
+  const derivedMode = useMemo<"locked" | "standard" | "keeper">(() => {
+    if (draftStarted) return "locked";
+    if (hasManualAssignments && keeperState.keeperSetId) return "keeper";
+    if (hasManualAssignments) return "locked"; // manual but no keeper set
+    return "standard";
+  }, [draftStarted, hasManualAssignments, keeperState.keeperSetId]);
+
+  const canEditRankings =
+    derivedMode === "standard" || derivedMode === "keeper";
+  const canSaveStandard = derivedMode === "standard";
+  const canSaveKeeper = derivedMode === "keeper";
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -55,7 +81,7 @@ export function useDraftState(
         }
         setAdpPlayers(json.adp);
         setScoredPlayers(json.scored);
-        setRankedPlayers([...json.adp].sort((a, b) => a.rank - b.rank));
+        _setRankedPlayers([...json.adp].sort((a, b) => a.rank - b.rank));
         setDraftPlan(
           initializeDraftPlan(draftConfig.num_teams, rosterSettings.totalRounds)
         );
@@ -76,6 +102,23 @@ export function useDraftState(
     rosterSettings.totalRounds,
   ]);
 
+  const setRankedPlayers = (update: SetStateAction<Player[]>) => {
+    if (!canEditRankings) {
+      toast.error(
+        draftStarted
+          ? "⏱️ Draft started — rankings are locked."
+          : "Manual keepers detected. Save them as a Keeper Set or clear them to edit rankings."
+      );
+      return;
+    }
+
+    if (typeof update === "function") {
+      _setRankedPlayers((prev) => (update as (p: Player[]) => Player[])(prev));
+    } else {
+      _setRankedPlayers(update);
+    }
+  };
+
   const loadRankings = useCallback(async () => {
     if (!user) return;
 
@@ -86,10 +129,12 @@ export function useDraftState(
       return;
     }
 
+    if (derivedMode === "locked") return;
+
     try {
       let savedRankings: string[] = [];
 
-      if (keeperState.mode === "keeper" && keeperState.keeperSetId) {
+      if (derivedMode === "keeper" && keeperState.keeperSetId) {
         const res = await fetchWithAuth(
           `${API_BASE_URL}/api/rankings/load/keeper/${keeperState.keeperSetId}`
         );
@@ -107,6 +152,7 @@ export function useDraftState(
 
         savedRankings = sorted;
       } else {
+        // standard mode
         const res = await fetchWithAuth(
           `${API_BASE_URL}/api/rankings/load?format_key=${draftConfig.adpFormatKey}`
         );
@@ -128,7 +174,7 @@ export function useDraftState(
         return;
       }
 
-      setRankedPlayers(savedPlayers);
+      _setRankedPlayers(savedPlayers);
       toast.success("✅ Rankings restored");
     } catch (err) {
       toast.error("❌ Failed to load rankings");
@@ -139,8 +185,8 @@ export function useDraftState(
     isPaidUser,
     draftConfig.adpFormatKey,
     adpPlayers,
-    keeperState.mode,
     keeperState.keeperSetId,
+    derivedMode,
   ]);
 
   const saveRankings = async () => {
@@ -148,6 +194,17 @@ export function useDraftState(
 
     if (!isPaidUser) {
       toast.error("🔒 Premium required to save rankings. Please upgrade.");
+      return;
+    }
+
+    if (!canSaveStandard) {
+      if (derivedMode === "keeper") {
+        toast.error("You’re in Keeper mode. Use ‘Save Keeper Rankings’.");
+      } else {
+        toast.error(
+          "Rankings are locked. Save manual keepers as a Keeper Set or clear them."
+        );
+      }
       return;
     }
 
@@ -179,10 +236,23 @@ export function useDraftState(
       return;
     }
 
+    if (!canSaveKeeper) {
+      if (!hasManualAssignments) {
+        toast.error("No manual keeper assignments on the board.");
+      } else if (!keeperState.keeperSetId && !keeperSetId) {
+        toast.error("Create or select a Keeper Set to save.");
+      } else if (draftStarted) {
+        toast.error("Draft started — rankings are locked.");
+      } else {
+        toast.error("Keeper rankings are not editable right now.");
+      }
+      return;
+    }
+
     try {
       const payload = {
-        adp_format_key: draftConfig.adpFormatKey, // always required by model
-        keeper_set_id: keeperSetId,
+        adp_format_key: draftConfig.adpFormatKey,
+        keeper_set_id: keeperSetId || keeperState.keeperSetId,
         player_ids: rankedPlayers.map((p) => p.player_id),
       };
 
@@ -201,8 +271,16 @@ export function useDraftState(
   };
 
   const resetRankings = () => {
+    if (!canEditRankings) {
+      toast.error(
+        draftStarted
+          ? "⏱️ Draft started — rankings are locked."
+          : "Manual keepers detected. Save them as a Keeper Set or clear them to edit rankings."
+      );
+      return;
+    }
     const sorted = [...adpPlayers].sort((a, b) => a.rank - b.rank);
-    setRankedPlayers(sorted);
+    _setRankedPlayers(sorted);
     toast.success("✅ Rankings reset to ADP (not saved)");
   };
 
@@ -230,7 +308,7 @@ export function useDraftState(
     user,
     isPaidUser,
     adpPlayers.length,
-    keeperState.mode,
+    derivedMode,
     keeperState.keeperSetId,
     draftConfig.adpFormatKey,
     loadRankings,
@@ -283,5 +361,10 @@ export function useDraftState(
     saveKeeperRankings,
     resetRankings,
     downloadRankings,
+    derivedMode,
+    canEditRankings,
+    canSaveStandard,
+    canSaveKeeper,
+    hasManualAssignments,
   };
 }

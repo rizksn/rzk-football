@@ -78,7 +78,15 @@ export default function MockDraft() {
     resetRankings,
     downloadRankings,
     loading,
-  } = useDraftState(draftConfig, rosterSettings, user, isPaidUser, keeperState);
+    canEditRankings,
+  } = useDraftState(
+    draftConfig,
+    rosterSettings,
+    user,
+    isPaidUser,
+    keeperState,
+    draftStarted
+  );
 
   const setDraftPlanWithHistory = (newPlan: DraftPick[]) => {
     setDraftHistory((prev) => [...prev, draftPlan]);
@@ -172,7 +180,8 @@ export default function MockDraft() {
     assignModeIndex,
     setAssignModeIndex,
     setDraftStarted,
-    userDraftSlot
+    userDraftSlot,
+    draftStarted
   );
 
   // 🧠 Ensure CPU picks continue automatically
@@ -388,6 +397,7 @@ export default function MockDraft() {
               draftStarted={draftStarted}
               draftPlan={draftPlan}
               userDraftSlot={userDraftSlot}
+              canEditRankings={canEditRankings}
             />
           </div>
         </div>
@@ -417,6 +427,7 @@ export default function MockDraft() {
       <KeeperModal
         isOpen={showKeeperModal}
         onClose={() => setShowKeeperModal(false)}
+        draftStarted={draftStarted}
         draftPlan={draftPlan}
         draftConfig={draftConfig}
         numTeams={numTeams}

@@ -45,6 +45,7 @@ type LowerPanelProps = {
   draftStarted: boolean;
   draftPlan: DraftPick[];
   userDraftSlot: number | null;
+  canEditRankings: boolean;
 };
 
 const LowerPanel: React.FC<LowerPanelProps> = ({
@@ -58,7 +59,6 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   assignModeIndex,
   onManualAssignPlayer,
   onExitAssignMode,
-
   user,
   draftConfig,
   adpPlayers,
@@ -78,6 +78,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
   draftStarted,
   draftPlan,
   userDraftSlot,
+  canEditRankings,
 }) => {
   const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
   const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
@@ -138,6 +139,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
                   draftStarted={draftStarted}
                   draftPlan={draftPlan}
                   userDraftSlot={userDraftSlot}
+                  canEditRankings={canEditRankings}
                 />
               </div>
             </SwiperSlide>
@@ -164,6 +166,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
                   draftStarted={draftStarted}
                   draftPlan={draftPlan}
                   userDraftSlot={userDraftSlot}
+                  canEditRankings={canEditRankings}
                 />
               </div>
             </SwiperSlide>
@@ -205,6 +208,7 @@ const LowerPanel: React.FC<LowerPanelProps> = ({
               draftStarted={draftStarted}
               draftPlan={draftPlan}
               userDraftSlot={userDraftSlot}
+              canEditRankings={canEditRankings}
             />
           </div>
         </div>
