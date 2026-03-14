@@ -1,11 +1,11 @@
 export interface DraftConfig {
   adpFormatKey: string;
   leagueFormat: string;
-  qb_setting: string;
+  qbSetting: string;
   scoring: string;
   platform: string;
+  numTeams: number;
   useAI: boolean;
-  num_teams: number;
 }
 
 export type RosterPosition = "QB" | "RB" | "WR" | "TE" | "FLX" | "SF" | "K";

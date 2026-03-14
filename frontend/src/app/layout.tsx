@@ -1,7 +1,7 @@
 import { defaultMetadata } from "./metadata";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "sonner";
-import ClientNavbarWrapper from "@/components/layout/ClientNavbarWrapper";
+import ClientNavbarWrapper from "@/features/layout/ClientNavbarWrapper";
 import "./globals.css";
 
 export const metadata = defaultMetadata;

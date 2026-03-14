@@ -1,6 +1,6 @@
 export type Player = {
-  player_id: string;  
-  full_name: string;  
+  player_id: string;
+  full_name: string;
   position: string;
   team: string;
   adp: number;
@@ -14,7 +14,6 @@ export type Player = {
   upsideScore?: number;
   score?: number;
   adjustedScore?: number;
-  team_index?: number;
 };
 
 export type RosterState = {

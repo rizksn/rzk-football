@@ -1,4 +1,4 @@
-import HeroCarousel from "@/components/homepage/HeroCarousel";
+import HeroCarousel from "@/features/homepage/HeroCarousel";
 
 const anubisFeatures = [
   {

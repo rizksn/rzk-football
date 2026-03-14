@@ -1,4 +1,4 @@
-import MockDraft from '@/components/mock-draft/MockDraft';
+import MockDraft from "@/features/mock-draft";
 
 export default function MockDraftPage() {
   return <MockDraft />;
