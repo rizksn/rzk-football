@@ -1,108 +1,100 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
-import { Player } from "@/types/core/player";
+import { useMemo } from "react";
 import { ChevronsLeft, ChevronsRight, ListPlus } from "lucide-react";
 import classNames from "classnames";
+
+import type { ScoredPlayer } from "@/features/mock-draft/session/session.models";
+import type { DraftWorkspacePlayerTableState } from "@/features/mock-draft/workspace/workspace.types";
 
 const POSITIONS = ["All", "QB", "RB", "WR", "TE", "FLEX", "K"] as const;
 
 type LeftPanelProps = {
-  players: Player[];
-  onAddToQueue: (player: Player) => void;
-  onDraftClick: (player: Player) => void;
-  isUserTurn: boolean;
-  onDisplayLeft: (player: Player) => void;
-  onDisplayRight: (player: Player) => void;
-  assignModeIndex?: number | null;
-  onManualAssignPlayer?: (player: Player) => void;
-  onExitAssignMode: () => void;
+  players: ScoredPlayer[];
+  playerTable: DraftWorkspacePlayerTableState;
+  canDraft: boolean;
+
+  onDraftPlayer: (playerId: string) => void;
+  onAddToQueue: (playerId: string) => void;
+
+  onSetSearchText: (value: string) => void;
+  onSetPositionFilter: (value: string | null) => void;
+
+  onSetLeftDisplayPlayer: (playerId: string | null) => void;
+  onSetRightDisplayPlayer: (playerId: string | null) => void;
 };
 
 const LeftPanel = ({
   players,
+  playerTable,
+  canDraft,
+  onDraftPlayer,
   onAddToQueue,
-  onDraftClick,
-  isUserTurn,
-  onDisplayLeft,
-  onDisplayRight,
-  assignModeIndex,
-  onManualAssignPlayer,
-  onExitAssignMode, // NEW prop
-}: LeftPanelProps & { onExitAssignMode: () => void }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [positionFilter, setPositionFilter] = useState<"All" | string>("All");
-  const panelRef = useRef<HTMLDivElement>(null);
-
+  onSetSearchText,
+  onSetPositionFilter,
+  onSetLeftDisplayPlayer,
+  onSetRightDisplayPlayer,
+}: LeftPanelProps) => {
   const filteredPlayers = useMemo(() => {
-    return players.filter((p) => {
-      const matchesSearch = p.full_name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+    const search = playerTable.searchText.trim().toLowerCase();
+
+    let next = players.filter((player) => {
+      const matchesSearch =
+        search.length === 0 || player.fullName.toLowerCase().includes(search);
 
       const matchesPosition =
-        positionFilter === "All" ||
-        (positionFilter === "FLEX"
-          ? ["WR", "RB", "TE"].includes(p.position)
-          : p.position === positionFilter);
+        !playerTable.positionFilter ||
+        playerTable.positionFilter === "All" ||
+        (playerTable.positionFilter === "FLEX"
+          ? ["WR", "RB", "TE"].includes(player.position)
+          : player.position === playerTable.positionFilter);
 
       return matchesSearch && matchesPosition;
     });
-  }, [players, searchTerm, positionFilter]);
 
-  function isDescendantOrSelf(
-    parent: Node | null,
-    child: Node | null
-  ): boolean {
-    if (!parent || !child) return false;
-    let node: Node | null = child;
-    while (node) {
-      if (node === parent) return true;
-      node = node.parentNode;
-    }
-    return false;
-  }
+    next = [...next].sort((a, b) => {
+      const { sortKey, sortDirection } = playerTable;
+      const direction = sortDirection === "asc" ? 1 : -1;
 
-  function handleClickOutside(event: MouseEvent) {
-    if (
-      assignModeIndex !== null &&
-      panelRef.current &&
-      !isDescendantOrSelf(panelRef.current, event.target as Node)
-    ) {
-      onExitAssignMode();
-    }
-  }
+      switch (sortKey) {
+        case "rank":
+          return (a.rank - b.rank) * direction;
+        case "adp":
+          return (a.absoluteAdp - b.absoluteAdp) * direction;
+        case "name":
+          return a.fullName.localeCompare(b.fullName) * direction;
+        case "position":
+          return a.position.localeCompare(b.position) * direction;
+        case "team":
+          return a.team.localeCompare(b.team) * direction;
+        default:
+          return 0;
+      }
+    });
 
-  useEffect(() => {
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, [assignModeIndex, onExitAssignMode]);
+    return next;
+  }, [players, playerTable]);
 
   return (
-    <div
-      ref={panelRef}
-      className="relative flex flex-col h-full w-full overflow-visible bg-[rgba(92,149,247,0.17)] rounded-md"
-    >
-      <div className="relative flex flex-col h-full w-full overflow-visible bg-[rgba(92,149,247,0.17)] rounded-md">
-        {/* Row: Search left, filters centered absolutely */}
-        <div className="relative w-full px-3 py-2 flex items-center h-[36px]">
-          {/* Search Bar */}
+    <div className="relative flex h-full w-full flex-col overflow-visible rounded-md bg-[rgba(92,149,247,0.17)]">
+      <div className="relative flex h-full w-full flex-col overflow-visible rounded-md bg-[rgba(92,149,247,0.17)]">
+        <div className="relative flex h-[36px] w-full items-center px-3 py-2">
           <input
             type="text"
             placeholder="Search players..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-slate-800 text-white text-xs rounded px-2 py-1 w-[160px] z-10"
+            value={playerTable.searchText}
+            onChange={(e) => onSetSearchText(e.target.value)}
+            className="z-10 w-[160px] rounded bg-slate-800 px-2 py-1 text-xs text-white"
           />
 
-          {/* Centered Filters */}
-          <div className="absolute left-1/2 -translate-x-1/2 flex gap-1 z-0">
+          <div className="absolute left-1/2 z-0 flex -translate-x-1/2 gap-1">
             {POSITIONS.map((pos) => (
               <button
                 key={pos}
-                onClick={() => setPositionFilter(pos)}
-                className={`px-2 py-1 text-xs rounded ${
-                  positionFilter === pos
+                onClick={() => onSetPositionFilter(pos === "All" ? "All" : pos)}
+                className={`rounded px-2 py-1 text-xs ${
+                  playerTable.positionFilter === pos ||
+                  (!playerTable.positionFilter && pos === "All")
                     ? "bg-cyan-700 text-white"
                     : "bg-slate-700 text-slate-300 hover:bg-slate-600"
                 }`}
@@ -113,88 +105,93 @@ const LeftPanel = ({
           </div>
         </div>
 
-        {/* Player Table */}
-        <div className="overflow-y-auto h-full w-full border-slate-800">
+        <div className="h-full w-full overflow-y-auto border-slate-800">
           <table className="w-full text-xs text-white">
             <thead className="sticky top-0 z-20">
               <tr>
-                <th className="text-left px-3 py-2">DRAFT</th>
-                <th className="text-left px-1 py-2">RANK</th>
-                <th className="text-left px-2 py-1">NAME</th>
-                <th className="text-left px-2 py-1">POS</th>
-                <th className="text-left px-2 py-1">TEAM</th>
-                <th className="text-left px-2 py-1">L</th>
-                <th className="text-left px-2 py-1">R</th>
-                <th className="text-right px-2 py-1">ADD</th>
+                <th className="px-3 py-2 text-left">DRAFT</th>
+                <th className="px-1 py-2 text-left">RANK</th>
+                <th className="px-2 py-1 text-left">NAME</th>
+                <th className="px-2 py-1 text-left">POS</th>
+                <th className="px-2 py-1 text-left">TEAM</th>
+                <th className="px-2 py-1 text-left">L</th>
+                <th className="px-2 py-1 text-left">R</th>
+                <th className="px-2 py-1 text-right">ADD</th>
               </tr>
             </thead>
+
             <tbody>
-              {filteredPlayers.map((p, index) => (
+              {filteredPlayers.map((player, index) => (
                 <tr
-                  key={`${p.full_name}-${p.team}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (assignModeIndex !== null && onManualAssignPlayer) {
-                      onManualAssignPlayer(p);
-                    }
-                  }}
+                  key={player.playerId}
                   className={classNames(
                     "border-b border-slate-700 transition-all duration-150",
                     index % 2 === 0
                       ? "bg-[rgba(28,29,46,0.23)]"
                       : "bg-[rgba(28,29,46,0.05)]",
-                    assignModeIndex !== null && [
-                      "border border-cyan-400 animate-pulse-border",
-                      "cursor-crosshair",
-                      "hover:bg-[rgba(0,255,170,0.15)] hover:shadow-[0_0_8px_rgba(0,255,170,0.6)]",
-                    ]
                   )}
-                  style={{
-                    animationDelay:
-                      assignModeIndex !== null
-                        ? `${(index % 6) * 100}ms`
-                        : undefined,
-                  }}
                 >
                   <td className="px-2 py-0">
                     <button
-                      disabled={!isUserTurn}
-                      onClick={() => isUserTurn && onDraftClick(p)}
-                      className={`text-[9px] font-bold px-2 py-0.5 rounded transition ${
-                        isUserTurn
-                          ? "bg-[#181c28] hover:bg-[#617fb9] text-[#ff2600] cursor-pointer"
-                          : "bg-slate-700 text-slate-400 cursor-not-allowed"
+                      disabled={!canDraft}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (canDraft) {
+                          onDraftPlayer(player.playerId);
+                        }
+                      }}
+                      className={`rounded px-2 py-0.5 text-[9px] font-bold transition ${
+                        canDraft
+                          ? "cursor-pointer bg-[#181c28] text-[#ff2600] hover:bg-[#617fb9]"
+                          : "cursor-not-allowed bg-slate-700 text-slate-400"
                       }`}
                     >
                       DRAFT
                     </button>
                   </td>
-                  <td className="px-2 py-1.5 text-slate-300">{p.rank}</td>
-                  <td className="px-2 py-1.5 text-slate-300">{p.full_name}</td>
-                  <td className="px-2 py-1.5 text-slate-300">{p.position}</td>
-                  <td className="px-2 py-1.5 text-slate-300">{p.team}</td>
+
+                  <td className="px-2 py-1.5 text-slate-300">{player.rank}</td>
+                  <td className="px-2 py-1.5 text-slate-300">
+                    {player.fullName}
+                  </td>
+                  <td className="px-2 py-1.5 text-slate-300">
+                    {player.position}
+                  </td>
+                  <td className="px-2 py-1.5 text-slate-300">{player.team}</td>
+
                   <td className="px-0 py-1">
                     <button
-                      onClick={() => onDisplayLeft(p)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSetLeftDisplayPlayer(player.playerId);
+                      }}
                       title="Left"
-                      className="p-[2px] text-white bg-cyan-900 hover:bg-cyan-700 rounded"
+                      className="rounded bg-cyan-900 p-[2px] text-white hover:bg-cyan-700"
                     >
                       <ChevronsLeft size={14} />
                     </button>
                   </td>
+
                   <td className="px-0 py-1">
                     <button
-                      onClick={() => onDisplayRight(p)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSetRightDisplayPlayer(player.playerId);
+                      }}
                       title="Right"
-                      className="p-[2px] text-white bg-cyan-900 hover:bg-cyan-700 rounded"
+                      className="rounded bg-cyan-900 p-[2px] text-white hover:bg-cyan-700"
                     >
                       <ChevronsRight size={14} />
                     </button>
                   </td>
+
                   <td className="px-3 py-1 text-right">
                     <button
-                      onClick={() => onAddToQueue(p)}
-                      aria-label={`Add ${p.full_name} to queue`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddToQueue(player.playerId);
+                      }}
+                      aria-label={`Add ${player.fullName} to queue`}
                       className="text-green-400 hover:text-green-300"
                     >
                       <ListPlus size={16} />

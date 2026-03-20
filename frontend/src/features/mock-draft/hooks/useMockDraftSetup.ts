@@ -12,6 +12,7 @@ import type {
   DraftSetupRosterState,
   DraftSetupState,
   DraftSetupTimerState,
+  DraftSetupUserState,
 } from "../setup/setup.types";
 
 function cloneSetupState(setup: DraftSetupState): DraftSetupState {
@@ -35,6 +36,9 @@ function cloneSetupState(setup: DraftSetupState): DraftSetupState {
     metadata: {
       ...setup.metadata,
     },
+    user: {
+      ...setup.user,
+    },
   };
 }
 
@@ -57,6 +61,7 @@ export interface UseMockDraftSetupResult {
   updateTimer: (patch: Partial<DraftSetupTimerState>) => void;
   updateKeeper: (patch: Partial<DraftSetupKeeperState>) => void;
   updateMetadata: (patch: Partial<DraftSetupMetadataState>) => void;
+  updateUser: (patch: Partial<DraftSetupUserState>) => void;
 }
 
 export function useMockDraftSetup(
@@ -162,6 +167,16 @@ export function useMockDraftSetup(
     [],
   );
 
+  const updateUser = useCallback((patch: Partial<DraftSetupUserState>) => {
+    setSetup((current) => ({
+      ...current,
+      user: {
+        ...current.user,
+        ...patch,
+      },
+    }));
+  }, []);
+
   return useMemo(
     () => ({
       setup,
@@ -174,6 +189,7 @@ export function useMockDraftSetup(
       updateTimer,
       updateKeeper,
       updateMetadata,
+      updateUser,
     }),
     [
       setup,
@@ -185,6 +201,7 @@ export function useMockDraftSetup(
       updateTimer,
       updateKeeper,
       updateMetadata,
+      updateUser,
     ],
   );
 }

@@ -25,6 +25,11 @@ export interface DraftWorkspacePanelsState {
   mobileSlideIndex: number;
 }
 
+export interface DraftWorkspaceDisplayState {
+  leftPlayerId: string | null;
+  rightPlayerId: string | null;
+}
+
 export interface DraftWorkspacePlayerTableState {
   searchText: string;
   selectedPlayerId: string | null;
@@ -51,6 +56,7 @@ export interface DraftWorkspaceRankingsState {
 export interface DraftWorkspaceState {
   modals: DraftWorkspaceModalsState;
   panels: DraftWorkspacePanelsState;
+  display: DraftWorkspaceDisplayState;
   playerTable: DraftWorkspacePlayerTableState;
   queue: DraftWorkspaceQueueState;
   rankings: DraftWorkspaceRankingsState;

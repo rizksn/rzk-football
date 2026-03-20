@@ -1,5 +1,6 @@
 export type MockNavbarProps = {
   draftStarted: boolean;
+  isCreatingDraft: boolean;
   onStartDraft: () => void;
   onOpenSettings: () => void;
   timer: number;

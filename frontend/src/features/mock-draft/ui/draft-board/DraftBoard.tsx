@@ -1,82 +1,90 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
 import DraftSlot from "./DraftSlot";
-import type { DraftPick } from "@/features/mock-draft/MockDraft";
+import type { DraftPick } from "@/features/mock-draft/session/session.models";
 
 type DraftBoardProps = {
-  draftStarted: boolean;
-  draftGrid: DraftPick[][];
-  claimedTeamIndex: number | null;
-  onClaimTeam: (teamIndex: number) => void;
+  draftPlan: DraftPick[];
   numTeams: number;
-  numRounds: number;
-  assignModeIndex: number | null;
-  setAssignModeIndex: (index: number | null) => void;
+  totalRounds: number;
+  currentPickIndex: number | null;
 };
 
 const DraftBoard = ({
-  draftStarted,
-  draftGrid,
-  claimedTeamIndex,
-  onClaimTeam,
+  draftPlan,
   numTeams,
-  numRounds,
-  assignModeIndex,
-  setAssignModeIndex,
+  totalRounds,
+  currentPickIndex,
 }: DraftBoardProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
+  const picksByIndex = useMemo(() => {
+    return new Map(draftPlan.map((pick) => [pick.pickIndex, pick]));
+  }, [draftPlan]);
+
+  const draftGrid = useMemo(() => {
+    if (numTeams <= 0 || totalRounds <= 0) return [];
+
+    const rows: Array<
+      Array<{
+        pickIndex: number;
+        round: number;
+        pickInRound: number;
+        pick: DraftPick | undefined;
+      }>
+    > = [];
+
+    for (let round = 0; round < totalRounds; round += 1) {
+      const row = [];
+
+      for (let pickInRound = 0; pickInRound < numTeams; pickInRound += 1) {
+        const pickIndex = round * numTeams + pickInRound;
+
+        row.push({
+          pickIndex,
+          round,
+          pickInRound,
+          pick: picksByIndex.get(pickIndex),
+        });
+      }
+
+      rows.push(row);
+    }
+
+    return rows;
+  }, [numTeams, totalRounds, picksByIndex]);
+
   return (
     <div className="w-full px-[2vw] py-4">
-      {/* Header row with claim buttons */}
-      <div className="grid grid-cols-12 gap-0.5 mb-2">
-        {Array.from({ length: numTeams }).map((_, teamIndex) => (
-          <button
-            key={`claim-${teamIndex}`}
-            disabled={draftStarted}
-            onClick={() => onClaimTeam(teamIndex)}
-            className={`text-[10px] py-0 px-2 rounded-md font-bold tracking-wide transition-all ${
-              claimedTeamIndex === teamIndex
-                ? "bg-[#0bf1074e] text-black"
-                : "bg-[#07f1dd] hover:bg-[#ec5100] text-black"
-            } ${draftStarted ? "opacity-50 cursor-not-allowed" : ""}`}
-          >
-            {claimedTeamIndex === teamIndex ? "CLAIMED" : "CLAIM"}
-          </button>
-        ))}
-      </div>
-
-      {/* Draft grid */}
       {draftGrid.map((round, roundIndex) => {
         const row = roundIndex % 2 === 0 ? round : [...round].reverse();
+
         return (
           <div
             key={`round-${roundIndex}`}
-            className="grid grid-cols-12 gap-0.5 mb-0.5"
+            className="mb-0.5 grid gap-0.5"
+            style={{
+              gridTemplateColumns: `repeat(${numTeams}, minmax(110px, 1fr))`,
+            }}
           >
-            {row.map((pick) => {
-              const flatIndex = pick.pickIndex;
-              const pickLabel = `${pick.round + 1}.${pick.pickInRound + 1}`;
-              const isHovered = hoveredIndex === flatIndex;
-              const isAssigning = assignModeIndex === flatIndex;
+            {row.map(({ pickIndex, round, pickInRound, pick }) => {
+              const pickLabel = `${round + 1}.${pickInRound + 1}`;
+              const isHovered = hoveredIndex === pickIndex;
+              const isCurrentPick = currentPickIndex === pickIndex;
 
               return (
                 <div
-                  key={pickLabel}
-                  onMouseEnter={() => setHoveredIndex(flatIndex)}
+                  key={pickIndex}
+                  onMouseEnter={() => setHoveredIndex(pickIndex)}
                   onMouseLeave={() => setHoveredIndex(null)}
                 >
                   <DraftSlot
                     pickNumber={pickLabel}
-                    player={pick.draftedPlayer}
+                    player={pick?.draftedPlayer ?? null}
                     isHovered={isHovered}
-                    isAssigning={isAssigning}
-                    onClick={() =>
-                      setAssignModeIndex(
-                        assignModeIndex === flatIndex ? null : flatIndex,
-                      )
-                    }
+                    isCurrentPick={isCurrentPick}
                   />
                 </div>
               );

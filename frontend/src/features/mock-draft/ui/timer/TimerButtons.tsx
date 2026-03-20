@@ -8,6 +8,7 @@ type TimerButtonsProps = {
   setTimer: React.Dispatch<React.SetStateAction<number>>;
   isTicking: boolean;
   draftStarted: boolean;
+  isCreatingDraft: boolean;
   onStartDraft: () => void;
   onPause: () => void;
   onResume: () => void;
@@ -20,6 +21,7 @@ export default function TimerButtons({
   setTimer,
   isTicking,
   draftStarted,
+  isCreatingDraft,
   onStartDraft,
   onPause,
   onResume,
@@ -49,7 +51,7 @@ export default function TimerButtons({
         onClick={() => {
           onStartDraft();
         }}
-        disabled={draftStarted}
+        disabled={draftStarted || isCreatingDraft}
         className="p-2 m-1 bg-[#39fb1fae] hover:bg-[#39fb1f] rounded text-white shadow-[0_0_10px_rgba(0,136,255,0.6)] hover:shadow-[0_0_14px_rgba(0,255,160,0.8)] transition-all duration-200 transform hover:scale-110 hover:-translate-y-[1px] disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <Power className="w-3 h-3" />

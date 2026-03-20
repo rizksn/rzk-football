@@ -6,6 +6,7 @@ import type {
   DraftSetupRosterState,
   DraftSetupState,
   DraftSetupTimerState,
+  DraftSetupUserState,
 } from "./setup.types";
 
 /**
@@ -29,7 +30,7 @@ export const DEFAULT_DRAFT_SETUP_ROSTER_POSITIONS: DraftSetupRosterPositions = {
   RB: 2,
   WR: 2,
   TE: 1,
-  FLX: 1,
+  FLX: 2,
   SF: 0,
   K: 0,
 };
@@ -40,6 +41,10 @@ export const DEFAULT_DRAFT_SETUP_ROSTER: DraftSetupRosterState = {
     ...DEFAULT_DRAFT_SETUP_ROSTER_POSITIONS,
   },
   benchCount: 8,
+};
+
+export const DEFAULT_DRAFT_SETUP_USER: DraftSetupUserState = {
+  userTeamIndex: null,
 };
 
 /**
@@ -87,5 +92,8 @@ export const DEFAULT_DRAFT_SETUP_STATE: DraftSetupState = {
   },
   metadata: {
     ...DEFAULT_DRAFT_SETUP_METADATA,
+  },
+  user: {
+    ...DEFAULT_DRAFT_SETUP_USER,
   },
 };

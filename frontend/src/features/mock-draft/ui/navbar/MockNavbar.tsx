@@ -12,6 +12,7 @@ import { useState, useRef, useEffect } from "react";
 
 const MockNavbar = ({
   draftStarted,
+  isCreatingDraft,
   onStartDraft,
   onOpenSettings,
   timer,
@@ -106,6 +107,7 @@ const MockNavbar = ({
             setTimer={setTimer}
             isTicking={isTicking}
             draftStarted={draftStarted}
+            isCreatingDraft={isCreatingDraft}
             onStartDraft={onStartDraft}
             onPause={onPause}
             onResume={onResume}

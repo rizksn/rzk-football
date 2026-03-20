@@ -1,219 +1,282 @@
 "use client";
 
-import type { User } from "firebase/auth";
-import { useState } from "react";
-import LeftPanel from "./LeftPanel";
-import RightPanel from "./RightPanel";
-import DisplayPanels from "../display-panels/DisplayPanels";
-import type { DraftPick } from "@/features/mock-draft/MockDraft";
-import { Player } from "@/types/core/player";
-import { DraftConfig, DraftRosterSettings } from "@/types/draft/config";
-import { DragEndEvent } from "@dnd-kit/core";
+import { useMemo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 
-type LowerPanelProps = {
-  players: Player[];
-  draftedPlayers: Player[];
-  rankingPlayers: Player[];
-  onDraftPlayer: (player: Player) => void;
-  isUserTurn: boolean;
-  userRoster: Player[];
-  rosterSettings: DraftRosterSettings;
-  assignModeIndex?: number | null;
-  onManualAssignPlayer?: (player: Player) => void;
-  onExitAssignMode: () => void;
-  user: User | null;
-  draftConfig: DraftConfig;
-  adpPlayers: Player[];
-  setRankedPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
-  loadRankings: () => Promise<void>;
-  onSaveRankings: () => Promise<void>;
-  resetRankings: () => void;
-  downloadRankings: () => void;
-  queuedPlayers: Player[];
-  onAddToQueue: (player: Player) => void;
-  onRemoveFromQueue: (playerId: string) => void;
-  queueOrder: string[];
-  handleQueueDragEnd: (event: DragEndEvent) => void;
-  isPaidUser: boolean;
-  setQueueOrder: React.Dispatch<React.SetStateAction<string[]>>;
-  keeperState: {
-    mode: "standard" | "keeper";
-    keeperSetId: string | null;
+import LeftPanel from "./LeftPanel";
+import RightPanel from "./RightPanel";
+import DisplayPanels from "../display-panels/DisplayPanels";
+
+import type { LowerPanelProps } from "./lower-panel.types";
+import type {
+  DraftedPlayer,
+  ScoredPlayer,
+} from "@/features/mock-draft/session/session.models";
+
+function scoredPlayerToLegacyPlayer(player: ScoredPlayer) {
+  return {
+    player_id: player.playerId,
+    full_name: player.fullName,
+    search_full_name: player.searchFullName,
+    first_name: player.firstName,
+    last_name: player.lastName,
+    team: player.team,
+    position: player.position,
+    rank: player.rank,
+    adp: player.adp,
+    scoring: player.scoring,
+    platform: player.platform,
+    type: player.type,
+    absolute_adp: player.absoluteAdp,
+    final_score: player.finalScore,
+    debug: player.debug,
   };
-  draftStarted: boolean;
-  draftPlan: DraftPick[];
-  userDraftSlot: number | null;
-  canEditRankings: boolean;
-  hasManualAssignments: boolean;
+}
+
+function draftedPlayerToLegacyPlayer(player: DraftedPlayer) {
+  return {
+    player_id: player.playerId,
+    full_name: player.fullName,
+    team: player.team,
+    position: player.position,
+  };
+}
+
+const EMPTY_ROSTER_SETTINGS = {
+  positions: {
+    QB: 0,
+    RB: 0,
+    WR: 0,
+    TE: 0,
+    FLX: 0,
+    SF: 0,
+    K: 0,
+  },
+  benchCount: 0,
+  totalRounds: 0,
 };
 
-const LowerPanel: React.FC<LowerPanelProps> = ({
-  players,
-  draftedPlayers,
-  rankingPlayers,
-  onDraftPlayer,
-  isUserTurn,
+const LowerPanel = ({
+  availablePlayers,
+  draftPlan,
+  rosterConfig,
   userRoster,
-  rosterSettings,
-  assignModeIndex,
-  onManualAssignPlayer,
-  onExitAssignMode,
-  user,
-  draftConfig,
-  adpPlayers,
-  setRankedPlayers,
-  loadRankings,
-  onSaveRankings,
-  resetRankings,
-  downloadRankings,
-  queuedPlayers,
+  draftStarted,
+  workspace,
+  onDraftPlayer,
+  onSetLowerPanelTab,
+  onSetMobileSlideIndex,
+  onSetSearchText,
+  onSetPositionFilter,
+  onSetTeamFilter,
+  onSetSort,
+  onSetLeftDisplayPlayer,
+  onSetRightDisplayPlayer,
   onAddToQueue,
   onRemoveFromQueue,
-  queueOrder,
-  handleQueueDragEnd,
-  isPaidUser,
-  setQueueOrder,
-  keeperState,
-  draftStarted,
-  draftPlan,
-  userDraftSlot,
-  canEditRankings,
-  hasManualAssignments,
-}) => {
-  const [leftPlayer, setLeftPlayer] = useState<Player | null>(null);
-  const [rightPlayer, setRightPlayer] = useState<Player | null>(null);
+  onQueueDragEnd,
+  onLoadRankings,
+  onSaveRankings,
+  onResetRankings,
+}: LowerPanelProps) => {
+  const legacyUserRoster = useMemo(
+    () => userRoster.map(draftedPlayerToLegacyPlayer),
+    [userRoster],
+  );
 
-  const handleUserDraft = (player: Player) => {
-    if (!isUserTurn) return;
-    onRemoveFromQueue(player.player_id);
-    onDraftPlayer(player);
-  };
+  const queuePlayers = useMemo(() => {
+    const availableById = new Map(
+      availablePlayers.map((player) => [player.playerId, player]),
+    );
+
+    return workspace.queue.playerIds
+      .map((playerId) => availableById.get(playerId))
+      .filter((player): player is ScoredPlayer => Boolean(player))
+      .map(scoredPlayerToLegacyPlayer);
+  }, [availablePlayers, workspace.queue.playerIds]);
+
+  const rankingPlayers = useMemo(() => {
+    const availableById = new Map(
+      availablePlayers.map((player) => [player.playerId, player]),
+    );
+
+    return workspace.rankings.playerIds
+      .map((playerId) => availableById.get(playerId))
+      .filter((player): player is ScoredPlayer => Boolean(player))
+      .map(scoredPlayerToLegacyPlayer);
+  }, [availablePlayers, workspace.rankings.playerIds]);
+
+  const leftDisplayPlayer = useMemo(() => {
+    const leftPlayerId = workspace.display.leftPlayerId;
+    if (!leftPlayerId) return null;
+
+    return (
+      availablePlayers.find((player) => player.playerId === leftPlayerId) ??
+      null
+    );
+  }, [availablePlayers, workspace.display.leftPlayerId]);
+
+  const rightDisplayPlayer = useMemo(() => {
+    const rightPlayerId = workspace.display.rightPlayerId;
+    if (!rightPlayerId) return null;
+
+    return (
+      availablePlayers.find((player) => player.playerId === rightPlayerId) ??
+      null
+    );
+  }, [availablePlayers, workspace.display.rightPlayerId]);
+
+  const legacyLeftDisplayPlayer = leftDisplayPlayer
+    ? scoredPlayerToLegacyPlayer(leftDisplayPlayer)
+    : null;
+
+  const legacyRightDisplayPlayer = rightDisplayPlayer
+    ? scoredPlayerToLegacyPlayer(rightDisplayPlayer)
+    : null;
+
+  const rosterSettings = rosterConfig
+    ? {
+        positions: rosterConfig.positions,
+        benchCount: rosterConfig.benchCount,
+        totalRounds: rosterConfig.totalRounds,
+      }
+    : EMPTY_ROSTER_SETTINGS;
 
   return (
-    <div className="w-full sm:min-w-[960px] max-w-[1600px] mx-auto h-[55vh] flex flex-col">
-      {/* Header player display */}
+    <div className="mx-auto flex h-[55vh] w-full max-w-[1600px] flex-col sm:min-w-[960px]">
       <div className="h-[120px] shrink-0">
-        <DisplayPanels leftPlayer={leftPlayer} rightPlayer={rightPlayer} />
+        <DisplayPanels
+          leftPlayer={legacyLeftDisplayPlayer}
+          rightPlayer={legacyRightDisplayPlayer}
+        />
       </div>
 
-      {/* Main content layout */}
-      <div className="h-[calc(55vh-136px)] w-full relative">
-        {/* 👉 Mobile (below 640px): Swiper */}
-        <div className="block sm:hidden h-full w-screen overflow-hidden">
-          <Swiper slidesPerView={1} spaceBetween={8} className="w-full h-full">
+      <div className="relative h-[calc(55vh-136px)] w-full">
+        <div className="block h-full w-screen overflow-hidden sm:hidden">
+          <Swiper
+            slidesPerView={1}
+            spaceBetween={8}
+            className="h-full w-full"
+            onSlideChange={(swiper) => {
+              onSetMobileSlideIndex(swiper.activeIndex);
+
+              if (swiper.activeIndex === 0) onSetLowerPanelTab("players");
+              if (swiper.activeIndex === 1) onSetLowerPanelTab("queue");
+              if (swiper.activeIndex === 2) onSetLowerPanelTab("roster");
+            }}
+          >
             <SwiperSlide>
               <div className="w-screen overflow-hidden px-2">
                 <LeftPanel
-                  players={players}
+                  players={availablePlayers}
+                  playerTable={workspace.playerTable}
+                  canDraft={draftStarted}
+                  onDraftPlayer={onDraftPlayer}
                   onAddToQueue={onAddToQueue}
-                  onDraftClick={handleUserDraft}
-                  isUserTurn={isUserTurn}
-                  onDisplayLeft={setLeftPlayer}
-                  onDisplayRight={setRightPlayer}
-                  assignModeIndex={assignModeIndex}
-                  onManualAssignPlayer={onManualAssignPlayer}
-                  onExitAssignMode={onExitAssignMode}
+                  onSetSearchText={onSetSearchText}
+                  onSetPositionFilter={onSetPositionFilter}
+                  onSetLeftDisplayPlayer={onSetLeftDisplayPlayer}
+                  onSetRightDisplayPlayer={onSetRightDisplayPlayer}
                 />
               </div>
             </SwiperSlide>
 
             <SwiperSlide>
-              <div className="flex flex-col h-full w-full px-4">
+              <div className="flex h-full w-full flex-col px-4">
                 <RightPanel
                   showOnly="queue"
-                  queuedPlayers={queuedPlayers}
+                  queuedPlayers={queuePlayers}
                   rankingPlayers={rankingPlayers}
-                  userRoster={userRoster}
+                  userRoster={legacyUserRoster}
                   rosterSettings={rosterSettings}
                   onRemoveFromQueue={onRemoveFromQueue}
-                  setRankedPlayers={setRankedPlayers}
-                  loadRankings={loadRankings}
+                  setRankedPlayers={() => {}}
+                  loadRankings={onLoadRankings}
                   onSaveRankings={onSaveRankings}
-                  resetRankings={resetRankings}
-                  downloadRankings={downloadRankings}
-                  queueOrder={queueOrder}
-                  setQueueOrder={setQueueOrder}
-                  handleQueueDragEnd={handleQueueDragEnd}
-                  isPaidUser={isPaidUser}
-                  keeperState={keeperState}
+                  resetRankings={onResetRankings}
+                  downloadRankings={() => {}}
+                  queueOrder={workspace.queue.playerIds}
+                  setQueueOrder={() => {}}
+                  handleQueueDragEnd={onQueueDragEnd}
+                  isPaidUser={true}
+                  keeperState={{ mode: "standard", keeperSetId: null }}
                   draftStarted={draftStarted}
                   draftPlan={draftPlan}
-                  userDraftSlot={userDraftSlot}
-                  canEditRankings={canEditRankings}
-                  hasManualAssignments={hasManualAssignments}
+                  userDraftSlot={null}
+                  canEditRankings={true}
+                  hasManualAssignments={false}
                 />
               </div>
             </SwiperSlide>
 
             <SwiperSlide>
-              <div className="flex flex-col h-full w-full px-4">
+              <div className="flex h-full w-full flex-col px-4">
                 <RightPanel
                   showOnly="roster"
-                  queuedPlayers={queuedPlayers}
+                  queuedPlayers={queuePlayers}
                   rankingPlayers={rankingPlayers}
-                  userRoster={userRoster}
+                  userRoster={legacyUserRoster}
                   rosterSettings={rosterSettings}
                   onRemoveFromQueue={onRemoveFromQueue}
-                  setRankedPlayers={setRankedPlayers}
-                  loadRankings={loadRankings}
+                  setRankedPlayers={() => {}}
+                  loadRankings={onLoadRankings}
                   onSaveRankings={onSaveRankings}
-                  resetRankings={resetRankings}
-                  downloadRankings={downloadRankings}
-                  queueOrder={queueOrder}
-                  setQueueOrder={setQueueOrder}
-                  handleQueueDragEnd={handleQueueDragEnd}
-                  isPaidUser={isPaidUser}
-                  keeperState={keeperState}
+                  resetRankings={onResetRankings}
+                  downloadRankings={() => {}}
+                  queueOrder={workspace.queue.playerIds}
+                  setQueueOrder={() => {}}
+                  handleQueueDragEnd={onQueueDragEnd}
+                  isPaidUser={true}
+                  keeperState={{ mode: "standard", keeperSetId: null }}
                   draftStarted={draftStarted}
                   draftPlan={draftPlan}
-                  userDraftSlot={userDraftSlot}
-                  canEditRankings={canEditRankings}
-                  hasManualAssignments={hasManualAssignments}
+                  userDraftSlot={null}
+                  canEditRankings={true}
+                  hasManualAssignments={false}
                 />
               </div>
             </SwiperSlide>
           </Swiper>
         </div>
 
-        {/* 👉 Desktop (640px and up): Flex layout */}
-        <div className="hidden sm:flex h-full">
+        <div className="hidden h-full sm:flex">
           <div className="w-1/2 overflow-y-auto">
             <LeftPanel
-              players={players}
+              players={availablePlayers}
+              playerTable={workspace.playerTable}
+              canDraft={draftStarted}
+              onDraftPlayer={onDraftPlayer}
               onAddToQueue={onAddToQueue}
-              onDraftClick={handleUserDraft}
-              isUserTurn={isUserTurn}
-              onDisplayLeft={setLeftPlayer}
-              onDisplayRight={setRightPlayer}
-              assignModeIndex={assignModeIndex}
-              onManualAssignPlayer={onManualAssignPlayer}
-              onExitAssignMode={onExitAssignMode}
+              onSetSearchText={onSetSearchText}
+              onSetPositionFilter={onSetPositionFilter}
+              onSetLeftDisplayPlayer={onSetLeftDisplayPlayer}
+              onSetRightDisplayPlayer={onSetRightDisplayPlayer}
             />
           </div>
+
           <div className="w-1/2 overflow-y-auto">
             <RightPanel
-              queuedPlayers={queuedPlayers}
+              queuedPlayers={queuePlayers}
               rankingPlayers={rankingPlayers}
-              userRoster={userRoster}
+              userRoster={legacyUserRoster}
               rosterSettings={rosterSettings}
               onRemoveFromQueue={onRemoveFromQueue}
-              setRankedPlayers={setRankedPlayers}
-              loadRankings={loadRankings}
+              setRankedPlayers={() => {}}
+              loadRankings={onLoadRankings}
               onSaveRankings={onSaveRankings}
-              resetRankings={resetRankings}
-              downloadRankings={downloadRankings}
-              queueOrder={queueOrder}
-              setQueueOrder={setQueueOrder}
-              handleQueueDragEnd={handleQueueDragEnd}
-              isPaidUser={isPaidUser}
-              keeperState={keeperState}
+              resetRankings={onResetRankings}
+              downloadRankings={() => {}}
+              queueOrder={workspace.queue.playerIds}
+              setQueueOrder={() => {}}
+              handleQueueDragEnd={onQueueDragEnd}
+              isPaidUser={true}
+              keeperState={{ mode: "standard", keeperSetId: null }}
               draftStarted={draftStarted}
               draftPlan={draftPlan}
-              userDraftSlot={userDraftSlot}
-              canEditRankings={canEditRankings}
-              hasManualAssignments={hasManualAssignments}
+              userDraftSlot={null}
+              canEditRankings={true}
+              hasManualAssignments={false}
             />
           </div>
         </div>

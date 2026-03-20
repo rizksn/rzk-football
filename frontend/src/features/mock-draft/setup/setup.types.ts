@@ -27,6 +27,10 @@ export interface DraftSetupRosterState {
   benchCount: number;
 }
 
+export interface DraftSetupUserState {
+  userTeamIndex: number | null;
+}
+
 export interface DraftSetupTimerState {
   enabled: boolean;
   secondsPerPick: number | null;
@@ -48,4 +52,5 @@ export interface DraftSetupState {
   timer: DraftSetupTimerState;
   keeper: DraftSetupKeeperState;
   metadata: DraftSetupMetadataState;
+  user: DraftSetupUserState;
 }

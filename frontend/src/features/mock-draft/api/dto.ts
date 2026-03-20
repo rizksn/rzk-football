@@ -129,3 +129,23 @@ export interface SimulateStateResponseDto {
   pickedPlayer: DraftedPlayerDto;
   explanation: string | null;
 }
+
+export type AdpPlayerResponseDto = {
+  playerId: string;
+  fullName: string | null;
+  searchFullName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  team: string | null;
+  position: string | null;
+  rank: number | null;
+  adp: string | null;
+  scoring: string | null;
+  platform: string | null;
+  type: string | null;
+};
+
+export type AdpPlayersResponseDto = {
+  adpFormatKey: string;
+  players: AdpPlayerResponseDto[];
+};
