@@ -23,7 +23,9 @@ function MockDraftScreenContent() {
   const { user, isPaidUser } = useAuthContext();
   const isLoggedIn = Boolean(user);
 
-  const { setup, replaceSetup } = useMockDraftSetup();
+  const { setup, updateMetadata, updateLeague, updateRoster, updateUser } =
+    useMockDraftSetup();
+
   const { dispatch } = useMockDraftSession();
 
   const {
@@ -124,14 +126,19 @@ function MockDraftScreenContent() {
           numTeams={boardNumTeams}
           totalRounds={boardTotalRounds}
           currentPickIndex={currentPickIndex}
+          claimedTeamIndex={setup.user.userTeamIndex}
+          onClaimTeam={(teamIndex) => updateUser({ userTeamIndex: teamIndex })}
+          draftStarted={draftStarted}
         />
       </div>
 
       <DraftSettingsModal
         isOpen={showSettings}
         onClose={handleCloseSettings}
-        initialSetup={setup}
-        onConfirm={replaceSetup}
+        setup={setup}
+        updateMetadata={updateMetadata}
+        updateLeague={updateLeague}
+        updateRoster={updateRoster}
         isPaidUser={isPaidUser}
         isLoggedIn={isLoggedIn}
       />

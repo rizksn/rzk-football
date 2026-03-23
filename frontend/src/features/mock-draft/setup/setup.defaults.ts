@@ -1,11 +1,11 @@
 import type {
-  DraftSetupKeeperState,
+  DraftSetupState,
   DraftSetupLeagueState,
-  DraftSetupMetadataState,
   DraftSetupRosterPositions,
   DraftSetupRosterState,
-  DraftSetupState,
   DraftSetupTimerState,
+  DraftSetupKeeperState,
+  DraftSetupMetadataState,
   DraftSetupUserState,
 } from "./setup.types";
 

@@ -10,6 +10,7 @@ import {
   buildAdpFormatKey,
   normalizeRosterForLeague,
 } from "../../setup/setup.helpers";
+
 import type {
   DraftSetupFormat,
   DraftSetupLeagueState,
@@ -23,8 +24,10 @@ import type {
 interface DraftSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialSetup: DraftSetupState;
-  onConfirm: (setup: DraftSetupState) => void;
+  setup: DraftSetupState;
+  updateMetadata: (patch: Partial<DraftSetupMetadataState>) => void;
+  updateLeague: (patch: Partial<DraftSetupLeagueState>) => void;
+  updateRoster: (patch: Partial<DraftSetupRosterState>) => void;
   isPaidUser: boolean;
   isLoggedIn: boolean;
 }
@@ -39,30 +42,6 @@ type AdpOptionRecord = {
 };
 
 const ADP_OPTION_RECORDS = ADP_OPTIONS as AdpOptionRecord[];
-
-function cloneSetupState(setup: DraftSetupState): DraftSetupState {
-  return {
-    league: {
-      ...setup.league,
-    },
-    roster: {
-      numTeams: setup.roster.numTeams,
-      positions: {
-        ...setup.roster.positions,
-      },
-      benchCount: setup.roster.benchCount,
-    },
-    timer: {
-      ...setup.timer,
-    },
-    keeper: {
-      ...setup.keeper,
-    },
-    metadata: {
-      ...setup.metadata,
-    },
-  };
-}
 
 function getUniqueValues<T extends string>(values: T[]): T[] {
   return Array.from(new Set(values));
@@ -152,54 +131,48 @@ function getTotalRounds(roster: DraftSetupRosterState): number {
 export default function DraftSettingsModal({
   isOpen,
   onClose,
-  initialSetup,
-  onConfirm,
+  setup,
+  updateMetadata,
+  updateLeague,
+  updateRoster,
   isPaidUser,
   isLoggedIn,
 }: DraftSettingsModalProps) {
   const [activeTab, setActiveTab] = useState<ActiveTab>("league");
-  const [localSetup, setLocalSetup] = useState<DraftSetupState>(() =>
-    cloneSetupState(initialSetup),
-  );
 
   useEffect(() => {
     if (isOpen) {
-      setLocalSetup(cloneSetupState(initialSetup));
       setActiveTab("league");
     }
-  }, [initialSetup, isOpen]);
+  }, [isOpen]);
 
   const controlsLocked = !isPaidUser;
 
   const formatOptions = useMemo(() => getFormatOptions(), []);
 
   const qbTypeOptions = useMemo(
-    () => getQbTypeOptions(localSetup.league.format),
-    [localSetup.league.format],
+    () => getQbTypeOptions(setup.league.format),
+    [setup.league.format],
   );
 
   const scoringOptions = useMemo(
-    () => getScoringOptions(localSetup.league.format, localSetup.league.qbType),
-    [localSetup.league.format, localSetup.league.qbType],
+    () => getScoringOptions(setup.league.format, setup.league.qbType),
+    [setup.league.format, setup.league.qbType],
   );
 
   const platformOptions = useMemo(
     () =>
       getPlatformOptions(
-        localSetup.league.format,
-        localSetup.league.qbType,
-        localSetup.league.scoring,
+        setup.league.format,
+        setup.league.qbType,
+        setup.league.scoring,
       ),
-    [
-      localSetup.league.format,
-      localSetup.league.qbType,
-      localSetup.league.scoring,
-    ],
+    [setup.league.format, setup.league.qbType, setup.league.scoring],
   );
 
   const totalRounds = useMemo(
-    () => getTotalRounds(localSetup.roster),
-    [localSetup.roster],
+    () => getTotalRounds(setup.roster),
+    [setup.roster],
   );
 
   const handleLeagueChange = <K extends keyof DraftSetupLeagueState>(
@@ -215,18 +188,12 @@ export default function DraftSettingsModal({
       return;
     }
 
-    setLocalSetup((current) => {
-      const nextLeague = normalizeLeagueSelection({
-        ...current.league,
-        [key]: value,
-      });
-
-      return {
-        ...current,
-        league: nextLeague,
-        roster: normalizeRosterForLeague(current.roster, nextLeague),
-      };
+    const nextLeague = normalizeLeagueSelection({
+      ...setup.league,
+      [key]: value,
     });
+
+    updateLeague(nextLeague);
   };
 
   const handleRosterChange = <K extends keyof DraftSetupRosterState>(
@@ -242,20 +209,15 @@ export default function DraftSettingsModal({
       return;
     }
 
-    setLocalSetup((current) => {
-      const nextRoster = normalizeRosterForLeague(
-        {
-          ...current.roster,
-          [key]: value,
-        },
-        current.league,
-      );
+    const nextRoster = normalizeRosterForLeague(
+      {
+        ...setup.roster,
+        [key]: value,
+      },
+      setup.league,
+    );
 
-      return {
-        ...current,
-        roster: nextRoster,
-      };
-    });
+    updateRoster(nextRoster);
   };
 
   const handleRosterPositionChange = <
@@ -273,44 +235,30 @@ export default function DraftSettingsModal({
       return;
     }
 
-    setLocalSetup((current) => {
-      const nextRoster = normalizeRosterForLeague(
-        {
-          ...current.roster,
-          positions: {
-            ...current.roster.positions,
-            [key]: value,
-          },
+    const nextRoster = normalizeRosterForLeague(
+      {
+        ...setup.roster,
+        positions: {
+          ...setup.roster.positions,
+          [key]: value,
         },
-        current.league,
-      );
+      },
+      setup.league,
+    );
 
-      return {
-        ...current,
-        roster: nextRoster,
-      };
-    });
+    updateRoster(nextRoster);
   };
 
   const handleMetadataChange = <K extends keyof DraftSetupMetadataState>(
     key: K,
     value: DraftSetupMetadataState[K],
   ) => {
-    setLocalSetup((current) => ({
-      ...current,
-      metadata: {
-        ...current.metadata,
-        [key]: value,
-      },
-    }));
+    updateMetadata({
+      [key]: value,
+    } as Pick<DraftSetupMetadataState, K>);
   };
 
-  const handleConfirm = () => {
-    onConfirm(localSetup);
-    onClose();
-  };
-
-  const derivedAdpKey = buildAdpFormatKey(localSetup.league);
+  const derivedAdpKey = buildAdpFormatKey(setup.league);
 
   return (
     <Dialog
@@ -368,7 +316,7 @@ export default function DraftSettingsModal({
                   Format
                   <select
                     className="mt-1 w-full rounded border border-slate-600 bg-slate-800 p-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    value={localSetup.league.format}
+                    value={setup.league.format}
                     disabled={controlsLocked}
                     onChange={(e) =>
                       handleLeagueChange(
@@ -389,7 +337,7 @@ export default function DraftSettingsModal({
                   QB Setting
                   <select
                     className="mt-1 w-full rounded border border-slate-600 bg-slate-800 p-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    value={localSetup.league.qbType}
+                    value={setup.league.qbType}
                     disabled={controlsLocked}
                     onChange={(e) =>
                       handleLeagueChange(
@@ -410,7 +358,7 @@ export default function DraftSettingsModal({
                   Scoring
                   <select
                     className="mt-1 w-full rounded border border-slate-600 bg-slate-800 p-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    value={localSetup.league.scoring}
+                    value={setup.league.scoring}
                     disabled={controlsLocked}
                     onChange={(e) =>
                       handleLeagueChange("scoring", e.target.value)
@@ -428,7 +376,7 @@ export default function DraftSettingsModal({
                   Platform
                   <select
                     className="mt-1 w-full rounded border border-slate-600 bg-slate-800 p-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    value={localSetup.league.platform}
+                    value={setup.league.platform}
                     disabled={controlsLocked}
                     onChange={(e) =>
                       handleLeagueChange("platform", e.target.value)
@@ -462,7 +410,7 @@ export default function DraftSettingsModal({
                     min={8}
                     max={14}
                     className="mt-1 w-full rounded border border-slate-600 bg-slate-800 p-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    value={localSetup.roster.numTeams}
+                    value={setup.roster.numTeams}
                     disabled={controlsLocked}
                     onChange={(e) =>
                       handleRosterChange("numTeams", Number(e.target.value))
@@ -476,7 +424,7 @@ export default function DraftSettingsModal({
                     type="number"
                     min={0}
                     className="mt-1 w-full rounded border border-slate-600 bg-slate-800 p-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    value={localSetup.roster.benchCount}
+                    value={setup.roster.benchCount}
                     disabled={controlsLocked}
                     onChange={(e) =>
                       handleRosterChange("benchCount", Number(e.target.value))
@@ -486,7 +434,7 @@ export default function DraftSettingsModal({
 
                 <div className="grid grid-cols-2 gap-3">
                   {(
-                    Object.keys(localSetup.roster.positions) as Array<
+                    Object.keys(setup.roster.positions) as Array<
                       keyof DraftSetupRosterPositions
                     >
                   ).map((positionKey) => {
@@ -501,7 +449,7 @@ export default function DraftSettingsModal({
                         <input
                           type="number"
                           min={0}
-                          value={localSetup.roster.positions[positionKey]}
+                          value={setup.roster.positions[positionKey]}
                           disabled={controlsLocked || locked}
                           onChange={(e) =>
                             handleRosterPositionChange(
@@ -532,7 +480,7 @@ export default function DraftSettingsModal({
                   <input
                     type="text"
                     className="mt-1 w-full rounded border border-slate-600 bg-slate-800 p-2 text-white"
-                    value={localSetup.metadata.title}
+                    value={setup.metadata.title}
                     onChange={(e) =>
                       handleMetadataChange("title", e.target.value)
                     }
@@ -544,7 +492,7 @@ export default function DraftSettingsModal({
                   Notes
                   <textarea
                     className="mt-1 min-h-[120px] w-full rounded border border-slate-600 bg-slate-800 p-2 text-white"
-                    value={localSetup.metadata.notes}
+                    value={setup.metadata.notes}
                     onChange={(e) =>
                       handleMetadataChange("notes", e.target.value)
                     }
@@ -567,16 +515,9 @@ export default function DraftSettingsModal({
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="rounded border border-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-800"
-          >
-            Cancel
-          </button>
-
-          <button
-            onClick={handleConfirm}
             className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-green-600"
           >
-            Confirm
+            Close
           </button>
         </div>
       </Dialog.Panel>

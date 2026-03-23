@@ -10,6 +10,9 @@ type DraftBoardProps = {
   numTeams: number;
   totalRounds: number;
   currentPickIndex: number | null;
+  claimedTeamIndex: number | null;
+  onClaimTeam: (teamIndex: number | null) => void;
+  draftStarted: boolean;
 };
 
 const DraftBoard = ({
@@ -17,6 +20,9 @@ const DraftBoard = ({
   numTeams,
   totalRounds,
   currentPickIndex,
+  claimedTeamIndex,
+  onClaimTeam,
+  draftStarted,
 }: DraftBoardProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -58,6 +64,34 @@ const DraftBoard = ({
 
   return (
     <div className="w-full px-[2vw] py-4">
+      {/* Header row with claim buttons */}
+      <div
+        className="mb-2 grid gap-0.5"
+        style={{
+          gridTemplateColumns: `repeat(${numTeams}, minmax(110px, 1fr))`,
+        }}
+      >
+        {Array.from({ length: numTeams }, (_, teamIndex) => {
+          const isClaimed = claimedTeamIndex === teamIndex;
+
+          return (
+            <button
+              key={`claim-${teamIndex}`}
+              type="button"
+              disabled={draftStarted}
+              onClick={() => onClaimTeam(isClaimed ? null : teamIndex)}
+              className={`text-[10px] py-0 px-2 rounded-md font-bold tracking-wide transition-all ${
+                isClaimed
+                  ? "bg-[#0bf1074e] text-black"
+                  : "bg-[#07f1dd] hover:bg-[#ec5100] text-black"
+              } ${draftStarted ? "opacity-50 cursor-not-allowed" : ""}`}
+            >
+              {isClaimed ? "CLAIMED" : "CLAIM"}
+            </button>
+          );
+        })}
+      </div>
+
       {draftGrid.map((round, roundIndex) => {
         const row = roundIndex % 2 === 0 ? round : [...round].reverse();
 
