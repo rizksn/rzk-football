@@ -140,3 +140,12 @@ export function buildCreateDraftRequestDto(
     ...buildDraftMetadata(setup.metadata),
   };
 }
+
+export function getTotalRounds(roster: DraftSetupRosterState): number {
+  const startingSlots = Object.values(roster.positions).reduce(
+    (sum, count) => sum + count,
+    0,
+  );
+
+  return startingSlots + roster.benchCount;
+}

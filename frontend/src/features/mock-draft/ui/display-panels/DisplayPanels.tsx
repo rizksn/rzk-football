@@ -1,9 +1,9 @@
-import { Player } from "@/types/core/player";
+import type { AdpPlayerResponseDto } from "@/features/mock-draft/api/dto";
 import DisplayPanel from "./DisplayPanel";
 
 interface DisplayPanelsProps {
-  leftPlayer: Player | null;
-  rightPlayer: Player | null;
+  leftPlayer: AdpPlayerResponseDto | null;
+  rightPlayer: AdpPlayerResponseDto | null;
 }
 
 export default function DisplayPanels({

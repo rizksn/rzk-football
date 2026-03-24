@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Player } from "@/types/core/player";
+import React, { useEffect, useState } from "react";
+
+import type { AdpPlayerResponseDto } from "@/features/mock-draft/api/dto";
 import PlayerImage from "@/features/shared/PlayerImage";
 import { API_BASE_URL } from "@/utils/config";
 
 interface Props {
-  player: Player | null;
+  player: AdpPlayerResponseDto | null;
   wide?: boolean;
 }
 
@@ -34,26 +35,28 @@ export default function DisplayPanel({ player, wide = false }: Props) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!player) return;
+    if (!player?.position || !player.playerId) return;
+
+    const playerPosition = player.position;
+    const playerId = player.playerId;
+    const playerName = player.fullName ?? "Unknown Player";
 
     const fetchStats = async () => {
       setLoading(true);
       try {
         const res = await fetch(
-          `${API_BASE_URL}/api/player-data/${player.position.toLowerCase()}/${year}?player_id=${
-            player.player_id
-          }`,
+          `${API_BASE_URL}/api/player-data/${playerPosition.toLowerCase()}/${year}?player_id=${playerId}`,
         );
         const json = await res.json();
         const playerData = Array.isArray(json)
-          ? json.find((row) => row.player_id === player.player_id)
+          ? json.find((row) => row.player_id === playerId)
           : null;
 
         if (playerData) {
           setStats((prev) => ({ ...prev, [year]: playerData }));
         } else {
           console.warn(
-            `No data found for ${player.full_name} (${player.player_id}) in ${year}`,
+            `No data found for ${playerName} (${playerId}) in ${year}`,
           );
         }
       } catch (err) {
@@ -63,11 +66,10 @@ export default function DisplayPanel({ player, wide = false }: Props) {
       }
     };
 
-    fetchStats();
-  }, [player?.player_id, year]);
+    void fetchStats();
+  }, [player?.playerId, player?.position, player?.fullName, year]);
 
   const STAT_LABELS: Record<string, string> = {
-    // 🔴 Passing
     pass_yds: "Yds",
     pass_td: "TDs",
     pass_cmp: "Cmp",
@@ -84,7 +86,6 @@ export default function DisplayPanel({ player, wide = false }: Props) {
     pass_40_plus: "40+",
     pass_yds_att: "Y/A",
 
-    // 🔵 Receiving (already defined)
     rec_yds: "Yds",
     rec_td: "TDs",
     rec_long: "Long",
@@ -96,7 +97,6 @@ export default function DisplayPanel({ player, wide = false }: Props) {
     rec_40_plus: "40+",
     rec_fum: "Fum",
 
-    // 🟢 Rushing
     rush_yds: "Yds",
     rush_td: "TDs",
     rush_att: "Att",
@@ -156,18 +156,22 @@ export default function DisplayPanel({ player, wide = false }: Props) {
 
   const renderStats = () => {
     const statData = stats[year];
-    if (loading)
+
+    if (loading) {
       return (
         <p className="italic text-[10px] text-gray-400">
           Loading {year} stats...
         </p>
       );
-    if (!statData)
+    }
+
+    if (!statData) {
       return (
         <p className="italic text-[10px] text-gray-400">
           No {year} stats available.
         </p>
       );
+    }
 
     const order =
       category === "receiving"
@@ -184,11 +188,11 @@ export default function DisplayPanel({ player, wide = false }: Props) {
         ).map((row, idx) => (
           <div
             key={idx}
-            className="grid grid-cols-5 text-[11px] leading-tight text-white pl-10 bg-[#0486a367] rounded-md py-0.5"
+            className="grid grid-cols-5 rounded-md bg-[#0486a367] py-0.5 pl-10 text-[11px] leading-tight text-white"
           >
             {row.map((key) => (
               <div key={key} className="whitespace-nowrap">
-                <span className="text-[#40ff33] font-mono">
+                <span className="font-mono text-[#40ff33]">
                   {formatStatLabel(key)}:
                 </span>{" "}
                 <span className="font-semibold text-white">
@@ -205,105 +209,97 @@ export default function DisplayPanel({ player, wide = false }: Props) {
   return (
     <div
       className={`
-    w-full h-[110px]
-    ${player ? "bg-panel-on" : "bg-panel-off"}
-    rounded-md ring-1 ring-[#010a0db4] relative
-    overflow-hidden transition-all duration-300
-    [transform:rotateX(3deg)] [transform-style:preserve-3d] [backface-visibility:hidden]
-  `}
+        w-full h-[110px]
+        ${player ? "bg-panel-on" : "bg-panel-off"}
+        rounded-md ring-1 ring-[#010a0db4] relative
+        overflow-hidden transition-all duration-300
+        [transform:rotateX(3deg)] [transform-style:preserve-3d] [backface-visibility:hidden]
+        ${wide ? "min-h-[110px]" : ""}
+      `}
     >
-      {/* Glow + Dot Grid */}
       <div className="absolute inset-0 z-0 bg-[rgba(16,94,82,0.51)] blur-sm pointer-events-none" />
       <div className="absolute inset-0 z-0 bg-[radial-gradient(rgba(0,255,255,0.08)_1px,transparent_1px)] bg-[size:20px_20px] opacity-40 pointer-events-none" />
 
-      {/* Main Content */}
-      <div className="relative z-10 flex flex-row items-center h-full text-white">
+      <div className="relative z-10 flex h-full flex-row items-center text-white">
         {player ? (
           <>
-            {/* LEFT SQUARE */}
             <div
-              className={`relative w-[120px] h-full flex flex-col items-center justify-center px-1 ${
-                player ? `bg-team-${player.team}` : "bg-transparent"
-              } rounded-md`}
+              className={`relative flex h-full w-[120px] flex-col items-center justify-center rounded-md px-1 ${
+                player.team ? `bg-team-${player.team}` : "bg-transparent"
+              }`}
             >
-              {/* Match only the left side corners */}
-              {player && (
-                <div className="absolute inset-0 bg-black bg-opacity-20 pointer-events-none rounded-md" />
-              )}
+              <div className="absolute inset-0 rounded-md bg-black bg-opacity-20 pointer-events-none" />
+
               <span className="absolute top-1 left-1 text-[10px] font-bold uppercase">
-                {player.position}
+                {player.position ?? "--"}
               </span>
               <span className="absolute top-1 right-1 text-[10px] font-bold uppercase">
-                {player.team}
+                {player.team ?? "--"}
               </span>
 
               <PlayerImage
-                playerId={player.player_id}
-                alt={player.full_name}
+                playerId={player.playerId}
+                alt={player.fullName ?? "Player"}
                 height={64}
                 className="brightness-110"
               />
-              <span className="text-xs mt-1 text-center">
-                {player.full_name}
+              <span className="mt-1 text-center text-xs">
+                {player.fullName ?? "Unknown Player"}
               </span>
             </div>
 
-            {/* RIGHT PANEL */}
             <div
-              className={`flex-1 h-full ${
+              className={`h-full flex-1 overflow-y-auto px-2 ${
                 player ? "bg-[#0b1e21]" : "bg-transparent"
-              } px-2 overflow-y-auto`}
+              }`}
             >
-              {/* Moved Controls Here */}
-              {player && (
-                <div className="w-full flex justify-center mb-4">
-                  <div className="flex items-center gap-10 text-[11px] font-medium uppercase">
-                    {/* Year Selector */}
-                    <div className="flex bg-[#0b0b0b] rounded-sm overflow-hidden">
-                      {["2024", "2023"].map((y) => (
-                        <button
-                          key={y}
-                          onClick={() => setYear(y as "2024" | "2023")}
-                          className={`relative px-3 h-[24px] text-[11px] tracking-wide font-semibold uppercase transition-all duration-200
-    ${year === y ? "text-cyan-300" : "text-white/40 hover:text-white"}
-  `}
-                        >
-                          {y}
-                          {year === y && (
-                            <span className="absolute bottom-0 left-0 w-full h-[2px] bg-cyan-300 rounded-full" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
+              <div className="mb-4 flex w-full justify-center">
+                <div className="flex items-center gap-10 text-[11px] font-medium uppercase">
+                  <div className="flex overflow-hidden rounded-sm bg-[#0b0b0b]">
+                    {["2024", "2023"].map((y) => (
+                      <button
+                        key={y}
+                        onClick={() => setYear(y as "2024" | "2023")}
+                        className={`relative h-[24px] px-3 text-[11px] font-semibold uppercase tracking-wide transition-all duration-200 ${
+                          year === y
+                            ? "text-cyan-300"
+                            : "text-white/40 hover:text-white"
+                        }`}
+                      >
+                        {y}
+                        {year === y && (
+                          <span className="absolute bottom-0 left-0 h-[2px] w-full rounded-full bg-cyan-300" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
 
-                    {/* Category Selector */}
-                    <div className="flex bg-[#0b0b0b] rounded-sm overflow-hidden">
-                      {["passing", "receiving", "rushing"].map((cat) => (
-                        <button
-                          key={cat}
-                          onClick={() => setCategory(cat as typeof category)}
-                          className={`relative px-3 h-[24px] tracking-wide text-[10px] font-semibold uppercase transition-all duration-200 ${
-                            category === cat
-                              ? "text-cyan-300"
-                              : "text-white/50 hover:text-white"
-                          }`}
-                        >
-                          {cat}
-                          {category === cat && (
-                            <span className="absolute bottom-0 left-0 w-full h-[2px] bg-cyan-300 rounded-full" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
+                  <div className="flex overflow-hidden rounded-sm bg-[#0b0b0b]">
+                    {["passing", "receiving", "rushing"].map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setCategory(cat as typeof category)}
+                        className={`relative h-[24px] px-3 text-[10px] font-semibold uppercase tracking-wide transition-all duration-200 ${
+                          category === cat
+                            ? "text-cyan-300"
+                            : "text-white/50 hover:text-white"
+                        }`}
+                      >
+                        {cat}
+                        {category === cat && (
+                          <span className="absolute bottom-0 left-0 h-[2px] w-full rounded-full bg-cyan-300" />
+                        )}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              )}
+              </div>
 
               {renderStats()}
             </div>
           </>
         ) : (
-          <p className="text-sm text-gray-500 italic px-4">
+          <p className="px-4 text-sm italic text-gray-500">
             No player selected
           </p>
         )}
@@ -311,5 +307,3 @@ export default function DisplayPanel({ player, wide = false }: Props) {
     </div>
   );
 }
-
-// #0b1e21      #16585a.    #006db0.    #ff2700

@@ -3,23 +3,23 @@
 import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Player } from "@/types/core/player";
+
+import type { AdpPlayerResponseDto } from "@/features/mock-draft/api/dto";
 
 type QueueItemProps = {
-  player: Player;
+  player: AdpPlayerResponseDto;
   onRemove: () => void;
 };
 
 const QueueItem = ({ player, onRemove }: QueueItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: player.player_id });
+    useSortable({ id: player.playerId });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
-  // const playerId = getSleeperPlayerId(player.name);
   const imageHeight = 24;
 
   return (
@@ -28,10 +28,8 @@ const QueueItem = ({ player, onRemove }: QueueItemProps) => {
       style={style}
       className="px-2 py-1 bg-[#1c283c4b] rounded flex items-center justify-between text-white text-xs"
     >
-      {/* Position */}
-      <div className="w-[40px] font-semibold">{player.position}</div>
+      <div className="w-[40px] font-semibold">{player.position ?? "--"}</div>
 
-      {/* Headshot */}
       {/* {playerId ? (
         <PlayerImage
           playerId={playerId}
@@ -45,28 +43,25 @@ const QueueItem = ({ player, onRemove }: QueueItemProps) => {
         />
       )} */}
 
-      {/* Name (drag handle) */}
       <div
         className="flex-1 text-center font-medium truncate"
         {...attributes}
         {...listeners}
       >
-        {player.full_name}
+        {player.fullName ?? "--"}
       </div>
 
-      {/* Team */}
       <div className="w-[40px] text-xs text-slate-400 text-right">
-        {player.team}
+        {player.team ?? "--"}
       </div>
 
-      {/* Remove button */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           onRemove();
         }}
         className="ml-3 text-red-400 hover:text-red-300"
-        aria-label={`Remove ${player.full_name}`}
+        aria-label={`Remove ${player.fullName ?? "player"}`}
       >
         ❌
       </button>

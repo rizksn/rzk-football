@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
-  arrayMove,
-} from '@dnd-kit/sortable';
-import { useState, useEffect } from 'react';
-import { Player } from '@/types/core/player';
-import QueuePlayer from './QueuePlayer';
+} from "@dnd-kit/sortable";
+import { useEffect, useState } from "react";
+
+import type { AdpPlayerResponseDto } from "@/features/mock-draft/api/dto";
+import QueuePlayer from "./QueuePlayer";
 
 type QueueProps = {
-  queuedPlayers: Player[];
+  queuedPlayers: AdpPlayerResponseDto[];
   queueOrder: string[];
   onRemoveFromQueue: (playerId: string) => void;
   onDragEnd: (event: DragEndEvent) => void;
@@ -30,20 +30,25 @@ const Queue = ({
   }, [queueOrder]);
 
   if (queuedPlayers.length === 0) {
-    return <div className="text-xs text-slate-400 italic">No players in queue yet.</div>;
+    return (
+      <div className="text-xs text-slate-400 italic">
+        No players in queue yet.
+      </div>
+    );
   }
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       <SortableContext items={order} strategy={verticalListSortingStrategy}>
         <div className="text-xs space-y-1">
-          {order.map(id => {
-            const player = queuedPlayers.find(p => p.player_id === id);
+          {order.map((id) => {
+            const player = queuedPlayers.find((p) => p.playerId === id);
+
             return player ? (
               <QueuePlayer
-                key={player.player_id}
+                key={player.playerId}
                 player={player}
-                onRemove={() => onRemoveFromQueue(player.player_id)}
+                onRemove={() => onRemoveFromQueue(player.playerId)}
               />
             ) : null;
           })}

@@ -411,8 +411,10 @@ function MockDraftScreenContent() {
       <DraftSettingsModal
         isOpen={showSettings}
         onClose={handleCloseSettings}
-        initialSetup={setup}
-        onConfirm={replaceSetup}
+        setup={setup}
+        updateMetadata={updateMetadata}
+        updateLeague={updateLeague}
+        updateRoster={updateRoster}
         isPaidUser={isPaidUser}
         isLoggedIn={isLoggedIn}
       />

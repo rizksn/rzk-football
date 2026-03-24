@@ -9,39 +9,8 @@ import RightPanel from "./RightPanel";
 import DisplayPanels from "../display-panels/DisplayPanels";
 
 import type { LowerPanelProps } from "./lower-panel.types";
-import type {
-  DraftedPlayer,
-  ScoredPlayer,
-} from "@/features/mock-draft/session/session.models";
-
-function scoredPlayerToLegacyPlayer(player: ScoredPlayer) {
-  return {
-    player_id: player.playerId,
-    full_name: player.fullName,
-    search_full_name: player.searchFullName,
-    first_name: player.firstName,
-    last_name: player.lastName,
-    team: player.team,
-    position: player.position,
-    rank: player.rank,
-    adp: player.adp,
-    scoring: player.scoring,
-    platform: player.platform,
-    type: player.type,
-    absolute_adp: player.absoluteAdp,
-    final_score: player.finalScore,
-    debug: player.debug,
-  };
-}
-
-function draftedPlayerToLegacyPlayer(player: DraftedPlayer) {
-  return {
-    player_id: player.playerId,
-    full_name: player.fullName,
-    team: player.team,
-    position: player.position,
-  };
-}
+import type { DraftedPlayer } from "@/features/mock-draft/session/session.models";
+import type { AdpPlayerResponseDto } from "@/features/mock-draft/api/dto";
 
 const EMPTY_ROSTER_SETTINGS = {
   positions: {
@@ -80,11 +49,6 @@ const LowerPanel = ({
   onSaveRankings,
   onResetRankings,
 }: LowerPanelProps) => {
-  const legacyUserRoster = useMemo(
-    () => userRoster.map(draftedPlayerToLegacyPlayer),
-    [userRoster],
-  );
-
   const queuePlayers = useMemo(() => {
     const availableById = new Map(
       availablePlayers.map((player) => [player.playerId, player]),
@@ -92,8 +56,7 @@ const LowerPanel = ({
 
     return workspace.queue.playerIds
       .map((playerId) => availableById.get(playerId))
-      .filter((player): player is ScoredPlayer => Boolean(player))
-      .map(scoredPlayerToLegacyPlayer);
+      .filter((player): player is AdpPlayerResponseDto => Boolean(player));
   }, [availablePlayers, workspace.queue.playerIds]);
 
   const rankingPlayers = useMemo(() => {
@@ -103,8 +66,7 @@ const LowerPanel = ({
 
     return workspace.rankings.playerIds
       .map((playerId) => availableById.get(playerId))
-      .filter((player): player is ScoredPlayer => Boolean(player))
-      .map(scoredPlayerToLegacyPlayer);
+      .filter((player): player is AdpPlayerResponseDto => Boolean(player));
   }, [availablePlayers, workspace.rankings.playerIds]);
 
   const leftDisplayPlayer = useMemo(() => {
@@ -127,28 +89,14 @@ const LowerPanel = ({
     );
   }, [availablePlayers, workspace.display.rightPlayerId]);
 
-  const legacyLeftDisplayPlayer = leftDisplayPlayer
-    ? scoredPlayerToLegacyPlayer(leftDisplayPlayer)
-    : null;
-
-  const legacyRightDisplayPlayer = rightDisplayPlayer
-    ? scoredPlayerToLegacyPlayer(rightDisplayPlayer)
-    : null;
-
-  const rosterSettings = rosterConfig
-    ? {
-        positions: rosterConfig.positions,
-        benchCount: rosterConfig.benchCount,
-        totalRounds: rosterConfig.totalRounds,
-      }
-    : EMPTY_ROSTER_SETTINGS;
+  const rosterSettings = rosterConfig;
 
   return (
     <div className="mx-auto flex h-[55vh] w-full max-w-[1600px] flex-col sm:min-w-[960px]">
       <div className="h-[120px] shrink-0">
         <DisplayPanels
-          leftPlayer={legacyLeftDisplayPlayer}
-          rightPlayer={legacyRightDisplayPlayer}
+          leftPlayer={leftDisplayPlayer}
+          rightPlayer={rightDisplayPlayer}
         />
       </div>
 
@@ -188,7 +136,7 @@ const LowerPanel = ({
                   showOnly="queue"
                   queuedPlayers={queuePlayers}
                   rankingPlayers={rankingPlayers}
-                  userRoster={legacyUserRoster}
+                  userRoster={userRoster}
                   rosterSettings={rosterSettings}
                   onRemoveFromQueue={onRemoveFromQueue}
                   setRankedPlayers={() => {}}
@@ -216,7 +164,7 @@ const LowerPanel = ({
                   showOnly="roster"
                   queuedPlayers={queuePlayers}
                   rankingPlayers={rankingPlayers}
-                  userRoster={legacyUserRoster}
+                  userRoster={userRoster}
                   rosterSettings={rosterSettings}
                   onRemoveFromQueue={onRemoveFromQueue}
                   setRankedPlayers={() => {}}
@@ -259,7 +207,7 @@ const LowerPanel = ({
             <RightPanel
               queuedPlayers={queuePlayers}
               rankingPlayers={rankingPlayers}
-              userRoster={legacyUserRoster}
+              userRoster={userRoster}
               rosterSettings={rosterSettings}
               onRemoveFromQueue={onRemoveFromQueue}
               setRankedPlayers={() => {}}

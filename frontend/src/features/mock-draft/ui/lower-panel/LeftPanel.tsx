@@ -4,25 +4,9 @@ import { useMemo } from "react";
 import { ChevronsLeft, ChevronsRight, ListPlus } from "lucide-react";
 import classNames from "classnames";
 
-import type { ScoredPlayer } from "@/features/mock-draft/session/session.models";
-import type { DraftWorkspacePlayerTableState } from "@/features/mock-draft/workspace/workspace.types";
+import type { LeftPanelProps } from "./lower-panel.types";
 
 const POSITIONS = ["All", "QB", "RB", "WR", "TE", "FLEX", "K"] as const;
-
-type LeftPanelProps = {
-  players: ScoredPlayer[];
-  playerTable: DraftWorkspacePlayerTableState;
-  canDraft: boolean;
-
-  onDraftPlayer: (playerId: string) => void;
-  onAddToQueue: (playerId: string) => void;
-
-  onSetSearchText: (value: string) => void;
-  onSetPositionFilter: (value: string | null) => void;
-
-  onSetLeftDisplayPlayer: (playerId: string | null) => void;
-  onSetRightDisplayPlayer: (playerId: string | null) => void;
-};
 
 const LeftPanel = ({
   players,
@@ -39,15 +23,18 @@ const LeftPanel = ({
     const search = playerTable.searchText.trim().toLowerCase();
 
     let next = players.filter((player) => {
+      const fullName = player.fullName ?? "";
+      const position = player.position ?? "";
+
       const matchesSearch =
-        search.length === 0 || player.fullName.toLowerCase().includes(search);
+        search.length === 0 || fullName.toLowerCase().includes(search);
 
       const matchesPosition =
         !playerTable.positionFilter ||
         playerTable.positionFilter === "All" ||
         (playerTable.positionFilter === "FLEX"
-          ? ["WR", "RB", "TE"].includes(player.position)
-          : player.position === playerTable.positionFilter);
+          ? ["WR", "RB", "TE"].includes(position)
+          : position === playerTable.positionFilter);
 
       return matchesSearch && matchesPosition;
     });
@@ -56,17 +43,32 @@ const LeftPanel = ({
       const { sortKey, sortDirection } = playerTable;
       const direction = sortDirection === "asc" ? 1 : -1;
 
+      const aRank = a.rank ?? Number.POSITIVE_INFINITY;
+      const bRank = b.rank ?? Number.POSITIVE_INFINITY;
+
+      const aAdp = Number(a.adp ?? Number.POSITIVE_INFINITY);
+      const bAdp = Number(b.adp ?? Number.POSITIVE_INFINITY);
+
+      const aName = a.fullName ?? "";
+      const bName = b.fullName ?? "";
+
+      const aPosition = a.position ?? "";
+      const bPosition = b.position ?? "";
+
+      const aTeam = a.team ?? "";
+      const bTeam = b.team ?? "";
+
       switch (sortKey) {
         case "rank":
-          return (a.rank - b.rank) * direction;
+          return (aRank - bRank) * direction;
         case "adp":
-          return (a.absoluteAdp - b.absoluteAdp) * direction;
+          return (aAdp - bAdp) * direction;
         case "name":
-          return a.fullName.localeCompare(b.fullName) * direction;
+          return aName.localeCompare(bName) * direction;
         case "position":
-          return a.position.localeCompare(b.position) * direction;
+          return aPosition.localeCompare(bPosition) * direction;
         case "team":
-          return a.team.localeCompare(b.team) * direction;
+          return aTeam.localeCompare(bTeam) * direction;
         default:
           return 0;
       }
@@ -150,14 +152,18 @@ const LeftPanel = ({
                     </button>
                   </td>
 
-                  <td className="px-2 py-1.5 text-slate-300">{player.rank}</td>
                   <td className="px-2 py-1.5 text-slate-300">
-                    {player.fullName}
+                    {player.rank ?? "--"}
                   </td>
                   <td className="px-2 py-1.5 text-slate-300">
-                    {player.position}
+                    {player.fullName ?? "--"}
                   </td>
-                  <td className="px-2 py-1.5 text-slate-300">{player.team}</td>
+                  <td className="px-2 py-1.5 text-slate-300">
+                    {player.position ?? "--"}
+                  </td>
+                  <td className="px-2 py-1.5 text-slate-300">
+                    {player.team ?? "--"}
+                  </td>
 
                   <td className="px-0 py-1">
                     <button
@@ -191,7 +197,7 @@ const LeftPanel = ({
                         e.stopPropagation();
                         onAddToQueue(player.playerId);
                       }}
-                      aria-label={`Add ${player.fullName} to queue`}
+                      aria-label={`Add ${player.fullName ?? "player"} to queue`}
                       className="text-green-400 hover:text-green-300"
                     >
                       <ListPlus size={16} />

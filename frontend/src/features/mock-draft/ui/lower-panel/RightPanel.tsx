@@ -1,44 +1,14 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
-import { DragEndEvent } from "@dnd-kit/core";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Download, FolderOutput, RotateCcw, Save, SquareX } from "lucide-react";
 
-import { Player } from "@/types/core/player";
 import Queue from "./Queue";
-import Roster from "./Roster";
 import Rankings from "./Rankings";
+import Roster from "./Roster";
 
-import { Save, Download, FolderOutput, RotateCcw, SquareX } from "lucide-react";
-import type { DraftRosterSettings } from "@/types/draft/config";
-import type { DraftPick } from "@/features/mock-draft/MockDraft";
-
-type RightPanelProps = {
-  queuedPlayers: Player[];
-  queueOrder: string[];
-  handleQueueDragEnd: (event: DragEndEvent) => void;
-  userRoster: Player[];
-  rosterSettings: DraftRosterSettings;
-  onRemoveFromQueue: (playerId: string) => void;
-  rankingPlayers: Player[];
-  setRankedPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
-  loadRankings: () => Promise<void>;
-  onSaveRankings: () => Promise<void>;
-  resetRankings: () => void;
-  downloadRankings: () => void;
-  isPaidUser: boolean;
-  setQueueOrder: React.Dispatch<React.SetStateAction<string[]>>;
-  showOnly?: "queue" | "roster";
-  keeperState: {
-    mode: "standard" | "keeper";
-    keeperSetId: string | null;
-  };
-  draftStarted: boolean;
-  draftPlan: DraftPick[];
-  userDraftSlot: number | null;
-  canEditRankings: boolean;
-  hasManualAssignments: boolean;
-};
+import type { RightPanelProps } from "./lower-panel.types";
 
 const RightPanel = ({
   queuedPlayers,
@@ -66,8 +36,6 @@ const RightPanel = ({
   const [activeTab, setActiveTab] = useState<"queue" | "rankings">("queue");
   const [saving, setSaving] = useState(false);
 
-  const hasLoaded = useRef(false);
-
   const disableSave = useMemo(() => {
     if (saving) return true;
     if (draftStarted) return true;
@@ -76,7 +44,6 @@ const RightPanel = ({
     return false;
   }, [saving, draftStarted, isPaidUser, canEditRankings]);
 
-  // simple per-button cooldown (no re-renders)
   const useClickCooldown = (ms = 1200) => {
     const ref = useRef(0);
     return () => {
@@ -87,7 +54,6 @@ const RightPanel = ({
     };
   };
 
-  // one guard per action you want to throttle
   const canSaveClick = useClickCooldown(1500);
   const canLoadClick = useClickCooldown(1200);
   const canResetClick = useClickCooldown(1000);
@@ -99,7 +65,6 @@ const RightPanel = ({
     <div className="flex h-full w-full bg-[rgba(28,29,46,0.58)] min-h-0">
       <div className="absolute inset-0 z-0 bg-[radial-gradient(rgba(0,255,255,0.08)_1px,transparent_1px)] bg-[size:20px_20px] opacity-40 pointer-events-none" />
 
-      {/* Player Queue & Rankings */}
       {showOnly !== "roster" && (
         <div
           className={`${
@@ -107,7 +72,6 @@ const RightPanel = ({
           } border-r border-slate-700 px-3 flex flex-col h-full min-h-0`}
         >
           <div className="flex items-center justify-between mb-2">
-            {/* Left Side (Queue tab only) */}
             <div className="flex items-center gap-2">
               <button
                 className={`text-xs px-5 font-semibold rounded uppercase ${
@@ -150,7 +114,7 @@ const RightPanel = ({
                       return;
                     }
 
-                    setQueueOrder(rankingPlayers.map((p) => p.player_id));
+                    setQueueOrder(rankingPlayers.map((p) => p.playerId));
                     toast.success("✅ Rankings migrated to queue!");
                   }}
                   className="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded"
@@ -160,7 +124,6 @@ const RightPanel = ({
               )}
             </div>
 
-            {/* Right Side (Rankings tab only) */}
             <div className="flex items-center gap-2">
               {activeTab === "rankings" && (
                 <>
@@ -291,7 +254,6 @@ const RightPanel = ({
         </div>
       )}
 
-      {/* Roster */}
       {showOnly !== "queue" && (
         <div
           className={`${

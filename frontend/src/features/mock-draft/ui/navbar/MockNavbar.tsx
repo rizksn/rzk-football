@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MockNavbarProps } from "@/types/ui/components";
+import type { MockNavbarProps } from "./MockNavbar.types";
 import { useAuth } from "@/utils/useAuth";
 import { User, Settings, Save, Undo, RotateCcw, SquareX } from "lucide-react";
 import TimerButtons from "../timer/TimerButtons";

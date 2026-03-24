@@ -4,13 +4,18 @@ import { Dialog } from "@headlessui/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import ADP_OPTIONS from "@/data/valid_adp_combinations.json";
-
 import {
   buildAdpFormatKey,
+  getTotalRounds,
   normalizeRosterForLeague,
 } from "../../setup/setup.helpers";
-
+import {
+  getFormatOptions,
+  getPlatformOptions,
+  getQbTypeOptions,
+  getScoringOptions,
+  normalizeLeagueSelection,
+} from "../../setup/setup.options";
 import type {
   DraftSetupFormat,
   DraftSetupLeagueState,
@@ -18,115 +23,11 @@ import type {
   DraftSetupQbType,
   DraftSetupRosterPositions,
   DraftSetupRosterState,
-  DraftSetupState,
 } from "../../setup/setup.types";
-
-interface DraftSettingsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  setup: DraftSetupState;
-  updateMetadata: (patch: Partial<DraftSetupMetadataState>) => void;
-  updateLeague: (patch: Partial<DraftSetupLeagueState>) => void;
-  updateRoster: (patch: Partial<DraftSetupRosterState>) => void;
-  isPaidUser: boolean;
-  isLoggedIn: boolean;
-}
-
-type ActiveTab = "league" | "roster" | "metadata";
-
-type AdpOptionRecord = {
-  leagueFormat: DraftSetupFormat;
-  qb_setting: DraftSetupQbType;
-  scoring: string;
-  platform: string;
-};
-
-const ADP_OPTION_RECORDS = ADP_OPTIONS as AdpOptionRecord[];
-
-function getUniqueValues<T extends string>(values: T[]): T[] {
-  return Array.from(new Set(values));
-}
-
-function getFormatOptions(): DraftSetupFormat[] {
-  return getUniqueValues(
-    ADP_OPTION_RECORDS.map((option) => option.leagueFormat),
-  );
-}
-
-function getQbTypeOptions(format: DraftSetupFormat): DraftSetupQbType[] {
-  return getUniqueValues(
-    ADP_OPTION_RECORDS.filter((option) => option.leagueFormat === format).map(
-      (option) => option.qb_setting,
-    ),
-  );
-}
-
-function getScoringOptions(
-  format: DraftSetupFormat,
-  qbType: DraftSetupQbType,
-): string[] {
-  return getUniqueValues(
-    ADP_OPTION_RECORDS.filter(
-      (option) =>
-        option.leagueFormat === format && option.qb_setting === qbType,
-    ).map((option) => option.scoring),
-  );
-}
-
-function getPlatformOptions(
-  format: DraftSetupFormat,
-  qbType: DraftSetupQbType,
-  scoring: string,
-): string[] {
-  return getUniqueValues(
-    ADP_OPTION_RECORDS.filter(
-      (option) =>
-        option.leagueFormat === format &&
-        option.qb_setting === qbType &&
-        option.scoring === scoring,
-    ).map((option) => option.platform),
-  );
-}
-
-function normalizeLeagueSelection(
-  league: DraftSetupLeagueState,
-): DraftSetupLeagueState {
-  const formatOptions = getFormatOptions();
-  const format = formatOptions.includes(league.format)
-    ? league.format
-    : formatOptions[0];
-
-  const qbTypeOptions = getQbTypeOptions(format);
-  const qbType = qbTypeOptions.includes(league.qbType)
-    ? league.qbType
-    : qbTypeOptions[0];
-
-  const scoringOptions = getScoringOptions(format, qbType);
-  const scoring = scoringOptions.includes(league.scoring)
-    ? league.scoring
-    : scoringOptions[0];
-
-  const platformOptions = getPlatformOptions(format, qbType, scoring);
-  const platform = platformOptions.includes(league.platform)
-    ? league.platform
-    : platformOptions[0];
-
-  return {
-    format,
-    qbType,
-    scoring,
-    platform,
-  };
-}
-
-function getTotalRounds(roster: DraftSetupRosterState): number {
-  const startingSlots = Object.values(roster.positions).reduce(
-    (sum, count) => sum + count,
-    0,
-  );
-
-  return startingSlots + roster.benchCount;
-}
+import type {
+  ActiveTab,
+  DraftSettingsModalProps,
+} from "./DraftSettingsModal.types";
 
 export default function DraftSettingsModal({
   isOpen,
